@@ -6,16 +6,11 @@ namespace Dream.Models.SOE_Basic
     {
         static void Main(string[] args)
         {
-            RunSimulation(args, true); // Mark saveScenario here!!
-            
-            
-            
-            // Line of code
+            RunSimulation(args, true); // Mark saveScenario here!!           
         }   
     
         static void RunSimulation(string[] args, bool saveScenario=false)
         {
-            //Multiple Goods 
             Settings settings = new();
             settings.SaveScenario = saveScenario;
 
