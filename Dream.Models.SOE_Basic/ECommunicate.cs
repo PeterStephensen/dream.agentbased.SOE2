@@ -17,6 +17,7 @@ namespace Dream.Models.SOE_Basic
         JobApplication,
         IQuit,
         CanIBuy,
+        Inheritance,
         Statistics,
         Initialize  // Only used during initialization
     }

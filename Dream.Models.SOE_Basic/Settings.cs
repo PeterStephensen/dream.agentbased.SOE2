@@ -218,6 +218,24 @@ namespace Dream.Models.SOE_Basic
         /// </summary>
         public double HouseholdCES_Elasticity { get; set; } = 0;
 
+        /// <summary>
+        /// Share of income saved before pension age
+        /// </summary>
+        public double HouseholdSaveRate { get; set; } = 0;
+
+        /// <summary>
+        /// Share of welath consumed when pensioned
+        /// </summary>
+        public double HouseholdDisSaveRatePensioner { get; set; } = 0;
+
+        /// <summary>
+        /// Share of welath consumed when unemployed
+        /// </summary>
+        public double HouseholdDisSaveRateUnemployed { get; set; } = 0;
+
+
+        public int NumberOfInheritors { get; set; } = 1;
+
 
         /// <summary>
         /// Initial size of investor firm portefolio

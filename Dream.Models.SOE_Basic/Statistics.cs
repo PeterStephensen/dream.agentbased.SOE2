@@ -410,7 +410,7 @@ namespace Dream.Models.SOE_Basic
                     }
 
                     int nFirmClosed = _nFirmCloseNatural + _nFirmCloseNegativeProfit + _nFirmCloseTooBig + _nFirmCloseZeroEmployment;
-                    _fileMacro.WriteLineTab(_scenario_id, _runName, _time.Now, _expSharpeRatioTotal, _macroProductivity, _marketPriceTotal, _marketWageTotal,
+                    _fileMacro.WriteLineTab(_scenario_id, Environment.MachineName, _runName, _time.Now, _expSharpeRatioTotal, _macroProductivity, _marketPriceTotal, _marketWageTotal,
                                                 n_firms, _totalEmployment, _totalSales, _laborSupply, _n_laborSupply, _n_unemployed,
                                                 _totalProduction, _simulation.Households.Count, _nFirmNew, nFirmClosed, _sigmaRiskTotal, _sharpeRatioTotal, 
                                                 mean_age, tot_vacancies, _marketPrice[0], _marketWage[0], _employment[0], _sales[0], 
@@ -429,13 +429,13 @@ namespace Dream.Models.SOE_Basic
 
 
 
-                    if (_time.Now==_settings.StatisticsOutputPeriode)
-                    {
-                        using (StreamWriter sw = File.AppendText(_settings.ROutputDir + "\\output.txt"))
-                        {
-                            sw.WriteLineTab(n_firms, _marketPrice, _marketWage, _discountedProfits);
-                        }
-                    }
+                    //if (_time.Now==_settings.StatisticsOutputPeriode)
+                    //{
+                    //    using (StreamWriter sw = File.AppendText(_settings.ROutputDir + "\\output.txt"))
+                    //    {
+                    //        sw.WriteLineTab(n_firms, _marketPrice, _marketWage, _discountedProfits);
+                    //    }
+                    //}
 
                     _nFirmCloseNatural = 0;
                     _nFirmCloseTooBig = 0;
@@ -550,7 +550,7 @@ namespace Dream.Models.SOE_Basic
                 path = _settings.ROutputDir + "\\household_reports.txt";
                 if (File.Exists(path)) File.Delete(path);
                 _fileHouseholdReport = File.CreateText(path);
-                _fileHouseholdReport.WriteLine("Time\tID\tProductivity\tAge\tConsumption\tValConsumption\tIncome");
+                _fileHouseholdReport.WriteLine("Time\tID\tProductivity\tAge\tConsumption\tValConsumption\tIncome\tWealth\tWage\tP_macro");
 
                 path = _settings.ROutputDir + "\\output.txt";
                 if (!File.Exists(path))
@@ -611,7 +611,7 @@ namespace Dream.Models.SOE_Basic
 
             if (File.Exists(macroPath)) File.Delete(macroPath);
             _fileMacro = File.CreateText(macroPath);
-            _fileMacro.WriteLine("Scenario\tRun\tTime\texpSharpeRatio\tmacroProductivity\tmarketPrice\t" +
+            _fileMacro.WriteLine("Scenario\tMachine\tRun\tTime\texpSharpeRatio\tmacroProductivity\tmarketPrice\t" +
                    "marketWage\tnFirms\tEmployment\tSales\tLaborSupply\tnLaborSupply\tnUnemployed\t" +
                    "Production\tnHouseholds\tnFirmNew\tnFirmClosed\tSigmaRisk\tSharpeRatio\tMeanAge\t" +
                    "Vacancies\tmarketPrice0\tmarketWage0\temployment0\tsales0\tnFirm0\texpShapeRatio0");

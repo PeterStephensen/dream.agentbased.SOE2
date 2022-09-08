@@ -32,6 +32,8 @@ namespace Dream.Models.SOE_Basic
         double _consumption = 0;
         double _vConsumption = 0; // Value of consumption
         double _income = 0;
+        double _consumption_budget = 0;
+        double _wealth = 0;
         double _year;
         double[] _c = null;  // Consumption
         double[] _vc = null; // Value of consumption
@@ -57,6 +59,7 @@ namespace Dream.Models.SOE_Basic
             _vc = new double[_settings.NumberOfSectors];
             _budget = new double[_settings.NumberOfSectors];
             _firmShopArray = new Firm[_settings.NumberOfSectors];
+            _wealth = 0;
 
             _s_CES = new double[_settings.NumberOfSectors];
             for (int i = 0; i < _settings.NumberOfSectors; i++)   // Random share parameters in the CES-function
@@ -132,6 +135,22 @@ namespace Dream.Models.SOE_Basic
                         _yr_employment++;
                    
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
+
+                    if(_age >= _settings.HouseholdPensionAge) // If pensioner
+                    {
+                        _consumption_budget = _settings.HouseholdDisSaveRatePensioner * _wealth;
+                        _wealth = _wealth - _consumption_budget;
+                    }
+                    else if(_w>0)                            // If employed
+                    {
+                        _consumption_budget = (1 - _settings.HouseholdSaveRate) * _income;
+                        _wealth = _wealth + _settings.HouseholdSaveRate * _income;
+                    }
+                    else                                     // If unemployed 
+                    {
+                        _consumption_budget = _settings.HouseholdDisSaveRateUnemployed * _wealth;
+                        _wealth = _wealth - _consumption_budget;
+                    }
                     break;
 
                 case Event.Economics.Update:
@@ -177,7 +196,8 @@ namespace Dream.Models.SOE_Basic
                     {
                         if(_firmEmployment!=null)
                             _firmEmployment.Communicate(ECommunicate.IQuit, this);
-                        
+
+                        Inheritance();
                         RemoveThisAgent();
                         return;
                     }
@@ -220,7 +240,7 @@ namespace Dream.Models.SOE_Basic
 
             // Calculate budget 
             for (int s = 0; s < _settings.NumberOfSectors; s++)
-                _budget[s] = _s_CES[s] * Math.Pow(_firmShopArray[s].Price / _P_CES, 1 - _settings.HouseholdCES_Elasticity) * _income;
+                _budget[s] = _s_CES[s] * Math.Pow(_firmShopArray[s].Price / _P_CES, 1 - _settings.HouseholdCES_Elasticity) * _consumption_budget;
 
             // Buy goods
             for (int s = 0; s < _settings.NumberOfSectors; s++)
@@ -390,6 +410,25 @@ namespace Dream.Models.SOE_Basic
 
         #endregion
 
+        #region Inheritance
+        void Inheritance()
+        {
+            double inheritance = _wealth / _settings.NumberOfInheritors;
+            int inh = 0;
+            while(inh<_settings.NumberOfInheritors)
+            {
+                Household h = _simulation.GetRandomHousehold();
+                if(h.Age<_settings.HouseholdPensionAge)
+                {
+                    h.Communicate(ECommunicate.Inheritance, inheritance);
+                    inh++;
+                }
+            }
+            _wealth = 0;
+
+        }
+        #endregion
+
         #region ProbabilityDeath()
         double ProbabilityDeath()
         {
@@ -403,7 +442,8 @@ namespace Dream.Models.SOE_Basic
         {
             if (_report & !_settings.SaveScenario)
             {               
-                _statistics.StreamWriterHouseholdReport.WriteLineTab(_year, this.ID, _productivity, _age/ _settings.PeriodsPerYear, _consumption, _vConsumption, _income);
+                _statistics.StreamWriterHouseholdReport.WriteLineTab(_year, this.ID, _productivity, _age/ _settings.PeriodsPerYear, 
+                    _consumption, _consumption_budget, _income, _wealth, _w, _statistics.PublicMarketPriceTotal);
                 _statistics.StreamWriterHouseholdReport.Flush();
             }
         }
@@ -424,6 +464,10 @@ namespace Dream.Models.SOE_Basic
                     _firmEmployment = (Firm)o;
                     return ECommunicate.Ok;
                 
+                case ECommunicate.Inheritance:
+                    _wealth += (double)o;
+                    return ECommunicate.Ok;
+
                 default:
                     return ECommunicate.Ok;
             }
@@ -463,6 +507,17 @@ namespace Dream.Models.SOE_Basic
         {
             get { return _unempDuration; }
         }
+        public double Wealth
+        {
+            get { return _wealth; }
+        }
+        public double Income
+        {
+            get { return _income; }
+        }
+        
+        
+        
         public double Productivity
         {
             get { return _productivity; }
