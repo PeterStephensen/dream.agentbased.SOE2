@@ -1,6 +1,8 @@
 rm(list=ls())
 library(dplyr)
 
+setwd("H:/CSharp/dream.agentbased.SOE-de498d55c72396b9e2e24e87e209e68ed3b06f65/dream.agentbased.SOE/Dream.Models.SOE_Basic/R")
+
 #install.packages("ContourFunctions")
 
 if(Sys.info()['nodename'] == "C1709161")    # PSP's machine
@@ -16,14 +18,19 @@ if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord for agentbased pro
   o_dir = "C:/Users/B007566/Documents/Output"  
 }
 
-d_report = read.delim(paste0(o_dir,"/file_reports.txt"))
+d_report = read.delim(paste0(o_dir,"/household_reports.txt"))
 
-plot(d_report$Time, d_report$Productivity)
+d = d_report %>% filter(Time>2110 & Time<2120) %>% group_by(Age) %>% 
+            dplyr::summarize(Wealth = mean(Wealth), Income = mean(Income), Cons = mean(ValConsumption), P = mean(P_macro))
 
-dd = d_report %>% filter(Productivity>8)
+plot(d$Age, d$Wealth/d$P, type="l")
+lines(d$Age, 12*d$Income/d$P, col="red")
+lines(d$Age, 12*d$Cons/d$P, col="blue")
+abline(h=0)
 
 
-pdf(paste0(o_dir,"/firm_reports.pdf"))
+
+#pdf(paste0(o_dir,"/firm_reports.pdf"))
 
 
 d_report = d_report %>% arrange(ID)
@@ -42,16 +49,20 @@ dec = function(x,n=3)
 
 par(mfrow=c(3,3))
 
+plot(d_report$Time, d_report$P_macro)
+
+
 for(i in 1:n)
 {
-  #i=222
+  #i=0
+  i=i+1
   dr = d_report %>% filter(ID==ids[i])
   #dr = dr %>% filter(Time>2050)
   
   if(nrow(dr)<2)
     next
   
-  if(T)
+  if(F)
   {
     if(dr$Productivity[1] < 1.8)
       next
@@ -66,8 +77,16 @@ for(i in 1:n)
     
   }
   
-  if(sum(dr$Profit / dr$Price>0)==0)
-    next
+  minAge = min(dr$Age)
+  minTime = min(dr$Time)
+  Age_dec = minAge + dr$Time - minTime 
+  
+  nn=12
+  mx = max(max(dr$Wealth/dr$P_macro), max(nn*dr$Income/dr$P_macro))
+  plot(Age_dec, dr$Wealth/dr$P_macro, type="s", ylim=c(0, 1.1*mx), , main=floor(min(dr$Time)))
+  lines(Age_dec, nn*dr$Income/dr$P_macro, col="red")
+  lines(Age_dec, nn*dr$ValConsumption/dr$P_macro, col="blue")
+  abline(h=0, v=67)
   
   
   mx = max(max(dr$Employment), max(dr$OptimalEmployment))

@@ -165,17 +165,6 @@ namespace Dream.Models.SOE_Basic
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
 
-                    // Statistics
-                    //List<double> wages = new();
-                    //List<double> prices = new();
-
-                    //foreach (Household h in _simulation.Households)
-                    //{
-                    //    if(h.FirmEmployment!=null)
-                    //        wages.Add(h.FirmEmployment.Wage);
-                    //    prices.Add(h.CES_Price);
-                    //}
-
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
                     {
                         double meanWage = 0;
@@ -260,6 +249,24 @@ namespace Dream.Models.SOE_Basic
                     if (meanWageTot > 0)
                         _marketWageTotal = meanWageTot / _totalEmployment;
 
+                    //----------
+                    int nUnemp = 0;
+                    int laborSupply = 0;
+                    _n_laborSupply = 0;
+                    _laborSupply = 0;
+                    _n_unemployed = 0;
+                    foreach (Household h in _simulation.Households)
+                    {
+                        if (h.Age < _settings.HouseholdPensionAge)
+                        {
+                            nUnemp += h.Unemployed ? 1 : 0;
+                            laborSupply++;
+                            _n_laborSupply++;
+                            _laborSupply += h.Productivity;
+                            _n_unemployed += h.Unemployed ? 1 : 0;
+                        }
+                    }
+
                     // Calculate median wage
                     //if (wages.Count > 0)
                     //    _marketWage = wages.Median();
@@ -293,10 +300,7 @@ namespace Dream.Models.SOE_Basic
                         if (_time.Now % _settings.StatisticsGraphicsPlotInterval == 0) // Once a year
                         {
                             double tot_opt_l = 0;// Calculate total optimal employment  
-                            //double tot_l = 0;// Calculate total employment  
                             double prod_avr = 0; // Calculate average productivity
-                            //double tot_vacancies = 0;
-                            //double tot_sales = 0;
                             using (StreamWriter sw = File.CreateText(_settings.ROutputDir + "\\data_firms.txt"))
                             {
 
@@ -308,52 +312,14 @@ namespace Dream.Models.SOE_Basic
                                         double discProfit = f.Profit * Math.Pow(disc, f.Age) / _marketPrice[f.Sector];
                                     
                                         sw.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}", f.Productivity, f.OptimalEmployment, f.OptimalProduction, f.Employment, f.Profit, f.Sales, f.Age, discProfit);
-                                        //prod_avr += f.Productivity;
                                         prod_avr += Math.Pow(f.Productivity, 1/(1-_settings.FirmAlpha));
                                         tot_opt_l += f.OptimalEmployment;
-                                        //tot_l += f.Employment;
-                                        //tot_vacancies += f.Vacancies;
-                                        //tot_sales += f.Sales;
                                     }
                             }
 
-                            //for (int i = 0; i < _settings.NumberOfSectors; i++)
-                            //    n_firms += _simulation.Sector(i).Count;
-
                             prod_avr /= n_firms;
                             prod_avr = Math.Pow(prod_avr, 1 - _settings.FirmAlpha);
-                            //double P_star = _marketWage * Math.Pow(_settings.NumberOfHouseholdsPerFirm, 1 - _settings.FirmAlpha) / (_settings.FirmAlpha * prod_avr);
-                            //tot_opt_l /= _settings.NumberOfFirms * _settings.NumberOfHouseholdsPerFirm;
                             double P_star = 0;  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                            //int nUnemp = 0;
-                            //int laborSupply = 0;
-                            //foreach (Household h in _simulation.Households)
-                            //{
-                            //    if(h.Age<_settings.HouseholdPensionAge)
-                            //    {
-                            //        nUnemp += h.Unemployed ? 1 : 0;
-                            //        laborSupply++;
-                            //    }
-                            //}
-
-                            //----------
-                            int nUnemp = 0;
-                            int laborSupply = 0;
-                            _n_laborSupply = 0;
-                            _laborSupply = 0;
-                            _n_unemployed = 0;
-                            foreach (Household h in _simulation.Households)
-                            {
-                                if (h.Age < _settings.HouseholdPensionAge)
-                                {
-                                    nUnemp += h.Unemployed ? 1 : 0;
-                                    laborSupply++;
-                                    _n_laborSupply++;
-                                    _laborSupply += h.Productivity;
-                                    _n_unemployed += h.Unemployed ? 1 : 0;
-                                }
-                            }
 
 
                             using (StreamWriter sw = File.AppendText(_settings.ROutputDir + "\\data_year.txt"))
@@ -369,18 +335,6 @@ namespace Dream.Models.SOE_Basic
                                 sw.Flush();
 
                             }
-
-                            //using (StreamWriter sw = File.AppendText(_settings.ROutputDir + "\\sectors_year.txt"))
-                            //{
-                            //    for (int i = 0; i < _settings.NumberOfSectors; i++)
-                            //    {
-                            //        sw.WriteLineTab(1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear, i,
-                            //        _marketPrice[i], _marketWage[i], _marketPriceTotal, _marketWageTotal, _employment[i], _production[i],
-                            //        _sales[i], _expSharpeRatio[i], _simulation.Sector(i).Count);
-                            //    }
-                            //    sw.Flush();
-                            //}
-
 
                             using (StreamWriter sw = File.CreateText(_settings.ROutputDir + "\\data_households.txt"))
                             {
@@ -419,7 +373,7 @@ namespace Dream.Models.SOE_Basic
 
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
                     {
-                        _fileSectors.WriteLineTab(_scenario_id, _runName, _time.Now, i,
+                        _fileSectors.WriteLineTab(_scenario_id, Environment.MachineName, _runName, _time.Now, i,
                         _marketPrice[i], _marketWage[i], _marketPriceTotal, _marketWageTotal, _employment[i], _production[i],
                         _sales[i], _expSharpeRatio[i], _simulation.Sector(i).Count);
                     }                    
@@ -590,8 +544,8 @@ namespace Dream.Models.SOE_Basic
                         sw.WriteLine("{0}", _simulation.Seed);
                     }
 
-                    macroPath = _settings.ROutputDir + "\\Scenarios\\Macro\\base_" + _scenario_id.ToString() + ".txt";
-                    sectorsPath = _settings.ROutputDir + "\\Scenarios\\Sectors\\base_" + _scenario_id.ToString() + ".txt";
+                    macroPath = _settings.ROutputDir + "\\Scenarios\\Macro\\base_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
+                    sectorsPath = _settings.ROutputDir + "\\Scenarios\\Sectors\\base_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
 
                 }
                 else //Counterfactual
@@ -601,8 +555,8 @@ namespace Dream.Models.SOE_Basic
                         _scenario_id = Int32.Parse(sr.ReadLine());
 
                     _runName = _settings.Shock.ToString();                                    
-                    macroPath = _settings.ROutputDir + "\\Scenarios\\Macro\\count_"  + _runName + "_" + _scenario_id.ToString() + ".txt";
-                    sectorsPath = _settings.ROutputDir + "\\Scenarios\\Sectors\\count_" + _runName + "_" + _scenario_id.ToString() + ".txt";
+                    macroPath = _settings.ROutputDir + "\\Scenarios\\Macro\\count_"  + _runName + "_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
+                    sectorsPath = _settings.ROutputDir + "\\Scenarios\\Sectors\\count_" + _runName + "_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
                     Console.WriteLine("{0}: {1}, {2}", _runName, _scenario_id, _simulation.Seed);
 
                 }
@@ -618,7 +572,7 @@ namespace Dream.Models.SOE_Basic
 
             if (File.Exists(sectorsPath)) File.Delete(sectorsPath);
             _fileSectors = File.CreateText(sectorsPath);
-            _fileSectors.WriteLine("Scenario\tRun\tTime\tSector\tPrice\tWage\tPriceTotal\tWageTotal\tEmployment\tProduction\tSales\tExpShapeRatio\tnFirm");
+            _fileSectors.WriteLine("Scenario\tMachine\tRun\tTime\tSector\tPrice\tWage\tPriceTotal\tWageTotal\tEmployment\tProduction\tSales\tExpShapeRatio\tnFirm");
 
 
 

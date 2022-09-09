@@ -151,6 +151,9 @@ namespace Dream.Models.SOE_Basic
                         _consumption_budget = _settings.HouseholdDisSaveRateUnemployed * _wealth;
                         _wealth = _wealth - _consumption_budget;
                     }
+
+                    // This overwrites code above *****************************************************
+                    _consumption_budget = _income; // **************************************************
                     break;
 
                 case Event.Economics.Update:

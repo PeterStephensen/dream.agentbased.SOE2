@@ -40,8 +40,8 @@ yr0 = 12*(2105-2014)-1
 d = d0 %>% filter(Time>yr0)
 d$Time = d$Time - yr0 
 
-d = d %>% arrange(Scenario)
-ids=unique(d$Scenario)
+d = d %>% arrange(Scenario, Machine)
+ids=unique(d$Scenario, d$Machine)
 n = length(ids)
 
 ss=unique(d$Run)
@@ -225,7 +225,7 @@ if(output=="pdf")
   pdf(paste0(o_dir, "/base.pdf"))
 
 if(output=="svg")
-  svg(paste0(o_dir_svg, "/base1_II.svg"))
+  svg(paste0(o_dir_svg, "/base1_III.svg"))
 
 par(mfrow=c(2,2))
 
@@ -316,7 +316,7 @@ lines(d4$Time/12, d4$u, lwd=lwd)
 if(output=="svg")
 {
   dev.off()
-  svg(paste0(o_dir_svg, "/base2_II.svg"))
+  svg(paste0(o_dir_svg, "/base2_III.svg"))
   par(mfrow=c(2,2))
 }  
 
@@ -483,8 +483,8 @@ if(output=="pdf")
   par(mfrow=c(3,3))
 }
 
-nSvg = c("", "/shock1_II.svg", "/shock2_II.svg", "/shock3_II.svg")
-shkYr = c(0, 10, 10, 10)
+nSvg = c("", "/shock1_III30.svg", "/shock2_III30.svg", "/shock3_III30.svg")
+shkYr = c(0, 150, 150, 150)
 
 for(shk in 2:n_ss)
 {
@@ -493,8 +493,7 @@ for(shk in 2:n_ss)
     svg(paste0(o_dir_svg, nSvg[shk]))
     par(mfrow=c(3,3))
   }
-  
-  #shk=3
+  #shk=2
   
   dc = d %>% filter(Run==ss[shk]) 
   
@@ -519,8 +518,9 @@ for(shk in 2:n_ss)
   #dd$dEmployment = as.numeric(dd$employment0.x)  / as.numeric(dd$employment0.y) - 1 
     
   dd = dd[dd$dnFirms!=0,] # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  
 
+
+  
   if(F)
   {
     zids=unique(dd$Scenario)
