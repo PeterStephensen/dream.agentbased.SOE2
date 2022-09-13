@@ -46,6 +46,10 @@ namespace Dream.Models.SOE_Basic
         bool _startFromDatabase = false;
         double _year = 0;
         int _sector=0;
+        double _l_wage;
+        double _b_wage=0;
+        double _l_price;
+        double _b_price=0;
         #endregion
 
         #region Constructors
@@ -96,6 +100,8 @@ namespace Dream.Models.SOE_Basic
             _expPrice = _statistics.PublicMarketPrice[_sector];
             _w = _statistics.PublicMarketWage[_sector];
             _p = _statistics.PublicMarketPrice[_sector];
+            _l_price = Math.Log(_p);
+            _l_wage = Math.Log(_w);
 
         }
         #endregion
@@ -267,6 +273,22 @@ namespace Dream.Models.SOE_Basic
         #region Expectations()
         void Expectations()
         {
+            //double alpha_p = 0.6000;
+            //double beta_p = 0.1;
+            //double l_lag_p = _l_price;
+            
+            //_l_price = alpha_p * Math.Log(_statistics.PublicMarketPrice[_sector]) + (1 - alpha_p)*(_l_price + _b_price);
+            //_b_price = beta_p * (_l_price - l_lag_p) + (1 - beta_p) * _b_price;
+            //_expPrice = Math.Exp(_l_price);
+
+            //double alpha_w = 0.6000;
+            //double beta_w = 0.00;
+            //double l_lag_w = _l_price;
+            
+            //_l_wage = alpha_w * Math.Log(_statistics.PublicMarketWageTotal) + (1 - alpha_w) * (_l_wage + _b_wage);
+            //_b_wage = beta_w * (_l_wage - l_lag_w) + (1 - beta_w) * _b_wage;
+            //_expWage = Math.Exp(_l_wage);
+
             _expPrice = _settings.FirmExpectationSmooth * _expPrice + (1 - _settings.FirmExpectationSmooth) * _statistics.PublicMarketPrice[_sector];
             _expWage = _settings.FirmExpectationSmooth * _expWage + (1 - _settings.FirmExpectationSmooth) * _statistics.PublicMarketWageTotal;
             _expQuitters = _settings.FirmExpectationSmooth * _expQuitters + (1 - _settings.FirmExpectationSmooth) * _jobQuitters;

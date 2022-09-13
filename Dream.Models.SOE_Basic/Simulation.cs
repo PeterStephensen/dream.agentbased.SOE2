@@ -189,12 +189,9 @@ namespace Dream.Models.SOE_Basic
                     int n_firms = 0;
                     foreach (Agent fs in _sectors)
                         n_firms += fs.Count;
-                    //Console.Write("\r                                                                           "); // Erase line
-                    //Console.Write("\r{0:#.##}\t{1}\t{2}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear, n_firms, _households.Count);
-                    //Console.WriteLine("{0:#.##}\t{1}\t{2}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear, n_firms, _households.Count);
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}\t{5:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _households.Count, _statistics.PublicMarketWageTotal, _statistics.PublicMarketPriceTotal, 
-                        _statistics.PublicMarketWageTotal/ _statistics.PublicMarketPriceTotal);
+                    //Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}\t{5:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                    //    n_firms, _households.Count, _statistics.PublicMarketWageTotal, _statistics.PublicMarketPriceTotal, 
+                    //    _statistics.PublicMarketWageTotal/ _statistics.PublicMarketPriceTotal);
                     
                     if (_time.Now % _settings.PeriodsPerYear == 0)  // Once a year
                     {

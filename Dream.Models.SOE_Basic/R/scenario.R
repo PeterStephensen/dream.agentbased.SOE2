@@ -40,8 +40,10 @@ yr0 = 12*(2105-2014)-1
 d = d0 %>% filter(Time>yr0)
 d$Time = d$Time - yr0 
 
-d = d %>% arrange(Scenario, Machine)
-ids=unique(d$Scenario, d$Machine)
+d$Scenario = paste0(d$Scenario, d$Machine)
+
+d = d %>% arrange(Scenario)
+ids=unique(d$Scenario)
 n = length(ids)
 
 ss=unique(d$Run)
@@ -55,7 +57,6 @@ hpfilter      = function(x, mu = 100) {
   d <- solve(I + mu * crossprod(D) , y) # solves focs
   d
 }
-
 
 #-------------------------
 dd = d[is.na(d$marketWage),]
@@ -139,7 +140,7 @@ pplot = function(zz, sMain, ylab="Relative change",
     if(mx<0)
       mx=0
   
-  if(abs_ylim==c(0,0))
+  if(abs_ylim[1]==0 & abs_ylim[2]==0)
   {
     ylim=c(s_ylim[1]*mn,s_ylim[2]*mx)
   }else
@@ -220,7 +221,7 @@ output="svg"
 
 #----------------------------------------------------
 lwd=0.5
-i=1
+i=2
 if(output=="pdf")
   pdf(paste0(o_dir, "/base.pdf"))
 
@@ -483,8 +484,8 @@ if(output=="pdf")
   par(mfrow=c(3,3))
 }
 
-nSvg = c("", "/shock1_III30.svg", "/shock2_III30.svg", "/shock3_III30.svg")
-shkYr = c(0, 150, 150, 150)
+nSvg = c("", "/shock1_III.svg", "/shock2_III.svg", "/shock3_III.svg")
+shkYr = c(0, 10, 10, 10)
 
 for(shk in 2:n_ss)
 {
@@ -493,7 +494,7 @@ for(shk in 2:n_ss)
     svg(paste0(o_dir_svg, nSvg[shk]))
     par(mfrow=c(3,3))
   }
-  #shk=2
+  #shk=4
   
   dc = d %>% filter(Run==ss[shk]) 
   
@@ -555,6 +556,7 @@ for(shk in 2:n_ss)
   }
 
   #-----------------
+  
   
   zz = dd %>% group_by(Time) %>%
     dplyr::summarize(mean=mean(dnFirms), up=up(dnFirms), lo=lo(dnFirms))

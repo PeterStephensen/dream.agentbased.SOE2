@@ -396,6 +396,10 @@ namespace Dream.Models.SOE_Basic
                     _nFirmCloseNegativeProfit = 0;
                     _nFirmCloseZeroEmployment = 0;
                     _nFirmNew = 0;
+
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal);
+
                     break;
 
                 case Event.System.Stop:

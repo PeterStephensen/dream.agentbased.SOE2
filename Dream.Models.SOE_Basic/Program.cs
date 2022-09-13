@@ -6,7 +6,7 @@ namespace Dream.Models.SOE_Basic
     {
         static void Main(string[] args)
         {
-            RunSimulation(args, true); // Mark saveScenario here!!           
+            RunSimulation(args, false); // Mark saveScenario here!!           
         }   
     
         static void RunSimulation(string[] args, bool saveScenario=false)
@@ -153,7 +153,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 12 * 1;
             
-            settings.StatisticsGraphicsStartPeriod = 12 * 275;   // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            settings.StatisticsGraphicsStartPeriod = 12 * 40;   // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 
