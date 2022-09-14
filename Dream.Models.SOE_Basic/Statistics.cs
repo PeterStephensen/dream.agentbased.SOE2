@@ -26,7 +26,7 @@ namespace Dream.Models.SOE_Basic
         double[] _employment, _sales, _production;
         double _marketWageTotal = 0;
         double _marketPriceTotal = 0;
-        double _totalProfit, _profitPerHousehold, _expProfit;
+        double _totalProfit, _profitPerHousehold, _expProfit, _totalProfitFromDefaults;
         StreamWriter _fileFirmReport;
         StreamWriter _fileHouseholdReport;
         StreamWriter _fileDBHouseholds;
@@ -152,19 +152,14 @@ namespace Dream.Models.SOE_Basic
                             _fileDBStatistics.Close();
                     }
 
-                    // Profit income to households
-                    _totalProfit = 0;
-                    for (int i = 0; i < _settings.NumberOfSectors; i++)
-                        foreach (Firm f in _simulation.Sector(i))
-                            _totalProfit += f.Profit;
-
-                    _profitPerHousehold = _totalProfit / _simulation.Households.Count; 
+                    _totalProfitFromDefaults = 0;
                     break;
 
                 case Event.System.PeriodEnd:
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
 
+                    double totalRevenues = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
                     {
                         double meanWage = 0;
@@ -179,6 +174,7 @@ namespace Dream.Models.SOE_Basic
                             meanPrice += f.Price * f.Sales;
                             _employment[i] += f.Employment;
                             _sales[i] += f.Sales;
+                            totalRevenues += f.Price * f.Sales;
                             _production[i] += f.Production;
                             discountedProfits += f.Profit / Math.Pow(1 + _interestRate, f.Age);
                         }
@@ -203,11 +199,16 @@ namespace Dream.Models.SOE_Basic
 
                     }
 
+
+
+
+
                     _meanValue = 0;
                     _discountedProfits = 0;
                     _totalSales = 0;
                     _totalEmployment = 0;
                     _totalProduction = 0;
+                    _totalProfit = _totalProfitFromDefaults; 
                     //double totProfit = 0;
                     double mean_age = 0;
                     double tot_vacancies = 0;
@@ -225,7 +226,10 @@ namespace Dream.Models.SOE_Basic
                             mean_age += f.Age;
                             tot_vacancies += f.Vacancies;
                             _discountedProfits += f.Profit / Math.Pow(1+_interestRate, f.Age);
+                            _totalProfit += f.Profit;
                         }
+                   
+                    _profitPerHousehold = _totalProfit / _simulation.Households.Count;  // Profit income to households
 
                     int n_firms = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
@@ -368,7 +372,7 @@ namespace Dream.Models.SOE_Basic
                                                 n_firms, _totalEmployment, _totalSales, _laborSupply, _n_laborSupply, _n_unemployed,
                                                 _totalProduction, _simulation.Households.Count, _nFirmNew, nFirmClosed, _sigmaRiskTotal, _sharpeRatioTotal, 
                                                 mean_age, tot_vacancies, _marketPrice[0], _marketWage[0], _employment[0], _sales[0], 
-                                                _simulation.Sector(0).Count, _expSharpeRatio[0]);
+                                                _simulation.Sector(0).Count, _expSharpeRatio[0], totalRevenues);
                     _fileMacro.Flush();
 
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
@@ -378,18 +382,6 @@ namespace Dream.Models.SOE_Basic
                         _sales[i], _expSharpeRatio[i], _simulation.Sector(i).Count);
                     }                    
                     _fileSectors.Flush();
-                
-
-
-
-
-                    //if (_time.Now==_settings.StatisticsOutputPeriode)
-                    //{
-                    //    using (StreamWriter sw = File.AppendText(_settings.ROutputDir + "\\output.txt"))
-                    //    {
-                    //        sw.WriteLineTab(n_firms, _marketPrice, _marketWage, _discountedProfits);
-                    //    }
-                    //}
 
                     _nFirmCloseNatural = 0;
                     _nFirmCloseTooBig = 0;
@@ -397,9 +389,9 @@ namespace Dream.Models.SOE_Basic
                     _nFirmCloseZeroEmployment = 0;
                     _nFirmNew = 0;
 
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal);
 
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}\t{5:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, totalRevenues);
                     break;
 
                 case Event.System.Stop:
@@ -429,22 +421,31 @@ namespace Dream.Models.SOE_Basic
         #region Communicate
         public void Communicate(EStatistics comID, object o)
         {
+            Firm f = null;
             switch (comID)
             {
                 case EStatistics.FirmCloseNatural:
                     _nFirmCloseNatural++;
+                    f = (Firm)o;
+                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseTooBig:
                     _nFirmCloseTooBig++;
+                    f = (Firm)o;
+                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseNegativeProfit:
                     _nFirmCloseNegativeProfit++;
+                    f = (Firm)o;
+                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseZeroEmployment:
                     _nFirmCloseZeroEmployment++;
+                    f = (Firm)o;
+                    _totalProfitFromDefaults += f.Profit;
                     return;
                 case EStatistics.FirmNew:
                     _nFirmNew += (double)o;
@@ -572,7 +573,7 @@ namespace Dream.Models.SOE_Basic
             _fileMacro.WriteLine("Scenario\tMachine\tRun\tTime\texpSharpeRatio\tmacroProductivity\tmarketPrice\t" +
                    "marketWage\tnFirms\tEmployment\tSales\tLaborSupply\tnLaborSupply\tnUnemployed\t" +
                    "Production\tnHouseholds\tnFirmNew\tnFirmClosed\tSigmaRisk\tSharpeRatio\tMeanAge\t" +
-                   "Vacancies\tmarketPrice0\tmarketWage0\temployment0\tsales0\tnFirm0\texpShapeRatio0");
+                   "Vacancies\tmarketPrice0\tmarketWage0\temployment0\tsales0\tnFirm0\texpShapeRatio0\ttotalRevenues");
 
             if (File.Exists(sectorsPath)) File.Delete(sectorsPath);
             _fileSectors = File.CreateText(sectorsPath);
