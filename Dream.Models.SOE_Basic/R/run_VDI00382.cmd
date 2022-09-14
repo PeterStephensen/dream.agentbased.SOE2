@@ -3,11 +3,12 @@ echo off
 time /t
 
 set SCENARIO_DIR=C:\Users\B007566\Documents\Output\Scenarios
-set EXE_FILE=..\bin\Debug\net6.0\Dream.Models.SOE_Basic.exe
+set EXE_FILE=..\bin\Release\net6.0\Dream.Models.SOE_Basic.exe
 
 if exist %SCENARIO_DIR% rmdir /q /s %SCENARIO_DIR%
 
-for /l %%i in (1 1 22) do (
+::for /l %%i in (1 1 22) do (
+for /l %%i in (1 1 1) do (
 	for /l %%x in (1 1 4) do (
 		echo %%i %%x
 		start %EXE_FILE%

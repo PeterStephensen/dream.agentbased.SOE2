@@ -41,6 +41,7 @@ namespace Dream.Models.SOE_Basic
         Firm[] _firmShopArray = null;
         double[] _s_CES = null;
         double _P_CES = 0;
+        bool _fired = false;
         #endregion
 
         #region Constructors
@@ -117,10 +118,17 @@ namespace Dream.Models.SOE_Basic
                     break;
 
                 case Event.System.PeriodStart:
+                    bool unemployed = false;
+                    if (_fired || _w == 0)     // Unemployed if just fired or if wage is zero
+                        unemployed = true;
+
+                    if (_fired)
+                        _fired = false; // Only fired 1 period
+
                     _year = _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
                     ReportToStatistics();
 
-                    _unempDuration = _w > 0 ? 0 : _unempDuration+1;
+                    _unempDuration = !unemployed ? 0 : _unempDuration+1;
 
                     if (_time.Now == 0)
                         _w = _simulation.Statistics.PublicMarketWageTotal;
@@ -131,7 +139,7 @@ namespace Dream.Models.SOE_Basic
                         _yr_employment = 0;
                     }
 
-                    if (_firmEmployment != null)
+                    if (!unemployed)
                         _yr_employment++;
                    
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
@@ -154,6 +162,10 @@ namespace Dream.Models.SOE_Basic
 
                     // This overwrites code above *****************************************************
                     _consumption_budget = _income; // **************************************************
+                    
+                    if (unemployed)
+                        _w = 0;
+                    
                     break;
 
                 case Event.Economics.Update:
@@ -315,7 +327,7 @@ namespace Dream.Models.SOE_Basic
             else
             {
                 List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
-                firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowest price first
+                //firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 foreach (Firm f in firms)
                 {
@@ -390,6 +402,32 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region SearchForShop()
+        void SearchForShop_NEW(int sector)
+        {
+
+            List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            //firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowes price first
+
+            Firm f = null;
+            double min_price = double.MaxValue;
+            foreach (Firm ff in firms)
+            {
+                if (ff.Price < min_price)
+                {
+                    f = ff;
+                    min_price = ff.Price;
+                }
+            }
+            
+            
+            if (f != null)
+                _firmShopArray[sector] = f;
+
+            if (_firmShopArray[sector] == null || firms.First().Price < _firmShopArray[sector].Price)
+                _firmShopArray[sector] = firms.First();
+
+        }
+
         void SearchForShop(int sector)
         {
 
@@ -400,22 +438,15 @@ namespace Dream.Models.SOE_Basic
                 _firmShopArray[sector] = firms.First();
 
         }
-        void SearchForShop_old()
-        {
-
-            List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop,0);
-            firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowes price first
-
-            if (_firmShop == null || firms.First().Price < _firmShop.Price)
-                _firmShop = firms.First();
-
-        }
 
         #endregion
 
         #region Inheritance
         void Inheritance()
         {
+            if (_wealth == 0)
+                return;
+            
             double inheritance = _wealth / _settings.NumberOfInheritors;
             int inh = 0;
             while(inh<_settings.NumberOfInheritors)
@@ -460,7 +491,8 @@ namespace Dream.Models.SOE_Basic
             switch (comID)
             {
                 case ECommunicate.YouAreFired:
-                    _firmEmployment = null;
+                    _fired = true;
+                    //_firmEmployment = null;
                     return ECommunicate.Ok;
                
                 case ECommunicate.Initialize:

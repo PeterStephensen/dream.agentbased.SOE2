@@ -165,10 +165,6 @@ namespace Dream.Models.SOE_Basic
                                     break;
                                 }
 
-                        // Close firm if negative profit or zero employment
-                        //if (_profit < profitLimit & _age > _settings.FirmNegativeProfitOkAge) // Restriction more and more tight
-                        //    if (_random.NextEvent(_settings.FirmDefaultProbabilityNegativeProfit))
-                        //        CloseFirm(EStatistics.FirmCloseNegativeProfit);
                     }
 
                     if(_random.NextEvent(_settings.FirmDefaultProbability))
@@ -511,6 +507,8 @@ namespace Dream.Models.SOE_Basic
         #region CloseFirm()
         void CloseFirm(EStatistics s)
         {
+            _profit = _p * _sales - _w * _l_primo;
+
             // Fire eveybody
             foreach (Household h in _employed)
                 h.Communicate(ECommunicate.YouAreFired, this);

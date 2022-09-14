@@ -1,0 +1,50 @@
+﻿------------------------------------------
+PeriodStart
+------------------------------------------
+- Household:
+	_income: _w>0 if just fired. Statistics.PublicProfitPerHousehold is used
+	_w: Set _w=0 if unemployed
+
+- Firm
+	_phi
+	_l_primo
+	_s_primo
+	Expectations()
+	Produce()
+	Management(): _profit_optimal
+	Marketing()
+	HumanResource()
+
+
+------------------------------------------
+Update
+------------------------------------------
+- Household:
+	SearchForJob()
+	SearchForShop()
+	BuyFromShops()
+	
+
+- Firm
+	CloseFirm(): Closed if _profit_optimal < 0
+	Firings
+
+
+------------------------------------------
+PeriodEnd
+------------------------------------------
+- Household:
+	Death
+	_productivity
+	_w
+
+- Firm
+	_profit
+
+- Statistics
+	A lot of statistics..
+	PublicProfitPerHousehold
+
+
+
+

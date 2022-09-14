@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Misc\Events.txt" />
     <None Remove="run.cmd" />
   </ItemGroup>
 

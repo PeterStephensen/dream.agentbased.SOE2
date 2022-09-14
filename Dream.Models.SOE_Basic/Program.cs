@@ -6,7 +6,7 @@ namespace Dream.Models.SOE_Basic
     {
         static void Main(string[] args)
         {
-            RunSimulation(args, false); // Mark saveScenario here!!           
+            RunSimulation(args, true); // Mark saveScenario here!!           
         }   
     
         static void RunSimulation(string[] args, bool saveScenario=false)
@@ -91,7 +91,7 @@ namespace Dream.Models.SOE_Basic
 
             // Households
             settings.HouseholdNumberFirmsSearchJob = 4;     // Try 20!
-            settings.HouseholdNumberFirmsSearchShop = 75;    //----------------------- 
+            settings.HouseholdNumberFirmsSearchShop = 15;    //----------------------- 
             settings.HouseholdProbabilityQuitJob = 0.01;
             settings.HouseholdProbabilitySearchForJob = 0.01;                        
             settings.HouseholdProbabilitySearchForShop = 0.01;                          // MEGET LAV???!!!
@@ -108,7 +108,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdStartAge = 18 * 12;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.15;   // 0.05    5.0....Try 30 !!!!!!            
+            settings.InvestorProfitSensitivity = 0.15*0.5;   // 0.05    5.0....Try 30 !!!!!!            
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.0;  //2.0
