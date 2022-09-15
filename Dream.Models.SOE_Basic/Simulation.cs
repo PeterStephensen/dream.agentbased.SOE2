@@ -31,7 +31,7 @@ namespace Dream.Models.SOE_Basic
         double[] _nFirmNew;
         Dictionary<int, Firm> _firmDict;
         Agents<Firm>[] _sectorList = null;
-        Firm[] _randomFirmList = null;
+        Firm[] _randomFirm = null;
         Household _randomHousehold;
         DateTime _t0;
         #endregion
@@ -89,7 +89,7 @@ namespace Dream.Models.SOE_Basic
             this.AddAgent(_publicSector);
 
             _sectorList = new Agents<Firm>[_settings.NumberOfSectors];
-            _randomFirmList = new Firm[_settings.NumberOfSectors];
+            _randomFirm = new Firm[_settings.NumberOfSectors];
             for (int i = 0; i < _settings.NumberOfSectors; i++)
             {
                 Agents<Firm> sector = new Agents<Firm>();
@@ -314,13 +314,13 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region GetRandomHouseholds
-        public List<Household> GetRandomHouseholds(int n)
+        public Household[] GetRandomHouseholds(int n)
         {
             if (n < 1) return null;
 
-            List<Household> lst = new();
+            Household[] lst = new Household[n];
             for (int i = 0; i < n; i++)
-                lst.Add(GetRandomHousehold());
+                lst[i] =GetRandomHousehold();
 
             return lst;
         }
@@ -331,60 +331,46 @@ namespace Dream.Models.SOE_Basic
         public Firm GetRandomFirm(int sector)
         {
 
-            if (_randomFirmList[sector] != null)
+            if (_randomFirm[sector] != null)
             {
                 if (_sectorList[sector].Count == 1)
-                    return _randomFirmList[sector];
-                _randomFirmList[sector] = (Firm)_randomFirmList[sector].NextAgent;
+                    return _randomFirm[sector];
+                _randomFirm[sector] = (Firm)_randomFirm[sector].NextAgent;
             }
 
-            if (_randomFirmList[sector] == null)
+            if (_randomFirm[sector] == null)
             {
                 _sectorList[sector].RandomizeAgents();
-                _randomFirmList[sector] = (Firm)_sectorList[sector].FirstAgent;
+                _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
             }
-            return _randomFirmList[sector];
+            return _randomFirm[sector];
 
         }
         #endregion
 
         #region GetRandomFirms
-        public List<Firm> GetRandomFirms_old(int n)
-        {
-            if (n < 1) return null;
-            
-            List<Firm> lst = new();
-            //for (int i = 0; i < n; i++)
-            //    lst.Add(GetRandomFirm());
-
-            return lst;
-        }
-        public List<Firm> GetRandomFirms(int n, int sector)
+        public Firm[] GetRandomFirms(int n, int sector)
         {
             if (n < 1) return null;
 
-            List<Firm> lst = new();
+            Firm[] lst = new Firm[n];
             for (int i = 0; i < n; i++)
-                lst.Add(GetRandomFirm(sector));
+                lst[i] = GetRandomFirm(sector);
 
             return lst;
         }
-        public List<Firm> GetRandomFirmsAllSectors(int n)  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        public Firm[] GetRandomFirmsAllSectors(int n) 
         {
             if (n < 1) return null;
 
-            List<Firm> lst = new();
+            Firm[] lst = new Firm[n];
             for (int i = 0; i < n; i++)
             {
                 int sector = _random.Next(_settings.NumberOfSectors);
-                lst.Add(GetRandomFirm(sector));
+                lst[i] = GetRandomFirm(sector);
             }
 
             return lst;
-        }
-        public List<Firm> GetRandomFirmsAllSectors_old(int n)
-        {
-            return GetRandomFirms(n,0);
         }
         #endregion
 

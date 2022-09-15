@@ -484,17 +484,17 @@ if(output=="pdf")
   par(mfrow=c(3,3))
 }
 
-nSvg = c("", "/shock1_III.svg", "/shock2_III.svg", "/shock3_III.svg")
-shkYr = c(0, 10, 10, 10)
+nSvg = c("/shock1_III.svg", "/shock2_III.svg", "/shock3_III.svg","")
+shkYr = c(10, 10, 10,0)
 
-for(shk in 2:n_ss)
+for(shk in 1:3)
 {
   if(output=="svg")
   {
     svg(paste0(o_dir_svg, nSvg[shk]))
     par(mfrow=c(3,3))
   }
-  #shk=4
+  #shk=3
   
   dc = d %>% filter(Run==ss[shk]) 
   

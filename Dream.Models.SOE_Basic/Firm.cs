@@ -112,7 +112,6 @@ namespace Dream.Models.SOE_Basic
             switch (idEvent)
             {
 
-
                 case Event.System.Start:
                     // If initial firm
                     _phi0 = _random.NextPareto(_settings.FirmParetoMinPhiInitial, _settings.FirmPareto_k);

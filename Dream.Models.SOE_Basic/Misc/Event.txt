@@ -15,7 +15,6 @@ PeriodStart
 	Marketing()
 	HumanResource()
 
-
 ------------------------------------------
 Update
 ------------------------------------------
@@ -23,12 +22,10 @@ Update
 	SearchForJob()
 	SearchForShop()
 	BuyFromShops()
-	
 
 - Firm
 	CloseFirm(): Closed if _profit_optimal < 0
 	Firings
-
 
 ------------------------------------------
 PeriodEnd

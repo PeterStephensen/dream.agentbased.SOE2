@@ -285,8 +285,8 @@ namespace Dream.Models.SOE_Basic
             }
             else
             {
-                List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, 0);
-                firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowest price first
+                Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, 0);
+                firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first
 
                 foreach(Firm f in firms)
                 {
@@ -326,7 +326,7 @@ namespace Dream.Models.SOE_Basic
             }
             else
             {
-                List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
+                Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
                 //firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 foreach (Firm f in firms)
@@ -384,7 +384,7 @@ namespace Dream.Models.SOE_Basic
             double wageNow = _firmEmployment != null ? _firmEmployment.Wage : 0.0;
             
             var firms = _simulation.GetRandomFirmsAllSectors(_settings.HouseholdNumberFirmsSearchJob);
-            firms = firms.OrderByDescending(x => x.Wage).ToList(); // Order by wage. Highest wage first
+            firms = firms.OrderByDescending(x => x.Wage).ToArray<Firm>(); // Order by wage. Highest wage first
 
             foreach (Firm f in firms)
             {
@@ -405,7 +405,7 @@ namespace Dream.Models.SOE_Basic
         void SearchForShop_NEW(int sector)
         {
 
-            List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
             //firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowes price first
 
             Firm f = null;
@@ -431,8 +431,8 @@ namespace Dream.Models.SOE_Basic
         void SearchForShop(int sector)
         {
 
-            List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
-            firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowes price first
+            Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowes price first
 
             if (_firmShopArray[sector] == null || firms.First().Price < _firmShopArray[sector].Price)
                 _firmShopArray[sector] = firms.First();

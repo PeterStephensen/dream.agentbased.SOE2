@@ -13,11 +13,11 @@ namespace Dream.Models.SOE_Basic
         {
             Settings settings = new();
             settings.SaveScenario = saveScenario;
-
+            
             // Scale
             double scale = 5 * 1.0; 
 
-            settings.NumberOfSectors = 10;
+            settings.NumberOfSectors = 5;
             settings.NumberOfFirms = (int)(150 * scale);
             settings.NumberOfHouseholdsPerFirm = 5;
             settings.HouseholdNewBorn = (int)(15 * scale);

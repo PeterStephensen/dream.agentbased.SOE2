@@ -160,6 +160,42 @@ namespace Dream.AgentClass
         #endregion
 
         #region RandomizeAgents()
+        public void RandomizeAgents_NEW()
+        {
+
+            if (_count == 0) return;
+            if (_count == 1) return;
+            if (_random == null)
+            {
+                if (_seed > 0)
+                    _random = new Random(_seed);
+                else
+                    _random = new Random();
+            }
+
+            Agent[] arr = new Agent[_count];
+
+            arr[0] = _first;
+            for (int i = 1; i < _count; i++)
+                arr[i] = arr[i - 1]._next;
+
+            Agent.Shuffle(arr);
+            
+            _first = arr[0];
+            _first._next = arr[1];
+            _first._prev = null;
+
+            for (int i = 1; i < _count - 1; i++)
+            {
+                arr[i]._prev = arr[i - 1];
+                arr[i]._next = arr[i + 1];
+            }
+
+            _last = arr[_count - 1];
+            _last._prev = arr[_count - 2];
+            _last._next = null;
+
+        }
         public void RandomizeAgents()
         {
 
@@ -206,6 +242,23 @@ namespace Dream.AgentClass
 
         }
         #endregion
+
+        #region Shuffle()
+        public static void Shuffle<T>(T[] array)
+        {
+            int n = array.Length;
+            while (n > 1)
+            {
+                int k = _random.Next(n--);
+                T temp = array[n];
+                array[n] = array[k];
+                array[k] = temp;
+            }
+        }
+
+
+        #endregion
+
 
         #region CopyTo()
         public void CopyTo(Array array, int index)

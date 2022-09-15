@@ -21,7 +21,7 @@ for /l %%i in (1 1 21) do (
 		start %EXE_FILE2% 3
         	ping 127.0.0.1 -n 2 > nul 
 	)
-       	ping 127.0.0.1 -n 610 > nul 
+       	ping 127.0.0.1 -n 430 > nul 
 )
 
 time /t
