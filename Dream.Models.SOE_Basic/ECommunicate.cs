@@ -30,7 +30,9 @@ namespace Dream.Models.SOE_Basic
         FirmCloseTooBig,
         FirmCloseNegativeProfit,
         FirmCloseZeroEmployment,
-        FirmNew
+        FirmNew,
+        Death,
+        Profit
     }
     #endregion
 

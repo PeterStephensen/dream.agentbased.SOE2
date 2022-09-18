@@ -42,6 +42,7 @@ namespace Dream.Models.SOE_Basic
         double[] _s_CES = null;
         double _P_CES = 0;
         bool _fired = false;
+        bool _dead = false;
         #endregion
 
         #region Constructors
@@ -118,20 +119,14 @@ namespace Dream.Models.SOE_Basic
                     break;
 
                 case Event.System.PeriodStart:
-                    bool unemployed = false;
-                    if (_fired || _w == 0)     // Unemployed if just fired or if wage is zero
-                        unemployed = true;
-
-                    if (_fired)
-                        _fired = false; // Only fired 1 period
+                    bool unemployed = _fired || _w == 0;  // Unemployed if just fired or if wage is zero
+                    if (_fired) _fired = false; // Fired only 1 period
 
                     _year = _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
                     ReportToStatistics();
 
                     _unempDuration = !unemployed ? 0 : _unempDuration+1;
-
-                    if (_time.Now == 0)
-                        _w = _simulation.Statistics.PublicMarketWageTotal;
+                    if (_time.Now == 0) _w = _simulation.Statistics.PublicMarketWageTotal;
 
                     if(_time.Now % _settings.PeriodsPerYear==0)
                     {
@@ -139,10 +134,18 @@ namespace Dream.Models.SOE_Basic
                         _yr_employment = 0;
                     }
 
-                    if (!unemployed)
-                        _yr_employment++;
+                    if (!unemployed) _yr_employment++;
                    
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
+
+                   
+                    //if(_dead)
+                    //{
+                    //    _statistics.Communicate(EStatistics.Death, this);
+                    //    RemoveThisAgent();
+                    //    return;                        
+                    //}
+                    
 
                     if(_age >= _settings.HouseholdPensionAge) // If pensioner
                     {
@@ -199,23 +202,29 @@ namespace Dream.Models.SOE_Basic
                         if (_random.NextEvent(_settings.HouseholdProbabilitySearchForShop))
                             SearchForShop(s);
 
-                    BuyFromShops(); //!!!!!!!!!!!!!!!!!!!!!!
+                    BuyFromShops(); 
                     _yr_consumption += _consumption;
+
+                    if (_random.NextEvent(ProbabilityDeath()))
+                    {
+                        if (_firmEmployment != null)
+                        {
+                            _firmEmployment.Communicate(ECommunicate.IQuit, this);
+                            _statistics.Communicate(EStatistics.Death, _w * _productivity); // Wage earned this period
+                        }
+
+
+                        //_dead = true;  // The household will be removed in next Event.System.PeriodStart and its income will be part of total profits
+                        //Inheritance();
+                        RemoveThisAgent();
+                        //return;
+                    }
                     break;
 
                 case Event.System.PeriodEnd:
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
-                    
-                    if (_random.NextEvent(ProbabilityDeath()))
-                    {
-                        if(_firmEmployment!=null)
-                            _firmEmployment.Communicate(ECommunicate.IQuit, this);
 
-                        Inheritance();
-                        RemoveThisAgent();
-                        return;
-                    }
 
                     if (!_initialHousehold)
                         if (_age < _settings.HouseholdPensionAge)
@@ -224,7 +233,7 @@ namespace Dream.Models.SOE_Basic
                             _productivity = 0;
 
                     _w = _firmEmployment == null ? 0.0 : _firmEmployment.Wage;
-                    
+
                     _age++;
                     break;
 
@@ -327,8 +336,8 @@ namespace Dream.Models.SOE_Basic
             else
             {
                 Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
-                //firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                //firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                
                 foreach (Firm f in firms)
                 {
                     if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)

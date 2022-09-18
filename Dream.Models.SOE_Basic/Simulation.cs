@@ -330,6 +330,30 @@ namespace Dream.Models.SOE_Basic
         #region GetRandomFirm
         public Firm GetRandomFirm(int sector)
         {
+            if (_randomFirm[sector] == null)
+                _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
+
+            int nJumpMax = (int)(0.01 * _sectorList[sector].Count);
+            int nJump = 0;
+            
+            if (_randomFirm[sector] != null)
+            {
+                if (_sectorList[sector].Count == 1)
+                    return _randomFirm[sector];
+                nJump = _random.Next(nJumpMax) + 1;
+                _randomFirm[sector] = (Firm)_randomFirm[sector].Jump(nJump);
+            }
+
+            int zz = 0;
+            if (_randomFirm[sector] == null)
+                zz = 22;
+
+            
+            return _randomFirm[sector];
+
+        }
+        public Firm GetRandomFirm_OLD(int sector)
+        {
 
             if (_randomFirm[sector] != null)
             {

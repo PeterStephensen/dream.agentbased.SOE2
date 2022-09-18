@@ -26,7 +26,7 @@ namespace Dream.Models.SOE_Basic
         double[] _employment, _sales, _production;
         double _marketWageTotal = 0;
         double _marketPriceTotal = 0;
-        double _totalProfit, _profitPerHousehold, _expProfit, _totalProfitFromDefaults;
+        double _profitPerHousehold, _expProfit, _totalProfitFromDefaults;
         StreamWriter _fileFirmReport;
         StreamWriter _fileHouseholdReport;
         StreamWriter _fileDBHouseholds;
@@ -153,11 +153,17 @@ namespace Dream.Models.SOE_Basic
                     }
 
                     _totalProfitFromDefaults = 0;
+                    _profitPerHousehold = 0;
+
+                    //_totalProfit = 0;
                     break;
 
                 case Event.System.PeriodEnd:
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
+
+                    // Profit income to households. What comes from defaults and deaths during Update
+                    _profitPerHousehold += _totalProfitFromDefaults / _simulation.Households.Count;  
 
                     double totalRevenues = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
@@ -198,17 +204,13 @@ namespace Dream.Models.SOE_Basic
 
 
                     }
-
-
-
-
-
+                    
                     _meanValue = 0;
                     _discountedProfits = 0;
                     _totalSales = 0;
                     _totalEmployment = 0;
                     _totalProduction = 0;
-                    _totalProfit = _totalProfitFromDefaults; 
+                    //_totalProfit = _totalProfitFromDefaults; 
                     //double totProfit = 0;
                     double mean_age = 0;
                     double tot_vacancies = 0;
@@ -226,10 +228,13 @@ namespace Dream.Models.SOE_Basic
                             mean_age += f.Age;
                             tot_vacancies += f.Vacancies;
                             _discountedProfits += f.Profit / Math.Pow(1+_interestRate, f.Age);
-                            _totalProfit += f.Profit;
+                            //_totalProfit += f.Profit;
                         }
-                   
-                    _profitPerHousehold = _totalProfit / _simulation.Households.Count;  // Profit income to households
+
+
+                    // Calculation of profitPerHousehold
+                    //_profitPerHousehold = _totalProfit / _simulation.Households.Count;  // Profit income to households
+                    //_totalProfitFromDefaults = 0;
 
                     int n_firms = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
@@ -422,6 +427,7 @@ namespace Dream.Models.SOE_Basic
         public void Communicate(EStatistics comID, object o)
         {
             Firm f = null;
+            Household h = null;
             switch (comID)
             {
                 case EStatistics.FirmCloseNatural:
@@ -447,6 +453,15 @@ namespace Dream.Models.SOE_Basic
                     f = (Firm)o;
                     _totalProfitFromDefaults += f.Profit;
                     return;
+
+                case EStatistics.Death:
+                    _totalProfitFromDefaults += (double)o;
+                    return;
+
+                case EStatistics.Profit:
+                    _profitPerHousehold += (double)o / _simulation.Households.Count;
+                    return;
+
                 case EStatistics.FirmNew:
                     _nFirmNew += (double)o;
                     return;

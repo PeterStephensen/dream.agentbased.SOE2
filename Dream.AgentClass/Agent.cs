@@ -259,6 +259,24 @@ namespace Dream.AgentClass
 
         #endregion
 
+        #region Jump()
+        public Agent Jump(int n)
+        {
+            if (_parent == null)
+                return null;
+
+            Agent first = _parent.FirstAgent;
+            Agent a = this;
+            for (int i = 0; i < n; i++)
+            {
+                if (a._next == null)
+                    a = first;
+                else
+                    a = a._next;
+            }
+            return a;
+        }   
+        #endregion
 
         #region CopyTo()
         public void CopyTo(Array array, int index)
