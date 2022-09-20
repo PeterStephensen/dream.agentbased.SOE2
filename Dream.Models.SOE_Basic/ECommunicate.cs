@@ -32,7 +32,8 @@ namespace Dream.Models.SOE_Basic
         FirmCloseZeroEmployment,
         FirmNew,
         Death,
-        Profit
+        Profit,
+        CouldNotFindSupplier
     }
     #endregion
 

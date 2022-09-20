@@ -30,9 +30,9 @@ namespace Dream.Models.SOE_Basic
         bool _startFromDatabase = false;
         bool _report = false;
         double _consumption = 0;
-        double _vConsumption = 0; // Value of consumption
         double _income = 0;
         double _consumption_budget = 0;
+        double _consumption_value = 0;
         double _wealth = 0;
         double _year;
         double[] _c = null;  // Consumption
@@ -42,7 +42,9 @@ namespace Dream.Models.SOE_Basic
         double[] _s_CES = null;
         double _P_CES = 0;
         bool _fired = false;
-        bool _dead = false;
+        int _no, _ok;
+        //bool _dead = false;
+
         #endregion
 
         #region Constructors
@@ -65,7 +67,8 @@ namespace Dream.Models.SOE_Basic
 
             _s_CES = new double[_settings.NumberOfSectors];
             for (int i = 0; i < _settings.NumberOfSectors; i++)   // Random share parameters in the CES-function
-                _s_CES[i] = _random.NextDouble();
+                _s_CES[i] = 1.0;  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //_s_CES[i] = _random.NextDouble();
 
             if (_random.NextEvent(_settings.StatisticsHouseholdReportSampleSize))
                 _report = true;
@@ -139,14 +142,6 @@ namespace Dream.Models.SOE_Basic
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
 
                    
-                    //if(_dead)
-                    //{
-                    //    _statistics.Communicate(EStatistics.Death, this);
-                    //    RemoveThisAgent();
-                    //    return;                        
-                    //}
-                    
-
                     if(_age >= _settings.HouseholdPensionAge) // If pensioner
                     {
                         _consumption_budget = _settings.HouseholdDisSaveRatePensioner * _wealth;
@@ -168,7 +163,9 @@ namespace Dream.Models.SOE_Basic
                     
                     if (unemployed)
                         _w = 0;
-                    
+
+                    _no = 0;
+                    _ok = 0;
                     break;
 
                 case Event.Economics.Update:
@@ -213,11 +210,9 @@ namespace Dream.Models.SOE_Basic
                             _statistics.Communicate(EStatistics.Death, _w * _productivity); // Wage earned this period
                         }
 
-
-                        //_dead = true;  // The household will be removed in next Event.System.PeriodStart and its income will be part of total profits
                         //Inheritance();
                         RemoveThisAgent();
-                        //return;
+                        return;
                     }
                     break;
 
@@ -267,49 +262,69 @@ namespace Dream.Models.SOE_Basic
                 _budget[s] = _s_CES[s] * Math.Pow(_firmShopArray[s].Price / _P_CES, 1 - _settings.HouseholdCES_Elasticity) * _consumption_budget;
 
             // Buy goods
+            _consumption_value = 0;
             for (int s = 0; s < _settings.NumberOfSectors; s++)
+            {
                 BuyFromShop(s);
+                _consumption_value += _vc[s];
+                
+            }
         }
 
         #endregion
 
         #region BuyFromShop()
-        void BuyFromShop_old()
-        {
-            //if (_firmShop == null)
-            //    _firmShop = _simulation.GetRandomFirm(); //SearchForShop ???????????????????????
 
-           if(_income<0)
+        void BuyFromShop_NEW(int sector)
+        {
+            if (_firmShopArray[sector] == null)
+                _firmShopArray[sector] = _simulation.GetRandomFirm(sector); //SearchForShop ???????????????????????
+
+            if (_budget[sector] < 0)
             {
-                _vConsumption = 0;
-                _consumption = 0;
+                _vc[sector] = 0;
+                _c[sector] = 0;
                 return;
             }
 
-            if (_firmShop.Communicate(ECommunicate.CanIBuy, _income / _firmShop.Price) == ECommunicate.Yes)
+            if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, _budget[sector] / _firmShopArray[sector].Price) == ECommunicate.Yes)
             {
-                _vConsumption = _income;
-                _consumption = _income / _firmShop.Price;
+                _vc[sector] = _budget[sector];
+                _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
+                _ok++;
                 return;
             }
             else
             {
-                Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, 0);
-                firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first
+                _vc[sector] = _budget[sector];
+                _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
+                _no++;
+                
+                
+                List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector).ToList<Firm>();
+                //Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
 
-                foreach(Firm f in firms)
+                //firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                for(int j=0;j<10;j++)
                 {
-                    if (f.Communicate(ECommunicate.CanIBuy, _income / f.Price) == ECommunicate.Yes)
+                    Firm f = firms.MinBy(x => x.Price);
+                    if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
                     {
-                        _firmShop = f;
-                        _vConsumption = _income;
-                        _consumption = _income / _firmShop.Price;
+                        _firmShopArray[sector] = f;
+                        _vc[sector] = _budget[sector];
+                        _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
                         return;
                     }
+                    firms.Remove(f);
 
                 }
-                _vConsumption = 0;
-                _consumption = 0;
+
+                _vc[sector] = 0;
+                _c[sector] = 0;
+
+                _statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
                 return;
 
             }
@@ -331,59 +346,49 @@ namespace Dream.Models.SOE_Basic
             {
                 _vc[sector] = _budget[sector];
                 _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
+                _ok++;
                 return;
             }
             else
             {
+                double c = (double)_firmShopArray[sector].ReturnObject;
+                _vc[sector] = _firmShopArray[sector].Price * c;
+                _c[sector] = c;
+                _budget[sector] -= _firmShopArray[sector].Price * c;
+
                 Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
-                //firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                
+                firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                _no++;
                 foreach (Firm f in firms)
                 {
                     if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
                     {
                         _firmShopArray[sector] = f;
-                        _vc[sector] = _budget[sector];
-                        _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
+                        _vc[sector] += _budget[sector];
+                        _c[sector] += _budget[sector] / _firmShopArray[sector].Price;
                         return;
+                    }
+                    else
+                    {
+                        c = (double)_firmShopArray[sector].ReturnObject;
+                        _vc[sector] += _firmShopArray[sector].Price * c;
+                        _c[sector] += c;
+                        _budget[sector] -= _firmShopArray[sector].Price * c;
+
                     }
 
                 }
                 _vc[sector] = 0;
                 _c[sector] = 0;
+
+                _statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
                 return;
 
             }
         }
 
-        void BuyFromShop2()
-        {
-
-            //if (_firmShop == null)
-            //    _firmShop = _simulation.GetRandomFirm();
-            
-            double budget = _income; // KAN VÆRE NEGATIV !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            bool foundFirm = true;
-
-            int i = 0;
-            if (budget > 0)
-                while(_firmShop.Communicate(ECommunicate.CanIBuy, budget / _firmShop.Price)!=ECommunicate.Yes)
-                {
-                    _firmShop = null;
-                    SearchForShop(0);
-                    //_firmShop = _simulation.GetRandomFirm();
-                    i++;
-                    if (i > _settings.HouseholdMaxNumberShops)
-                    {
-                        foundFirm = false;
-                        break;
-                    }
-                }
-            
-            _consumption = foundFirm ? budget / _firmShop.Price : 0.0;
-            _vConsumption = foundFirm ? budget : 0.0;
-
-        }
         #endregion
 
         #region SearchForJob()
@@ -559,9 +564,17 @@ namespace Dream.Models.SOE_Basic
         {
             get { return _income; }
         }
-        
-        
-        
+
+        public int No
+        {
+            get { return _no; }
+        }
+
+        public int Ok
+        {
+            get { return _ok; }
+        }
+
         public double Productivity
         {
             get { return _productivity; }
@@ -580,20 +593,20 @@ namespace Dream.Models.SOE_Basic
             get { return _P_CES; }
         }
 
-        //public Firm FirmShop
-        //{
-        //    get { return _firmShop; }
-        //}
         public Firm FirmEmployment
         {
             get { return _firmEmployment; }
         }
-        
-        //public double Good
-        //{
-        //    get { return _good; }
-        //}
 
+        public double ConsumptionBudget
+        {
+            get { return _consumption_budget; }
+        }
+
+        public double ConsumptionValue
+        {
+            get { return _consumption_value; }
+        }
 
         #endregion
 

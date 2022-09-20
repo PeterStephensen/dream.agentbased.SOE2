@@ -6,7 +6,7 @@ namespace Dream.Models.SOE_Basic
     {
         static void Main(string[] args)
         {
-            RunSimulation(args, true); // Mark saveScenario here!!           
+            RunSimulation(args, false); // Mark saveScenario here!!           
         }   
     
         static void RunSimulation(string[] args, bool saveScenario=false)
@@ -16,11 +16,11 @@ namespace Dream.Models.SOE_Basic
             
             // Scale
             double scale = 5 * 1.0; 
-
-            settings.NumberOfSectors = 5;
+            
+            settings.NumberOfSectors = 3;
             settings.NumberOfFirms = (int)(150 * scale);
             settings.NumberOfHouseholdsPerFirm = 5;
-            settings.HouseholdNewBorn = (int)(15 * scale);
+            settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
 
             //Firms
@@ -35,19 +35,19 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.05; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            double mark = 0.02; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             double sens = 1/0.15;
 
             // Wage ----------------------------------
             settings.FirmWageMarkup = 1 * mark;
             settings.FirmWageMarkupSensitivity = sens;
-            settings.FirmWageMarkdown = 1 * mark;
+            settings.FirmWageMarkdown = 1 * mark;    // 0 is ok
             settings.FirmWageMarkdownSensitivity = sens;
 
             // In zone
             settings.FirmWageMarkupInZone = 1 * mark;
             settings.FirmWageMarkupSensitivityInZone = sens;
-            settings.FirmWageMarkdownInZone = 1 * mark;
+            settings.FirmWageMarkdownInZone = 1 * mark;    // 0 is ok
             settings.FirmWageMarkdownSensitivityInZone = sens;
 
             settings.FirmProbabilityRecalculateWage = 0.5;
@@ -82,7 +82,7 @@ namespace Dream.Models.SOE_Basic
             settings.FirmExpectationSmooth = 0.4;
             settings.FirmMaxEmployment = 1000;  // 700
 
-            settings.FirmVacanciesShare = 0.1;
+            settings.FirmVacanciesShare = 0.5;
             settings.FirmMinRemainingVacancies = 5;
 
             settings.FirmProfitLimitZeroPeriod = (2040 - 2014) * 12;
@@ -90,7 +90,7 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProductivityGrowth = 0.02;
 
             // Households
-            settings.HouseholdNumberFirmsSearchJob = 4;     // Try 20!
+            settings.HouseholdNumberFirmsSearchJob = 15;     // Try 20!
             settings.HouseholdNumberFirmsSearchShop = 15;    //----------------------- 
             settings.HouseholdProbabilityQuitJob = 0.01;
             settings.HouseholdProbabilitySearchForJob = 0.01;                        
@@ -103,6 +103,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdDisSaveRateUnemployed = 0.05;
             settings.HouseholdSaveRate = 0.01;
             settings.NumberOfInheritors = 5;
+            settings.HouseholdMaxNumberShops = 10; // When your supplier can not deliver: how many to seach for
 
             settings.HouseholdPensionAge = 67 * 12;
             settings.HouseholdStartAge = 18 * 12;
@@ -153,7 +154,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 12 * 1;
             
-            settings.StatisticsGraphicsStartPeriod = 12 * 40;   // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            settings.StatisticsGraphicsStartPeriod = 12 * 70;   // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 

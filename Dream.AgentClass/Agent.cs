@@ -39,6 +39,7 @@ namespace Dream.AgentClass
         int _count;
         Type _childType;
         int _id;
+        double _balance=0;
         #endregion
 
         #region Constructor
@@ -275,7 +276,15 @@ namespace Dream.AgentClass
                     a = a._next;
             }
             return a;
-        }   
+        }
+        #endregion
+
+        #region Transfer()
+        public static void Transfer(double amount, Agent from, Agent to)
+        {
+            from._balance -= amount;
+            to._balance += amount;
+        }
         #endregion
 
         #region CopyTo()
@@ -383,6 +392,10 @@ namespace Dream.AgentClass
         public Agent LastAgent
         {
             get { return _last; }
+        }
+        public double Balance
+        {
+            get { return _balance; }
         }
         #endregion
 
