@@ -20,7 +20,7 @@ namespace Dream.Models.SOE_Basic
             settings.NumberOfSectors = 3;
             settings.NumberOfFirms = (int)(150 * scale);
             settings.NumberOfHouseholdsPerFirm = 5;
-            settings.HouseholdNewBorn = (int)(5 * scale);   //15
+            settings.HouseholdNewBorn = (int)(10 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
 
             //Firms
@@ -35,17 +35,17 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.02; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            double mark = 0.001; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             double sens = 1/0.15;
 
             // Wage ----------------------------------
-            settings.FirmWageMarkup = 1 * mark;
+            settings.FirmWageMarkup = 1 * mark;                                            //2  !!!!
             settings.FirmWageMarkupSensitivity = sens;
             settings.FirmWageMarkdown = 1 * mark;    // 0 is ok
             settings.FirmWageMarkdownSensitivity = sens;
 
             // In zone
-            settings.FirmWageMarkupInZone = 1 * mark;
+            settings.FirmWageMarkupInZone = 1 * mark;                                      //2  !!!!
             settings.FirmWageMarkupSensitivityInZone = sens;
             settings.FirmWageMarkdownInZone = 1 * mark;    // 0 is ok
             settings.FirmWageMarkdownSensitivityInZone = sens;
@@ -103,7 +103,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdDisSaveRateUnemployed = 0.05;
             settings.HouseholdSaveRate = 0.01;
             settings.NumberOfInheritors = 5;
-            settings.HouseholdMaxNumberShops = 10; // When your supplier can not deliver: how many to seach for
+            settings.HouseholdMaxNumberShops = 15; // When your supplier can not deliver: how many to seach for
 
             settings.HouseholdPensionAge = 67 * 12;
             settings.HouseholdStartAge = 18 * 12;
@@ -113,7 +113,7 @@ namespace Dream.Models.SOE_Basic
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.0;  //2.0
-            settings.StatisticsInitialMarketWage = 0.15;   //1.0 
+            settings.StatisticsInitialMarketWage = 1.0;   //1.0 
             settings.StatisticsInitialInterestRate = Math.Pow(1 + 0.05, 1.0 / 12) - 1; // 5% p.a.
 
             settings.StatisticsFirmReportSampleSize = 0.015;

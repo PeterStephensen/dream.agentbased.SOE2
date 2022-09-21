@@ -239,7 +239,7 @@ namespace Dream.Models.SOE_Basic
                         }
 
 
-                    double rejectionRate = (double)no / (no + ok);
+                    double firmRejectionRate = (double)no / (no + ok);
                     double potentilaSalesRate = potentialSales / _totalSales;
                     // Calculation of profitPerHousehold
                     //_profitPerHousehold = _totalProfit / _simulation.Households.Count;  // Profit income to households
@@ -449,9 +449,8 @@ namespace Dream.Models.SOE_Basic
                     _nFirmNew = 0;
 
 
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.#}\t{6}\t{7:#.####}\t{8:#.####}\t{8:#.####}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, totalRevenues, _n_couldNotFindSupplier, 
-                        rejectionRate, potentilaSalesRate, h_rejectionRate);
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, h_rejectionRate);
                     break;
 
                 case Event.System.Stop:

@@ -385,7 +385,8 @@ namespace Dream.Models.SOE_Basic
                         //if (_expSales < 0.9*_y_optimal)
                         if (_expPotentialSales < _y_optimal)
                         {
-                            double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
+                            double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expPotentialSales) / _y_optimal);
+                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
                             p_target = (1 - g) * _expPrice;
                         }
                         else
@@ -395,7 +396,6 @@ namespace Dream.Models.SOE_Basic
                             double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _y_optimal) / _y_optimal);
                             p_target = (1 + g) * _expPrice;
                         }
-
                     }
                 }
 
@@ -466,10 +466,11 @@ namespace Dream.Models.SOE_Basic
                     if (_expApplications * avr_prod < _vacancies + _expQuitters * avr_prod)
                     {
                         double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * avr_prod - _expApplications * avr_prod) / _l_optimal);// _employed.Count);
+                        //double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * avr_prod - _expApplications * avr_prod));// _employed.Count);
                         w_target = (1 + g) * _expWage;
                     }
                 }
-                else // if _vacancies=0
+                else
                 {
                     if (_expApplications > _expQuitters)
                     {
