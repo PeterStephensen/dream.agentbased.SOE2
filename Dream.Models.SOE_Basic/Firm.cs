@@ -39,6 +39,7 @@ namespace Dream.Models.SOE_Basic
         double _expWage = 1.0;
         double _expApplications = 0;
         double _expQuitters = 0;
+        double _expAvrProd = 0;
         //double _expProfit = 0;
         double _expSales = 0, _expPotentialSales = 0; 
         int _age = 0;
@@ -52,6 +53,7 @@ namespace Dream.Models.SOE_Basic
         double _b_price=0;
         int _ok, _no;
         object _object;
+        bool _open = false;
         #endregion
 
         #region Constructors
@@ -100,10 +102,12 @@ namespace Dream.Models.SOE_Basic
 
             _expWage = _statistics.PublicMarketWage[_sector];
             _expPrice = _statistics.PublicMarketPrice[_sector];
+            _expAvrProd = 1.0;
+
             _w = _statistics.PublicMarketWage[_sector];
             _p = _statistics.PublicMarketPrice[_sector];
-            _l_price = Math.Log(_p);
-            _l_wage = Math.Log(_w);
+            //_l_price = Math.Log(_p);
+            //_l_wage = Math.Log(_w);
 
         }
         #endregion
@@ -148,6 +152,9 @@ namespace Dream.Models.SOE_Basic
                         if(_settings.Shock==EShock.Tsunami)
                             if (_random.NextEvent(0.1))
                                 CloseFirm(EStatistics.FirmCloseNatural);
+
+                    if (_age == _settings.FirmStartupPeriod)
+                        _open = true;    
 
                     break;
 
@@ -283,7 +290,7 @@ namespace Dream.Models.SOE_Basic
             //_expProfit = _settings.FirmExpectationSmooth * _expProfit + (1 - _settings.FirmExpectationSmooth) * _profit;
             _expPotentialSales = _settings.FirmExpectationSmooth * _expPotentialSales + (1 - _settings.FirmExpectationSmooth) * _potentialSales;
             _expSales = _settings.FirmExpectationSmooth * _expSales + (1 - _settings.FirmExpectationSmooth) * _sales;
-            
+
         }
         #endregion
 
@@ -382,15 +389,17 @@ namespace Dream.Models.SOE_Basic
                             markdownSensitivity = _settings.FirmPriceMarkdownSensitivityInZone;
                         }
 
-                        //if (_expSales < 0.9*_y_optimal)
-                        if (_expPotentialSales < _y_optimal)
+                        if (_expSales < _y_optimal)
+                        //if (_expPotentialSales < _y_optimal)
+                        //if (_expPotentialSales < _y_primo)
                         {
-                            double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expPotentialSales) / _y_optimal);
-                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
+                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_primo - _expPotentialSales) / _y_primo);
+                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expPotentialSales) / _y_optimal);
+                            double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
                             p_target = (1 - g) * _expPrice;
                         }
-                        else
-                        //else if (_expPotentialSales > _y_optimal)
+                        //else
+                        else if (_expPotentialSales > _y_optimal)
                         //if (_expPotentialSales > _y_optimal)
                         {
                             double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _y_optimal) / _y_optimal);
@@ -424,6 +433,9 @@ namespace Dream.Models.SOE_Basic
             double l = CalcEmployment();
             double avr_prod = 1.0;
             if(_employed.Count>0) avr_prod = l / _employed.Count;
+            _expAvrProd = _settings.FirmExpectationSmooth * _expAvrProd + (1 - _settings.FirmExpectationSmooth) * avr_prod;
+            //_expAvrProd = avr_prod;
+
             _vacancies = 0;
             if (_l_optimal > l)
             {
@@ -463,10 +475,10 @@ namespace Dream.Models.SOE_Basic
                 //if(_age > _settings.FirmStartupPeriod)
                 if (_vacancies > 0)
                 {
-                    if (_expApplications * avr_prod < _vacancies + _expQuitters * avr_prod)
+                    if (_expApplications * _expAvrProd < _vacancies + _expQuitters * _expAvrProd)
                     {
-                        double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * avr_prod - _expApplications * avr_prod) / _l_optimal);// _employed.Count);
-                        //double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * avr_prod - _expApplications * avr_prod));// _employed.Count);
+                        double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd) / _l_optimal);// _employed.Count);
+                        //double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd));// _employed.Count);
                         w_target = (1 + g) * _expWage;
                     }
                 }
@@ -474,7 +486,8 @@ namespace Dream.Models.SOE_Basic
                 {
                     if (_expApplications > _expQuitters)
                     {
-                        double g = markdown * PriceFunc(markdownSensitivity * (_expApplications * avr_prod - _expQuitters * avr_prod) / _l_optimal);// _employed.Count);
+                        double g = markdown * PriceFunc(markdownSensitivity * (_expApplications * _expAvrProd - _expQuitters * _expAvrProd) / _l_optimal);// _employed.Count);
+                        //double g = markdown * PriceFunc(markdownSensitivity * (_expApplications - _expQuitters) / _l_optimal);// _employed.Count);
                         w_target = (1 - g) * _expWage;
                     }
                 }
@@ -529,6 +542,10 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region Public proporties
+        public bool Open
+        {
+            get { return _open; }
+        }
         public object ReturnObject
         {
             get { return _object; }

@@ -189,6 +189,7 @@ namespace Dream.Models.SOE_Basic
                     int n_firms = 0;
                     foreach (Agent fs in _sectors)
                         n_firms += fs.Count;
+                    
                     //Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}\t{5:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
                     //    n_firms, _households.Count, _statistics.PublicMarketWageTotal, _statistics.PublicMarketPriceTotal, 
                     //    _statistics.PublicMarketWageTotal/ _statistics.PublicMarketPriceTotal);
@@ -331,24 +332,43 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region GetRandomFirm
+        public Firm GetRandomOpenFirm(int sector)
+        {
+            Firm f=null;
+            bool open = false;
+            int i = 0;
+            while(!open)
+            {
+                f = GetRandomFirm(sector);
+                open = f.Open;
+                i++;
+                if (i > 1000)
+                    throw new Exception("No open firms");   
+            }
+
+            return f;
+
+        }
         public Firm GetRandomFirm(int sector)
         {
             if (_randomFirm[sector] == null)
                 _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
 
             int nJumpMax = 10; //(int)(0.01 * _sectorList[sector].Count);
-            
+
             if (_randomFirm[sector] != null)
             {
                 if (_sectorList[sector].Count == 1)
                     return _randomFirm[sector];
+
                 int nJump = _random.Next(nJumpMax) + 1;
                 _randomFirm[sector] = (Firm)_randomFirm[sector].Jump(nJump);
             }
-            
+
             return _randomFirm[sector];
 
         }
+
         public Firm GetRandomFirm_OLD(int sector)
         {
 
