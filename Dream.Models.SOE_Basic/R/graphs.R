@@ -35,6 +35,10 @@ d_house = read.delim(paste0(o_dir,"/data_households.txt"))
 d_prod = read.delim(paste0(o_dir,"/data_firms.txt"))
 d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 
+#ddd = d_house %>% filter(ConsumptionValue==0 & ConsumptionBudget>0)
+#ddd = d_house %>% filter(ConsumptionValue>0 & ConsumptionValue<0.0*ConsumptionBudget)
+#hist(ddd$Age/12, breaks=50)
+
 
 y0 = 2014
 burnIn = 2035
@@ -88,7 +92,16 @@ cols=palette()
 n_households = last(d$n_Households)
 n_firms = n_households/l_bar
 
-hist(d_prod$Productivity, breaks = 50, xlab="Firm Productivity", main=paste("Year:",yr), col=cols[3])
+mx = max(d$ProfitPerHousehold)
+plot(d$Year, d$ProfitPerHousehold, main="Profit Per Household", xlab = "year", ylab="", 
+     type="l", xlim=c(y0,mx_yr), ylim=c(0,mx), cex.main=0.8)
+abline(h=0)
+abline(v=burnIn, lty=2)
+
+
+
+
+#hist(d_prod$Productivity, breaks = 50, xlab="Firm Productivity", main=paste("Year:",yr), col=cols[3])
 
 mx = max(max(d_prod$OptimalEmployment), max(d_prod$Employment))
 plot(d_prod$OptimalEmployment, d_prod$Employment, xlab="Optimal employment", ylab="Employment", 
@@ -100,6 +113,14 @@ mn = min(min(d_prod$OptimalProduction), min(d_prod$Sales))
 plot(d_prod$OptimalProduction, d_prod$Sales, xlab="Optimal production", ylab="Sales", 
      log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.5)
 abline(a=0,b=1, lty=2)
+
+mx = max(max(d_house$ConsumptionValue), max(d_house$ConsumptionBudget))
+mn = min(min(d_house$ConsumptionValue), min(d_house$ConsumptionBudget))
+plot(d_house$ConsumptionBudget, d_house$ConsumptionValue, xlab="Budgetet consumption value", ylab="Actual consumption value", 
+     col=cols[3], xlim=c(0,1.1*mx), ylim=c(0,1.1*mx), cex=0.5)
+abline(a=0,b=1, lty=2)
+
+#log = "xy", 
 
 mx = max(d$nUnemployed/d$LaborSupply)
 if(last(d$nUnemployed/d$LaborSupply) < 0.2)
@@ -122,9 +143,9 @@ abline(h=n_households, lty=2)
 abline(v=burnIn, lty=2)
 abline(h=0)
 
-z=d_prod$Profit<500
-z=d_prod$Profit[z]>-100
-hist(d_prod$Profit[z], breaks = 50, xlab="Profit", main="", col=cols[3])
+#z=d_prod$Profit<500
+#z=d_prod$Profit[z]>-100
+#hist(d_prod$Profit[z], breaks = 50, xlab="Profit", main="", col=cols[3])
 
 mx = max(d$nVacancies/d$nEmployment)
 if(last(d$nVacancies/d$nEmployment) < 0.2)
@@ -310,6 +331,8 @@ abline(h=0)
 dd = d_house[sample(1:nrow(d_house),1000), ]
 plot(dd$Age/12, dd$Productivity,pch=19, cex=0.1, xlab="Age (years)", ylab="Productivity", ylim=c(0,5))
 
+
+
 #-----------------------------------------------
 par(mfrow=c(2,2))
 
@@ -345,7 +368,7 @@ dd = d_sector %>% group_by(Time) %>% summarise(P=mean(Price))
 d_sector2 = merge(dd, d_sector)
 d_sector2$Price = d_sector2$Price / d_sector2$P
 
-txt = "Price"
+txt = "Relative Price"
 mx = max(d_sector2$Price)
 dd = d_sector2 %>% filter(Sector==0)
 plot(dd$Time/12, dd$Price, col=col[1], type="l", ylim=c(0,1.1*mx), ylab=txt, main=txt, xlab="Year")

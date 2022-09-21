@@ -141,13 +141,13 @@ namespace Dream.Models.SOE_Basic
                    
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
 
-                   
-                    if(_age >= _settings.HouseholdPensionAge) // If pensioner
+                    #region Not used (Saving)
+                    if (_age >= _settings.HouseholdPensionAge) // If pensioner
                     {
                         _consumption_budget = _settings.HouseholdDisSaveRatePensioner * _wealth;
                         _wealth = _wealth - _consumption_budget;
                     }
-                    else if(_w>0)                            // If employed
+                    else if (_w > 0)                            // If employed
                     {
                         _consumption_budget = (1 - _settings.HouseholdSaveRate) * _income;
                         _wealth = _wealth + _settings.HouseholdSaveRate * _income;
@@ -157,13 +157,12 @@ namespace Dream.Models.SOE_Basic
                         _consumption_budget = _settings.HouseholdDisSaveRateUnemployed * _wealth;
                         _wealth = _wealth - _consumption_budget;
                     }
+                    #endregion
 
                     // This overwrites code above *****************************************************
                     _consumption_budget = _income; // **************************************************
                     
-                    if (unemployed)
-                        _w = 0;
-
+                    if (unemployed) _w = 0;
                     _no = 0;
                     _ok = 0;
                     break;
@@ -275,6 +274,74 @@ namespace Dream.Models.SOE_Basic
 
         #region BuyFromShop()
 
+        void BuyFromShop(int sector)
+        {
+            if (_firmShopArray[sector] == null)
+                _firmShopArray[sector] = _simulation.GetRandomFirm(sector); //SearchForShop ???????????????????????
+
+
+           
+            if (_budget[sector] < 0)
+            {
+                _vc[sector] = 0;
+                _c[sector] = 0;
+                return;
+            }
+
+            _ok++;
+            if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, _budget[sector] / _firmShopArray[sector].Price) == ECommunicate.Yes)
+            {
+                _vc[sector] = _budget[sector];
+                _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
+                return;
+            }
+            else
+            {
+                double c = (double)_firmShopArray[sector].ReturnObject;
+                _vc[sector] = _firmShopArray[sector].Price * c;
+                _c[sector] = c;
+                _budget[sector] -= _firmShopArray[sector].Price * c;
+
+                Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
+                firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                int pos = 0;
+                foreach (Firm f in firms)
+                {
+                    if(f.Open)
+                        if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
+                        {
+                            _firmShopArray[sector] = f;
+                            _vc[sector] += _budget[sector];
+                            _c[sector] += _budget[sector] / _firmShopArray[sector].Price;
+                            return;
+                        }
+                        else
+                        {
+                            c = (double)_firmShopArray[sector].ReturnObject;
+                            if (c > 0) pos++;
+                            _vc[sector] += _firmShopArray[sector].Price * c;
+                            _c[sector] += c;
+                            _budget[sector] -= _firmShopArray[sector].Price * c;                            
+                        }
+                }
+                int zz = 0;
+                if (_time.Now > 12 * 30 & pos>0)
+                    zz = 22;
+
+
+                _no++;
+                _ok--;
+                //_vc[sector] = 0;
+                //_c[sector] = 0;
+
+                _statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
+                return;
+
+            }
+        }
+
         void BuyFromShop_NEW(int sector)
         {
             if (_firmShopArray[sector] == null)
@@ -299,14 +366,14 @@ namespace Dream.Models.SOE_Basic
                 _vc[sector] = _budget[sector];
                 _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
                 _no++;
-                
-                
+
+
                 List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector).ToList<Firm>();
                 //Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
 
                 //firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-                for(int j=0;j<10;j++)
+                for (int j = 0; j < 10; j++)
                 {
                     Firm f = firms.MinBy(x => x.Price);
                     if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
@@ -330,64 +397,6 @@ namespace Dream.Models.SOE_Basic
             }
         }
 
-        void BuyFromShop(int sector)
-        {
-            if (_firmShopArray[sector] == null)
-                _firmShopArray[sector] = _simulation.GetRandomFirm(sector); //SearchForShop ???????????????????????
-
-            if (_budget[sector] < 0)
-            {
-                _vc[sector] = 0;
-                _c[sector] = 0;
-                return;
-            }
-
-            if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, _budget[sector] / _firmShopArray[sector].Price) == ECommunicate.Yes)
-            {
-                _vc[sector] = _budget[sector];
-                _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
-                _ok++;
-                return;
-            }
-            else
-            {
-                double c = (double)_firmShopArray[sector].ReturnObject;
-                _vc[sector] = _firmShopArray[sector].Price * c;
-                _c[sector] = c;
-                _budget[sector] -= _firmShopArray[sector].Price * c;
-
-                Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
-                firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                foreach (Firm f in firms)
-                {
-                    if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
-                    {
-                        _firmShopArray[sector] = f;
-                        _vc[sector] += _budget[sector];
-                        _c[sector] += _budget[sector] / _firmShopArray[sector].Price;
-                        return;
-                    }
-                    else
-                    {
-                        c = (double)_firmShopArray[sector].ReturnObject;
-                        _vc[sector] += _firmShopArray[sector].Price * c;
-                        _c[sector] += c;
-                        _budget[sector] -= _firmShopArray[sector].Price * c;
-
-                    }
-
-                }
-                _no++;
-                _vc[sector] = 0;
-                _c[sector] = 0;
-
-                _statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
-                return;
-
-            }
-        }
 
         #endregion
 

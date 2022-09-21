@@ -199,4 +199,4 @@ pdf
 > 
 > proc.time()
   bruger   system forløbet 
-    3.85     0.25     4.82 
+    5.95     0.23     7.96 

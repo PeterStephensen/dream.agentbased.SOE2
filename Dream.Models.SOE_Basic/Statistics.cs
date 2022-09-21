@@ -275,6 +275,7 @@ namespace Dream.Models.SOE_Basic
                     _n_unemployed = 0;
                     int h_no = 0;
                     int h_ok = 0;
+                    double consValue = 0, consBudget = 0;
                     foreach (Household h in _simulation.Households)
                     {
                         if (h.Age < _settings.HouseholdPensionAge)
@@ -287,8 +288,11 @@ namespace Dream.Models.SOE_Basic
                         }
                         h_no += h.No;
                         h_ok += h.Ok;
+                        consValue += h.ConsumptionValue;
+                        consBudget += h.ConsumptionBudget;
                     }
                     double h_rejectionRate = (double)h_no / (h_no + h_ok);
+                    double consLoss = 1.0 - consValue / consBudget;
                     // Calculate median wage
                     //if (wages.Count > 0)
                     //    _marketWage = wages.Median();
@@ -307,6 +311,7 @@ namespace Dream.Models.SOE_Basic
 
                     if((_time.Now + 1) % _settings.PeriodsPerYear == 0)
                     {
+                        // REMOVE THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         _yr_consumption = 0;
                         _yr_employment = 0;
                         foreach (Household h in _simulation.Households)
@@ -402,11 +407,11 @@ namespace Dream.Models.SOE_Basic
 
                             using (StreamWriter sw = File.CreateText(_settings.ROutputDir + "\\data_households.txt"))
                             {
-                                sw.WriteLine("UnemplDuration\tProductivity\tAge\tConsumptionValue\tConsumptionBudget\tPrice\tWage");
+                                sw.WriteLine("UnemplDuration\tProductivity\tAge\tConsumptionValue\tConsumptionBudget\tPrice\tWage\tIncome");
                                 foreach (Household h in _simulation.Households)
                                 {
                                     double w = h.FirmEmployment!=null ? h.FirmEmployment.Wage : 0;
-                                    sw.WriteLineTab(h.UnemploymentDuration, h.Productivity, h.Age, h.ConsumptionValue, h.ConsumptionBudget, h.CES_Price, w);
+                                    sw.WriteLineTab(h.UnemploymentDuration, h.Productivity, h.Age, h.ConsumptionValue, h.ConsumptionBudget, h.CES_Price, w, h.Income);
                                 }
                             }
 
@@ -450,7 +455,7 @@ namespace Dream.Models.SOE_Basic
 
 
                     Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, h_rejectionRate);
+                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, consLoss);  //h_rejectionRate
                     break;
 
                 case Event.System.Stop:

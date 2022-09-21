@@ -17,10 +17,10 @@ namespace Dream.Models.SOE_Basic
             // Scale
             double scale = 5 * 1.0; 
             
-            settings.NumberOfSectors = 3;
+            settings.NumberOfSectors = 1;
             settings.NumberOfFirms = (int)(150 * scale);
             settings.NumberOfHouseholdsPerFirm = 5;
-            settings.HouseholdNewBorn = (int)(10 * scale);   //15
+            settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
 
             //Firms
@@ -35,7 +35,7 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.001; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            double mark = 0.01; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             double sens = 1/0.15;
 
             // Wage ----------------------------------
@@ -94,7 +94,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdNumberFirmsSearchShop = 15;    //----------------------- 
             settings.HouseholdProbabilityQuitJob = 0.01;
             settings.HouseholdProbabilitySearchForJob = 0.01;                        
-            settings.HouseholdProbabilitySearchForShop = 0.01;                          // MEGET LAV???!!!
+            settings.HouseholdProbabilitySearchForShop = 0.1;                          // MEGET LAV???!!!
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
             settings.HouseholdProductivityErrorSigma = 0.02;
@@ -113,7 +113,7 @@ namespace Dream.Models.SOE_Basic
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.0;  //2.0
-            settings.StatisticsInitialMarketWage = 1.0;   //1.0 
+            settings.StatisticsInitialMarketWage = 0.2;   //1.0 
             settings.StatisticsInitialInterestRate = Math.Pow(1 + 0.05, 1.0 / 12) - 1; // 5% p.a.
 
             settings.StatisticsFirmReportSampleSize = 0.015;

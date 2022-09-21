@@ -53,7 +53,7 @@ for(i in 1:n)
   
   if(T)
   {
-    if(dr$Productivity[1] < 1.8)
+    if(dr$Productivity[1] < 0.8)
       next
   }
   
