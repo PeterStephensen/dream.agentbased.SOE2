@@ -20,23 +20,6 @@ if(Sys.info()['nodename'] == "C2210098")     # Peters nye maskine
   o_dir = "C:/Users/B007566/Documents/Output"  
 }
 
-if(F)
-{
-  dd10 = read.delim(paste0(o_dir,"/output.txt"))
-  mean(dd10$DiscountedProfits)
-  
-  plot(dd10$DiscountedProfits)
-  abline(h=0)
-  abline(h=mean(dd10$DiscountedProfits), lty=2)
-  
-  dd2 = read.delim(paste0(o_dir,"/output_2.txt"))
-  hist(dd2$n_firms, breaks = 70, xlim=c(0,400))
-  hist(dd10$n_firms, breaks = 70, xlim=c(0,400))
-  
-  hist(dd2$Wage/dd2$Price, breaks = 50, xlim=c(0,0.2), ylim=c(0,85))
-  hist(dd10$Wage/dd10$Price, breaks = 30, xlim=c(0,0.2), ylim=c(0,85))
-  
-}
 
 hpfilter      = function(x, mu = 100) {
   y = x
@@ -50,6 +33,7 @@ hpfilter      = function(x, mu = 100) {
 d = read.delim(paste0(o_dir,"/data_year.txt"))
 d_house = read.delim(paste0(o_dir,"/data_households.txt"))
 d_prod = read.delim(paste0(o_dir,"/data_firms.txt"))
+d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 
 
 y0 = 2014
@@ -64,7 +48,6 @@ g = (1 + 0.02)^(1/12) - 1
 l_bar = k * (fi/(1-alpha))^(1/alpha) /(k - (1/(1-alpha)))
 
 pdf(paste0(o_dir,"/graph1.pdf"))
-
 par(mfrow=c(3,3))
 
 yr = last(d$Year)
@@ -132,21 +115,23 @@ abline(v=burnIn, lty=2)
 
 
 mx = max(d$nOptimalEmplotment)
-plot(d$Year, d$nOptimalEmplotment, main="Total Optimal Employment", xlab = "year", ylab="Optimal Employment", 
+plot(d$Year, d$nOptimalEmplotment, main="Total Optimal Employment (Red: Actual empl.)", xlab = "year", ylab="Optimal Employment", 
      type="l", xlim=c(y0,mx_yr), ylim=c(0,1.1*mx), cex.main=0.8)
+lines(d$Year, d$nEmployment, col="red")
 abline(h=n_households, lty=2)
 abline(v=burnIn, lty=2)
+abline(h=0)
 
 z=d_prod$Profit<500
 z=d_prod$Profit[z]>-100
 hist(d_prod$Profit[z], breaks = 50, xlab="Profit", main="", col=cols[3])
 
-mx = max(d$nVacancies/d$LaborSupply)
-if(last(d$nVacancies/d$LaborSupply) < 0.2)
+mx = max(d$nVacancies/d$nEmployment)
+if(last(d$nVacancies/d$nEmployment) < 0.2)
 {
   mx = 0.2
 }
-plot(d$Year, d$nVacancies/d$LaborSupply, main="Vacancies rate", xlab = "year", ylab="", 
+plot(d$Year, d$nVacancies/d$nEmployment, main="Vacancies rate", xlab = "year", ylab="", 
      type="l", xlim=c(y0,mx_yr), ylim=c(0,mx), cex.main=0.8)
 abline(h=0)
 abline(v=burnIn, lty=2)
@@ -181,6 +166,7 @@ plot(d$Year, d$Price, main="", xlab = "year", ylab="Price",
      type="l", xlim=c(y0,mx_yr), ylim=c(0,1.05*mx))
 abline(h=0)
 abline(v=burnIn, lty=2)
+
 
 mx = max(d$n_Households)
 plot(d$Year, d$n_Households, main="", xlab = "year", ylab="#Households", 
@@ -321,127 +307,104 @@ plot(d_prod$Age/12, d_prod$Profit, xlab="Age (year)",ylab="Profit",
      pch=19, cex=0.2, xlim=c(0,50))
 abline(h=0)
 
-plot(d_prod$Age/12, d_prod$DiscountedProfits, xlab="Age (year)",ylab="Discounted Profit",
-     pch=19, cex=0.2, xlim=c(0,50))
-abline(h=0)
-abline(h=mean(d_prod$DiscountedProfits), lty=2, col="red")
-abline(h=median(d_prod$DiscountedProfits), lty=2, col="blue")
-
-plot(d_prod$Age/12, d_prod$DiscountedProfits, xlab="Age (year)",ylab="Discounted Profit",
-     pch=19, cex=0.2, xlim=c(0,5))
-abline(h=0)
-abline(h=mean(d_prod$DiscountedProfits), lty=2, col="red")
-abline(h=median(d_prod$DiscountedProfits), lty=2, col="blue")
-
-
-hist(d_prod$DiscountedProfits, breaks = 50, xlab="Discounted profits", main="")
-
 dd = d_house[sample(1:nrow(d_house),1000), ]
 plot(dd$Age/12, dd$Productivity,pch=19, cex=0.1, xlab="Age (years)", ylab="Productivity", ylim=c(0,5))
 
-#par(mfrow=c(1,1))
-
 #-----------------------------------------------
 par(mfrow=c(2,2))
 
-#z = (d$nFirmCloseNegativeProfit + d$nFirmCloseNatural + d$nFirmCloseTooBig) / (12*d$nFirms)
-  
-#mx = max(max(z), max(d$nFirmNew / (12*d$nFirms)))
-#plot(d$Year, z, xlab = "year", ylab="Flow of firms", ylim=c(0, 1.1*mx), 
-#     type="l", xlim=c(y0,mx_yr), main="", cex.main=0.7)
-#lines(d$Year, d$nFirmCloseNatural / (12*d$nFirms), col=cols[2], type="l")
-#lines(d$Year, d$nFirmCloseTooBig / (12*d$nFirms), col=cols[3], type="s")
-#abline(h=120, lty=2)
-#lines(d$Year, d$nFirmNew / (12*d$nFirms), col=cols[4], type="l")
-#abline(h=0)
-#abline(v=burnIn, lty=2)
-#abline(v=2050, lty=2)
-#ContourFunctions::multicolor.title(c("Closed:Total  ","Closed:Natural  ", "Closed:TooBig  ", "New"), 1:4, cex.main = 0.7)
 
-if(F)
+S = length(unique(d_sector$Sector))
+col = rainbow(S)
+
+txt = "Employment"
+mx = max(d_sector$Employment)
+dd = d_sector %>% filter(Sector==0)
+plot(dd$Time/12, dd$Employment, col=col[1], type="l", ylim=c(0,1.1*mx), ylab=txt, main=txt, xlab="Year")
+for(i in 2:S)
 {
-if(d$Year[1]>2050 & length(d$Year)>50)
-{
-  z = (length(d$Year)-50):length(d$Year)
-
-  fit = as.character(auto.arima(d$YearConsumption))
-  hp = hpfilter(d$YearConsumption)
-  plot(d$Year[z], d$YearConsumption[z], type="b", ylab="Consumption per year", xlab="Year", main=fit, cex=0.5, pch=20) 
-  lines(d$Year[z], hp[z], lty=2)
-
-  fit = as.character(auto.arima(d$YearConsumption[z]/hp[z]))
-  plot(d$Year[z], d$YearConsumption[z]/hp[z], type="b", ylab="Consumption per year", xlab="Year", main=fit, cex=0.5, pch=20)
-  abline(h=1, lty=2)
-  
-  fit = as.character(auto.arima(d$YearEmployment))
-  hp = hpfilter(d$YearEmployment)
-  plot(d$Year[z], d$YearEmployment[z], type="b", ylab="Employment per year", xlab="Year", main=fit, cex=0.5, pch=20)
-  lines(d$Year[z], hp[z], lty=2)
-
-  fit = as.character(auto.arima(d$YearEmployment[z]/hp[z]))
-  plot(d$Year[z], d$YearEmployment[z]/hp[z], type="b", ylab="Employment per year", xlab="Year", main=fit, cex=0.5, pch=20) 
-  abline(h=1, lty=2)
-  
-    
-}else
-{
-  
-  plot(d$Year, d$YearConsumption, type="b", ylab="Consumption per year", xlab="Year", cex=0.5, pch=20)
-  plot(d$Year, d$YearEmployment, type="b", ylab="Employment per year", xlab="Year", cex=0.5, pch=20)
-    
+  dd = d_sector %>% filter(Sector==i-1)
+  lines(dd$Time/12, dd$Employment, col=col[i])
 }
-}
-
-#plot(d_house$Good, d_house$ShopGood, col=rgb(0,0,0,0.1), pch=20)
-
-#d_house$diff1 = abs(d_house$Good-d_house$ShopGood)
-#d_house$diff2 = abs(1-d_house$Good-d_house$ShopGood)
-#d_house$diff = ifelse(d_house$diff1<d_house$diff2, d_house$diff1, d_house$diff2)
-
-#hist(d_house$diff, breaks = 20)
-
-p = d$Price[nrow(d)]
-hist(d_house$Price, breaks=50, xlim=c(0.9*p, 1.1*p))
-abline(v=p, col="red", lwd=2, lty=2)
-
-w = d$Wage[nrow(d)]
-d_h2 = d_house %>% filter(Wage>0)
-hist(d_h2$Wage, breaks=50, xlim=c(0.9*w, 1.1*w))
-abline(v=w, col="red", lwd=2, lty=2)
-
-
-
-dev.off()
-
-
-#-----------------------------------------------
-
-svg(paste0(o_dir,"/graph.svg"))
-
-par(mfrow=c(2,2))
-
-mx = max(max(d_prod$OptimalEmployment), max(d_prod$Employment))
-plot(d_prod$OptimalEmployment, d_prod$Employment, xlab="Optimal employment", ylab="Employment", 
-     log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.7)
-abline(a=0,b=1, lty=2)
-
-mx = max(max(d_prod$OptimalProduction), max(d_prod$Sales))
-mn = min(min(d_prod$OptimalProduction), min(d_prod$Sales))
-plot(d_prod$OptimalProduction, d_prod$Sales, xlab="Optimal production", ylab="Sales", 
-     log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.7)
-abline(a=0,b=1, lty=2)
-
-
-plot(d_prod$Productivity, d_prod$Age/12, xlab="Productivity",ylab="Age (year)",
-     pch=19, cex=0.2, main="Firms")
 abline(h=0)
-abline(v=0.5, lty=2)
 
-dd = d_house[sample(1:nrow(d_house),1000), ]
-plot(dd$Age/12, dd$Productivity,pch=19, cex=0.1, xlab="Age (years)", 
-     ylab="Productivity", ylim=c(0,5), main="Households (sample: 1.000)")
+txt = "Number of Firms"
+mx = max(d_sector$nFirm)
+dd = d_sector %>% filter(Sector==0)
+plot(dd$Time/12, dd$nFirm, col=col[1], type="l", ylim=c(0,1.1*mx), ylab=txt, main=txt, xlab="Year")
+for(i in 2:S)
+{
+  dd = d_sector %>% filter(Sector==i-1)
+  lines(dd$Time/12, dd$nFirm, col=col[i])
+}
+abline(h=0)
+
+
+#d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
+dd = d_sector %>% group_by(Time) %>% summarise(P=mean(Price))
+d_sector2 = merge(dd, d_sector)
+d_sector2$Price = d_sector2$Price / d_sector2$P
+
+txt = "Price"
+mx = max(d_sector2$Price)
+dd = d_sector2 %>% filter(Sector==0)
+plot(dd$Time/12, dd$Price, col=col[1], type="l", ylim=c(0,1.1*mx), ylab=txt, main=txt, xlab="Year")
+for(i in 2:S)
+{
+  dd = d_sector2 %>% filter(Sector==i-1)
+  lines(dd$Time/12, dd$Price, col=col[i])
+}
+abline(h=0)
+
+txt = "ExpSharpeRatio"
+mx = max(d_sector$expSharpeRatio)
+mn = min(d_sector$expSharpeRatio)
+dd = d_sector %>% filter(Sector==0)
+plot(dd$Time/12, dd$expSharpeRatio, col=col[1], type="l", ylim=c(1.2*mn,1.2*mx), ylab=txt, main=txt, xlab="Year")
+for(i in 2:S)
+{
+  dd = d_sector %>% filter(Sector==i-1)
+  lines(dd$Time/12, dd$expSharpeRatio, col=col[i])
+}
+abline(h=0)
+lines(dd$Time/12, dd$expSharpeRatioTotal, lwd=2)
+
+
+
+#-----------------------------------------------
+par(mfrow=c(2,2))
+
+vv = d_house$ConsumptionValue/d_house$ConsumptionBudget
+vv = vv[!is.na(vv)]
+hist(vv, xlab="Actual-Value/Budget", main="Consumption", breaks=50)
+
+infl = exp(diff(log(d$Price)))^12-1
+mx = max(infl)
+mn = min(0,min(infl))
+plot(d$Year[-1], exp(diff(log(d$Price)))^12-1, type="l", ylim=c(mn, 1.1*mx), ylab="", main="Inflation")
+abline(h=0)
+
+
+hist(d_house$Price, breaks=50)
+
+d_h2 = d_house %>% filter(Wage>0)
+hist(d_h2$Wage, breaks=50)
+
+#p = d$Price[nrow(d)]
+#hist(d_house$Price, breaks=50, xlim=c(0.2*p, 1.5*p))
+#abline(v=p, col="red", lwd=2, lty=2)
+
+#w = d$Wage[nrow(d)]
+#d_h2 = d_house %>% filter(Wage>0)
+#hist(d_h2$Wage, breaks=50, xlim=c(0.9*w, 1.1*w))
+#abline(v=w, col="red", lwd=2, lty=2)
+
+
 
 dev.off()
+
+
+#-----------------------------------------------
 
 
 

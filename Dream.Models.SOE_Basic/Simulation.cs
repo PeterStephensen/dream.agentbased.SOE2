@@ -250,24 +250,27 @@ namespace Dream.Models.SOE_Basic
                                 for (int i = 0; i < n; i++)
                                 {
                                     // Random sector
-                                    int sector = _random.Next(_settings.NumberOfSectors);
+                                    int sector = _random.Next(_settings.NumberOfSectors);                                    
                                     _sectorList[sector] += new Firm(sector);
 
                                 }
                             }
                             else
                             {
-                                double kappa = 0.1;
+                                
+                                
+                                double kappa = 0.05;
 
                                 double sum = 0;
                                 for (int i = 0; i < _settings.NumberOfSectors; i++)
-                                    sum += _nFirmNew[i] * Math.Exp(kappa * _statistics.PublicExpectedSharpRatio[i]);
+                                    sum += _nFirmNew[i] * Math.Exp(kappa * (_statistics.PublicExpectedSharpRatio[i] - _statistics.PublicExpectedSharpRatioTotal));
 
                                 for (int i = 0  ; i < _settings.NumberOfSectors; i++)
                                 {
-                                    double d = _nFirmNewTotal * _nFirmNew[i] * Math.Exp(kappa * _statistics.PublicExpectedSharpRatio[i]) / sum;
+                                    double d = _nFirmNewTotal * _nFirmNew[i] * 
+                                        Math.Exp(kappa * (_statistics.PublicExpectedSharpRatio[i] - _statistics.PublicExpectedSharpRatioTotal)) / sum;
                                     _nFirmNew[i] = _random.NextInteger(d);
-                                    for (int j = 0; j < _nFirmNew[i]; j++)
+                                    for (int j = 0; j < (int)_nFirmNew[i]; j++)
                                         _sectorList[i] += new Firm(i);
                                 }
                             }
@@ -333,21 +336,15 @@ namespace Dream.Models.SOE_Basic
             if (_randomFirm[sector] == null)
                 _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
 
-            int nJumpMax = (int)(0.01 * _sectorList[sector].Count);
-            int nJump = 0;
+            int nJumpMax = 10; //(int)(0.01 * _sectorList[sector].Count);
             
             if (_randomFirm[sector] != null)
             {
                 if (_sectorList[sector].Count == 1)
                     return _randomFirm[sector];
-                nJump = _random.Next(nJumpMax) + 1;
+                int nJump = _random.Next(nJumpMax) + 1;
                 _randomFirm[sector] = (Firm)_randomFirm[sector].Jump(nJump);
             }
-
-            int zz = 0;
-            if (_randomFirm[sector] == null)
-                zz = 22;
-
             
             return _randomFirm[sector];
 

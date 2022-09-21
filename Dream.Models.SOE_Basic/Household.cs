@@ -122,7 +122,7 @@ namespace Dream.Models.SOE_Basic
                     break;
 
                 case Event.System.PeriodStart:
-                    bool unemployed = _fired || _w == 0;  // Unemployed if just fired or if wage is zero
+                    bool unemployed = _fired | _w == 0;  // Unemployed if just fired or if wage is zero
                     if (_fired) _fired = false; // Fired only 1 period
 
                     _year = _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
@@ -359,7 +359,6 @@ namespace Dream.Models.SOE_Basic
                 Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
                 firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-                _no++;
                 foreach (Firm f in firms)
                 {
                     if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
@@ -379,6 +378,7 @@ namespace Dream.Models.SOE_Basic
                     }
 
                 }
+                _no++;
                 _vc[sector] = 0;
                 _c[sector] = 0;
 
@@ -416,32 +416,6 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region SearchForShop()
-        void SearchForShop_NEW(int sector)
-        {
-
-            Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
-            //firms = firms.OrderBy(x => x.Price).ToList(); // Order by price. Lowes price first
-
-            Firm f = null;
-            double min_price = double.MaxValue;
-            foreach (Firm ff in firms)
-            {
-                if (ff.Price < min_price)
-                {
-                    f = ff;
-                    min_price = ff.Price;
-                }
-            }
-            
-            
-            if (f != null)
-                _firmShopArray[sector] = f;
-
-            if (_firmShopArray[sector] == null || firms.First().Price < _firmShopArray[sector].Price)
-                _firmShopArray[sector] = firms.First();
-
-        }
-
         void SearchForShop(int sector)
         {
 
