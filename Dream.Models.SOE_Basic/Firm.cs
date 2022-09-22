@@ -198,7 +198,7 @@ namespace Dream.Models.SOE_Basic
                         Write();
 
                     _profit = _p * _sales - _w * _l_primo;
-                    _statistics.Communicate(EStatistics.Profit, _profit);
+                    _statistics.Communicate(EStatistics.Profit, this);
 
                     if (_time.Now > 4)
                         _value = (1 + _statistics.PublicInterestRate) * _value + _profit;

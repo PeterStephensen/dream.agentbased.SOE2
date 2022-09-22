@@ -25,12 +25,12 @@ namespace Dream.Models.SOE_Basic
         public int Sector { get; set; }
         public double Profit { get; set; }
 
-        public FirmInfo(int age, double profit, int sector)
+        public FirmInfo(Firm firm)
         {
-            Age = age;
-            Profit = profit;
-            Sector = sector;
-        }        
+            Age = firm.Age;
+            Sector = firm.Sector;
+            Profit = firm.Profit;
+        }
     }
     
     
@@ -78,6 +78,7 @@ namespace Dream.Models.SOE_Basic
         int _n_laborSupply = 0;   // Measured in heads
         int _n_unemployed = 0;     // Measured in heads
         int _n_couldNotFindSupplier=0;
+        List<FirmInfo> _firmInfo; 
         #endregion
 
         #region Constructor
@@ -175,6 +176,7 @@ namespace Dream.Models.SOE_Basic
                     _totalProfitFromDefaults = 0;
                     _profitPerHousehold = 0;
                     _n_couldNotFindSupplier = 0;
+                    _firmInfo = new List<FirmInfo>();
 
                     //_totalProfit = 0;
                     break;
@@ -511,24 +513,28 @@ namespace Dream.Models.SOE_Basic
                 case EStatistics.FirmCloseNatural:
                     _nFirmCloseNatural++;
                     f = (Firm)o;
+                    _firmInfo.Add(new FirmInfo(f));
                     _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseTooBig:
                     _nFirmCloseTooBig++;
                     f = (Firm)o;
+                    _firmInfo.Add(new FirmInfo(f));
                     _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseNegativeProfit:
                     _nFirmCloseNegativeProfit++;
                     f = (Firm)o;
+                    _firmInfo.Add(new FirmInfo(f));
                     _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseZeroEmployment:
                     _nFirmCloseZeroEmployment++;
                     f = (Firm)o;
+                    _firmInfo.Add(new FirmInfo(f));
                     _totalProfitFromDefaults += f.Profit;
                     return;
 
@@ -537,7 +543,9 @@ namespace Dream.Models.SOE_Basic
                     return;
 
                 case EStatistics.Profit:
-                    _profitPerHousehold += (double)o / _simulation.Households.Count;
+                    f = (Firm)o;
+                    _firmInfo.Add(new FirmInfo(f));
+                    _profitPerHousehold += f.Profit / _simulation.Households.Count;
                     return;
 
                 case EStatistics.FirmNew:

@@ -139,6 +139,14 @@ namespace Dream.Models.SOE_Basic
 
                     if (!unemployed) _yr_employment++;
                    
+                    
+                    if (unemployed) _w = 0;
+                    _no = 0;
+                    _ok = 0;
+                    break;
+
+                case Event.Economics.Update:
+                    // Income calculadet here because PublicProfitPerHousehold is calculated during PeriodStart-event by the Statistics object
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
 
                     #region Not used (Saving)
@@ -161,14 +169,9 @@ namespace Dream.Models.SOE_Basic
 
                     // This overwrites code above *****************************************************
                     _consumption_budget = _income; // **************************************************
-                    
-                    if (unemployed) _w = 0;
-                    _no = 0;
-                    _ok = 0;
-                    break;
 
-                case Event.Economics.Update:
-                    if(_age==_settings.HouseholdPensionAge)
+
+                    if (_age==_settings.HouseholdPensionAge)
                     {
                         if(_firmEmployment != null)
                         {
