@@ -45,7 +45,7 @@ namespace Dream.Models.SOE_Basic
         double[] _employment, _sales, _production;
         double _marketWageTotal = 0;
         double _marketPriceTotal = 0;
-        double _profitPerHousehold, _expProfit, _totalProfitFromDefaults;
+        double _profitPerHousehold, _profitPerHouseholdLag, _expProfit, _totalProfitFromDefaults;
         StreamWriter _fileFirmReport;
         StreamWriter _fileHouseholdReport;
         StreamWriter _fileDBHouseholds;
@@ -78,7 +78,7 @@ namespace Dream.Models.SOE_Basic
         int _n_laborSupply = 0;   // Measured in heads
         int _n_unemployed = 0;     // Measured in heads
         int _n_couldNotFindSupplier=0;
-        List<FirmInfo> _firmInfo; 
+        List<FirmInfo> _firmInfo = new List<FirmInfo>(); 
         #endregion
 
         #region Constructor
@@ -173,8 +173,45 @@ namespace Dream.Models.SOE_Basic
                             _fileDBStatistics.Close();
                     }
 
-                    _totalProfitFromDefaults = 0;
+                    //Calculate Profit Per Household and Sharpe Ratios
                     _profitPerHousehold = 0;
+                    double discountedProfitsTotal = 0;
+                    double[] discountedProfits = new double[_settings.NumberOfSectors];
+                    int[] nFirms = new int[_settings.NumberOfSectors];
+                    foreach (var fi in _firmInfo)
+                    {
+                        _profitPerHousehold += fi.Profit;
+                        discountedProfitsTotal += fi.Profit / Math.Pow(1 + _interestRate, fi.Age); 
+                        discountedProfits[fi.Sector] += fi.Profit / Math.Pow(1 + _interestRate, fi.Age);
+                        nFirms[fi.Sector]++; 
+                    }
+
+                    _profitPerHousehold /= _simulation.Households.Count;
+                    double dpTotal = discountedProfitsTotal / _firmInfo.Count;
+                    double[] dp = new double[_settings.NumberOfSectors];
+                    for (int i = 0; i < _settings.NumberOfSectors; i++)  dp[i] /= nFirms[i];
+
+                    _sigmaRiskTotal = 0;
+                    for (int i = 0; i < _settings.NumberOfSectors; i++) _sigmaRisk[i] = 0;
+
+                    foreach (var fi in _firmInfo)
+                    {
+                        _sigmaRiskTotal += Math.Pow(fi.Profit / Math.Pow(1 + _interestRate, fi.Age) - dp[fi.Sector], 2);
+                        _sigmaRisk[fi.Sector] += Math.Pow(fi.Profit / Math.Pow(1 + _interestRate, fi.Age) - dp[fi.Sector], 2);
+                    }
+
+                    _sharpeRatioTotal = _sigmaRiskTotal > 0 ? dpTotal / _sigmaRiskTotal : 0;
+                    _expSharpeRatioTotal = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatioTotal + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatioTotal;
+
+                    for (int i = 0; i < _settings.NumberOfSectors; i++)
+                    {
+                        _sharpeRatio[i] = _sigmaRisk[i] > 0 ? dp[i] / _sigmaRisk[i] : 0;
+                        _expSharpeRatio[i] = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatio[i] + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatio[i];
+                    }
+
+
+                    //_totalProfitFromDefaults = 0;
+                    //_profitPerHousehold = 0;
                     _n_couldNotFindSupplier = 0;
                     _firmInfo = new List<FirmInfo>();
 
@@ -186,14 +223,14 @@ namespace Dream.Models.SOE_Basic
                         Write();
 
                     // Profit income to households. What comes from defaults and deaths during Update
-                    _profitPerHousehold += _totalProfitFromDefaults / _simulation.Households.Count;  
+                    //_profitPerHousehold += _totalProfitFromDefaults / _simulation.Households.Count;  
 
                     double totalRevenues = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
                     {
                         double meanWage = 0;
                         double meanPrice = 0;
-                        double discountedProfits = 0;
+                        //double discountedProfits = 0;
                         _employment[i] = 0;
                         _sales[i] = 0;
 
@@ -205,7 +242,7 @@ namespace Dream.Models.SOE_Basic
                             _sales[i] += f.Sales;
                             totalRevenues += f.Price * f.Sales;
                             _production[i] += f.Production;
-                            discountedProfits += f.Profit / Math.Pow(1 + _interestRate, f.Age);
+                            //discountedProfits += f.Profit / Math.Pow(1 + _interestRate, f.Age);
                         }
                         
                         if (meanWage > 0)
@@ -214,16 +251,16 @@ namespace Dream.Models.SOE_Basic
                         if (meanPrice > 0 & _sales[i] > 0)
                             _marketPrice[i] = meanPrice / _sales[i];
 
-                        // Calculate Sharpe Ratio
-                        double m_pi0 = discountedProfits / _simulation.Sector(i).Count;
+                        //// Calculate Sharpe Ratio
+                        //double m_pi0 = discountedProfits / _simulation.Sector(i).Count;
                         
-                        _sigmaRisk[i] = 0;
-                        foreach (Firm f in _simulation.Sector(i))
-                            _sigmaRisk[i] += Math.Pow(f.Profit / Math.Pow(1 + _interestRate, f.Age) - m_pi0, 2);
-                        _sigmaRisk[i] = Math.Sqrt(_sigmaRisk[i] / _simulation.Sector(i).Count);
-                        _sharpeRatio[i] = _sigmaRisk[i] > 0 ? m_pi0 / _sigmaRisk[i] : 0;
+                        //_sigmaRisk[i] = 0;
+                        //foreach (Firm f in _simulation.Sector(i))
+                        //    _sigmaRisk[i] += Math.Pow(f.Profit / Math.Pow(1 + _interestRate, f.Age) - m_pi0, 2);
+                        //_sigmaRisk[i] = Math.Sqrt(_sigmaRisk[i] / _simulation.Sector(i).Count);
+                        //_sharpeRatio[i] = _sigmaRisk[i] > 0 ? m_pi0 / _sigmaRisk[i] : 0;
 
-                        _expSharpeRatio[i] = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatio[i] + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatio[i];
+                        //_expSharpeRatio[i] = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatio[i] + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatio[i];
 
                     }
                     
@@ -514,38 +551,33 @@ namespace Dream.Models.SOE_Basic
                     _nFirmCloseNatural++;
                     f = (Firm)o;
                     _firmInfo.Add(new FirmInfo(f));
-                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseTooBig:
                     _nFirmCloseTooBig++;
                     f = (Firm)o;
                     _firmInfo.Add(new FirmInfo(f));
-                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseNegativeProfit:
                     _nFirmCloseNegativeProfit++;
                     f = (Firm)o;
                     _firmInfo.Add(new FirmInfo(f));
-                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.FirmCloseZeroEmployment:
                     _nFirmCloseZeroEmployment++;
                     f = (Firm)o;
                     _firmInfo.Add(new FirmInfo(f));
-                    _totalProfitFromDefaults += f.Profit;
                     return;
 
                 case EStatistics.Death:
-                    _totalProfitFromDefaults += (double)o;
+                    //_totalProfitFromDefaults += (double)o;
                     return;
 
                 case EStatistics.Profit:
                     f = (Firm)o;
                     _firmInfo.Add(new FirmInfo(f));
-                    _profitPerHousehold += f.Profit / _simulation.Households.Count;
                     return;
 
                 case EStatistics.FirmNew:
