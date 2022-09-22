@@ -15,6 +15,25 @@ using Dream.IO;
 
 namespace Dream.Models.SOE_Basic
 {
+
+    /// <summary>
+    /// This class contains information to the Statistics object
+    /// </summary>
+    public class FirmInfo
+    {
+        public int Age { get; set; }
+        public int Sector { get; set; }
+        public double Profit { get; set; }
+
+        public FirmInfo(int age, double profit, int sector)
+        {
+            Age = age;
+            Profit = profit;
+            Sector = sector;
+        }        
+    }
+    
+    
     public class Statistics : Agent
     {
 

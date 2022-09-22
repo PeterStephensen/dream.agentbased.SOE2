@@ -264,6 +264,10 @@ namespace Dream.Models.SOE_Basic
             _consumption_value = 0;
             for (int s = 0; s < _settings.NumberOfSectors; s++)
             {
+                int zz = 0;
+                if (_time.Now > 12 * 30)
+                    zz = 22;
+
                 BuyFromShop(s);
                 _consumption_value += _vc[s];
                 
@@ -283,23 +287,23 @@ namespace Dream.Models.SOE_Basic
            
             if (_budget[sector] < 0)
             {
-                _vc[sector] = 0;
                 _c[sector] = 0;
+                _vc[sector] = 0;
                 return;
             }
 
             _ok++;
             if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, _budget[sector] / _firmShopArray[sector].Price) == ECommunicate.Yes)
             {
-                _vc[sector] = _budget[sector];
                 _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
+                _vc[sector] = _budget[sector];
                 return;
             }
             else
             {
                 double c = (double)_firmShopArray[sector].ReturnObject;
-                _vc[sector] = _firmShopArray[sector].Price * c;
                 _c[sector] = c;
+                _vc[sector] = _firmShopArray[sector].Price * c;
                 _budget[sector] -= _firmShopArray[sector].Price * c;
 
                 Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
@@ -335,7 +339,7 @@ namespace Dream.Models.SOE_Basic
                 //_vc[sector] = 0;
                 //_c[sector] = 0;
 
-                _statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //_statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
                 return;
 

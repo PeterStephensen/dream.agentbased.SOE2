@@ -51,7 +51,7 @@ for(i in 1:n)
   if(nrow(dr)<2)
     next
   
-  if(T)
+  if(F)
   {
     if(dr$Productivity[1] < 0.8)
       next

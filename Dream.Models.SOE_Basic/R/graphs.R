@@ -93,8 +93,8 @@ n_households = last(d$n_Households)
 n_firms = n_households/l_bar
 
 mx = max(d$ProfitPerHousehold)
-plot(d$Year, d$ProfitPerHousehold, main="Profit Per Household", xlab = "year", ylab="", 
-     type="l", xlim=c(y0,mx_yr), ylim=c(0,mx), cex.main=0.8)
+plot(d$Year, d$ProfitPerHousehold * d$n_Households, main="Profit Per Household", xlab = "year", ylab="", 
+     type="l", xlim=c(y0,mx_yr), cex.main=0.8) #ylim=c(0,mx), 
 abline(h=0)
 abline(v=burnIn, lty=2)
 
