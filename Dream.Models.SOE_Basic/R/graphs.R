@@ -394,6 +394,7 @@ lines(dd$Time/12, dd$expSharpeRatioTotal, lwd=2)
 
 
 
+
 #-----------------------------------------------
 par(mfrow=c(2,2))
 

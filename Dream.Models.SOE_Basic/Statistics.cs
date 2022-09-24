@@ -173,6 +173,8 @@ namespace Dream.Models.SOE_Basic
                             _fileDBStatistics.Close();
                     }
 
+
+
                     //Calculate Profit Per Household and Sharpe Ratios
                     _profitPerHousehold = 0;
                     double discountedProfitsTotal = 0;
@@ -187,18 +189,24 @@ namespace Dream.Models.SOE_Basic
                     }
 
                     _profitPerHousehold /= _simulation.Households.Count;
+                    
                     double dpTotal = discountedProfitsTotal / _firmInfo.Count;
+                    
                     double[] dp = new double[_settings.NumberOfSectors];
-                    for (int i = 0; i < _settings.NumberOfSectors; i++)  dp[i] /= nFirms[i];
+                    for (int i = 0; i < _settings.NumberOfSectors; i++) dp[i] = discountedProfits[i] / nFirms[i];
+
+
 
                     _sigmaRiskTotal = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++) _sigmaRisk[i] = 0;
-
                     foreach (var fi in _firmInfo)
                     {
-                        _sigmaRiskTotal += Math.Pow(fi.Profit / Math.Pow(1 + _interestRate, fi.Age) - dp[fi.Sector], 2);
+                        _sigmaRiskTotal += Math.Pow(fi.Profit / Math.Pow(1 + _interestRate, fi.Age) - dpTotal, 2);
                         _sigmaRisk[fi.Sector] += Math.Pow(fi.Profit / Math.Pow(1 + _interestRate, fi.Age) - dp[fi.Sector], 2);
                     }
+
+                    _sigmaRiskTotal = Math.Sqrt(_sigmaRiskTotal / _firmInfo.Count);
+                    for (int i = 0; i < _settings.NumberOfSectors; i++) _sigmaRisk[i] = Math.Sqrt(_sigmaRisk[i] / nFirms[i]);
 
                     _sharpeRatioTotal = _sigmaRiskTotal > 0 ? dpTotal / _sigmaRiskTotal : 0;
                     _expSharpeRatioTotal = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatioTotal + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatioTotal;
@@ -209,6 +217,9 @@ namespace Dream.Models.SOE_Basic
                         _expSharpeRatio[i] = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatio[i] + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatio[i];
                     }
 
+                    //int z = 0;
+                    //if (_time.Now > 12 * 30)
+                    //    z++;
 
                     //_totalProfitFromDefaults = 0;
                     //_profitPerHousehold = 0;
@@ -307,17 +318,17 @@ namespace Dream.Models.SOE_Basic
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
                         n_firms += _simulation.Sector(i).Count;
 
-                    double m_pi = _discountedProfits /n_firms;
-                    _sigmaRiskTotal = 0;
+                    //double m_pi = _discountedProfits /n_firms;
+                    //_sigmaRiskTotal = 0;
 
-                    for (int i = 0; i < _settings.NumberOfSectors; i++)
-                        foreach (Firm f in _simulation.Sector(i))
-                            _sigmaRiskTotal += Math.Pow(f.Profit / Math.Pow(1 + _interestRate, f.Age) - m_pi, 2);
-                    _sigmaRiskTotal = Math.Sqrt(_sigmaRiskTotal / n_firms);
-                    _sharpeRatioTotal = _sigmaRiskTotal > 0 ? m_pi / _sigmaRiskTotal : 0;
+                    //for (int i = 0; i < _settings.NumberOfSectors; i++)
+                    //    foreach (Firm f in _simulation.Sector(i))
+                    //        _sigmaRiskTotal += Math.Pow(f.Profit / Math.Pow(1 + _interestRate, f.Age) - m_pi, 2);
+                    //_sigmaRiskTotal = Math.Sqrt(_sigmaRiskTotal / n_firms);
+                    //_sharpeRatioTotal = _sigmaRiskTotal > 0 ? m_pi / _sigmaRiskTotal : 0;
 
                     _expDiscountedProfits = 0.99 * _expDiscountedProfits + (1 - 0.99) * _discountedProfits; // Bruges ikke
-                    _expSharpeRatioTotal = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatioTotal + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatioTotal;
+                    //_expSharpeRatioTotal = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatioTotal + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatioTotal;
                     mean_age /= n_firms;
                     _meanValue /= n_firms;
                     //_expProfit = totProfit / n_firms;

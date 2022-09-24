@@ -52,8 +52,9 @@ namespace Dream.Models.SOE_Basic
         double _l_price;
         double _b_price=0;
         int _ok, _no;
-        object _object;
+        object _returnObject;
         bool _open = false;
+        double _wageSavedDeath = 0; 
         #endregion
 
         #region Constructors
@@ -144,6 +145,7 @@ namespace Dream.Models.SOE_Basic
                     _jobQuitters = 0;
                     _sales = 0;
                     _potentialSales = 0;
+                    _wageSavedDeath = 0;
                     _no = 0;
                     _ok = 0;
 
@@ -161,7 +163,6 @@ namespace Dream.Models.SOE_Basic
                 case Event.Economics.Update:
                     // Default
                     if (_time.Now > _settings.FirmDefaultStart)  // 12*5
-                    {
                         if (_time.Now > _settings.BurnInPeriod1)  //2030
                             if(_age > _settings.FirmStartupPeriod)  //6
                                 if (_profit_optimal <= 0 | _employed.Count==0) 
@@ -170,7 +171,6 @@ namespace Dream.Models.SOE_Basic
                                         CloseFirm(EStatistics.FirmCloseZeroEmployment);
                                         break;
                                     }
-                    }
 
                     if(_random.NextEvent(_settings.FirmDefaultProbability))
                     {
@@ -196,8 +196,8 @@ namespace Dream.Models.SOE_Basic
                 case Event.System.PeriodEnd:
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
-
-                    _profit = _p * _sales - _w * _l_primo;
+                    
+                    _profit = _p * _sales - _w * _l_primo + _wageSavedDeath;
                     _statistics.Communicate(EStatistics.Profit, this);
 
                     if (_time.Now > 4)
@@ -219,14 +219,15 @@ namespace Dream.Models.SOE_Basic
         #region Communicate
         public ECommunicate Communicate(ECommunicate comID, object o)
         {
-            _object = null;
+            _returnObject = null;
+            Household h = null;
             switch (comID)
             {
                 case ECommunicate.JobApplication:
                     _jobApplications++;
                     if (_vacancies>0)
                     {
-                        var h = (Household)o;
+                        h = (Household)o;
                         _employed.Add(h);
                         _vacancies -= h.Productivity;
                         _vacancies = _vacancies < 0 ? 0 : _vacancies;
@@ -237,6 +238,13 @@ namespace Dream.Models.SOE_Basic
                 case ECommunicate.IQuit:
                     _jobQuitters++;
                     _employed.Remove((Household)o);
+                    return ECommunicate.Ok;
+
+                case ECommunicate.Death:
+                    _jobQuitters++;
+                    h = (Household)o;
+                    _wageSavedDeath += _w * h.Productivity;
+                    _employed.Remove(h);
                     return ECommunicate.Ok;
 
                 case ECommunicate.CanIBuy:
@@ -250,7 +258,7 @@ namespace Dream.Models.SOE_Basic
                     }
                     else
                     {
-                        _object = _y_primo - _sales;
+                        _returnObject = _y_primo - _sales;
                         _sales = _y_primo;
                         _no++;
                         return ECommunicate.No;
@@ -389,7 +397,7 @@ namespace Dream.Models.SOE_Basic
                             markdownSensitivity = _settings.FirmPriceMarkdownSensitivityInZone;
                         }
 
-                        if (_expSales < _y_optimal)
+                        if (_expSales < 0.85*_y_optimal)
                         //if (_expPotentialSales < _y_optimal)
                         //if (_expPotentialSales < _y_primo)
                         {
@@ -517,7 +525,7 @@ namespace Dream.Models.SOE_Basic
         #region CloseFirm()
         void CloseFirm(EStatistics s)
         {
-            _profit = _p * _sales - _w * _l_primo;
+            _profit = _p * _sales - _w * _l_primo + _wageSavedDeath;
 
             // Fire eveybody
             foreach (Household h in _employed)
@@ -548,7 +556,7 @@ namespace Dream.Models.SOE_Basic
         }
         public object ReturnObject
         {
-            get { return _object; }
+            get { return _returnObject; }
         }
         public double Productivity
         {

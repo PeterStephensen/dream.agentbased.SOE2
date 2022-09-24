@@ -35,7 +35,7 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.01; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            double mark = 0.02; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             double sens = 1/0.15;
 
             // Wage ----------------------------------
@@ -116,7 +116,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsInitialMarketWage = 0.2;   //1.0 
             settings.StatisticsInitialInterestRate = Math.Pow(1 + 0.05, 1.0 / 12) - 1; // 5% p.a.
 
-            settings.StatisticsFirmReportSampleSize = 0.015;
+            settings.StatisticsFirmReportSampleSize = 0.05;
             settings.StatisticsHouseholdReportSampleSize = 0.001;
 
             settings.StatisticsExpectedSharpeRatioSmooth = 0.7;

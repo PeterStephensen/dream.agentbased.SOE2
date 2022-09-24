@@ -271,7 +271,11 @@ namespace Dream.AgentClass
             for (int i = 0; i < n; i++)
             {
                 if (a._next == null)
+                {
+                    //_parent.RandomizeAgents();
+                    //a = _parent.FirstAgent;
                     a = first;
+                }
                 else
                     a = a._next;
             }

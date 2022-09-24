@@ -81,7 +81,7 @@ De følgende objekter er maskerede fra 'package:base':
 +   if(nrow(dr)<2)
 +     next
 +   
-+   if(T)
++   if(F)
 +   {
 +     if(dr$Productivity[1] < 0.8)
 +       next
@@ -199,4 +199,4 @@ pdf
 > 
 > proc.time()
   bruger   system forløbet 
-    5.76     0.17     7.17 
+   19.50     0.26    20.76 

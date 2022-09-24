@@ -256,24 +256,27 @@ namespace Dream.Models.SOE_Basic
 
                                 }
                             }
-                            else
+                            else  // If multiple sectors
                             {
-                                
-                                
-                                double kappa = 0.05;
+
+                                //int z = 0;
+                                //if (_time.Now > 12 * 30)
+                                //        z++;
+
+                                double kappa = 0.5;
 
                                 double sum = 0;
                                 for (int i = 0; i < _settings.NumberOfSectors; i++)
                                     sum += _nFirmNew[i] * Math.Exp(kappa * (_statistics.PublicExpectedSharpRatio[i] - _statistics.PublicExpectedSharpRatioTotal));
 
-                                for (int i = 0  ; i < _settings.NumberOfSectors; i++)
+                                for (int i = 0; i < _settings.NumberOfSectors; i++)
                                 {
-                                    double d = _nFirmNewTotal * _nFirmNew[i] * 
+                                    double d = _nFirmNewTotal * _nFirmNew[i] *
                                         Math.Exp(kappa * (_statistics.PublicExpectedSharpRatio[i] - _statistics.PublicExpectedSharpRatioTotal)) / sum;
                                     _nFirmNew[i] = _random.NextInteger(d);
                                     for (int j = 0; j < (int)_nFirmNew[i]; j++)
                                         _sectorList[i] += new Firm(i);
-                                }
+                                }                               
                             }
                         }
                     }                   

@@ -16,6 +16,7 @@ namespace Dream.Models.SOE_Basic
         YouAreFired,
         JobApplication,
         IQuit,
+        Death,
         CanIBuy,
         Inheritance,
         Statistics,

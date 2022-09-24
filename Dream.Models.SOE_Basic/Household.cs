@@ -208,7 +208,7 @@ namespace Dream.Models.SOE_Basic
                     {
                         if (_firmEmployment != null)
                         {
-                            _firmEmployment.Communicate(ECommunicate.IQuit, this);
+                            _firmEmployment.Communicate(ECommunicate.Death, this);
                             _statistics.Communicate(EStatistics.Death, _w * _productivity); // Wage earned this period
                         }
 
