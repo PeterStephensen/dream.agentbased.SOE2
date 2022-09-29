@@ -164,15 +164,24 @@ namespace Dream.Models.SOE_Basic
                     // Default
                     if (_time.Now > _settings.FirmDefaultStart)  // 12*5
                         if (_time.Now > _settings.BurnInPeriod1)  //2030
-                            if(_age > _settings.FirmStartupPeriod)  //6
-                                if (_profit_optimal <= 0 | _employed.Count==0) 
+                            if (_age > _settings.FirmStartupPeriod)  //6
+                            {
+                                if (_profit_optimal <= 0 | _employed.Count == 0)
                                     if (_random.NextEvent(_settings.FirmDefaultProbabilityNegativeProfit)) //0.5
                                     {
                                         CloseFirm(EStatistics.FirmCloseZeroEmployment);
                                         break;
                                     }
+                                //if (_profit < 0 & _age>12*10)
+                                //    if (_random.NextEvent(0.5)) 
+                                //    {
+                                //        CloseFirm(EStatistics.FirmCloseZeroEmployment);
+                                //        break;
+                                //    }
 
-                    if(_random.NextEvent(_settings.FirmDefaultProbability))
+                            }
+
+                    if (_random.NextEvent(_settings.FirmDefaultProbability))
                     {
                         CloseFirm(EStatistics.FirmCloseNatural);
                         break;
@@ -397,22 +406,24 @@ namespace Dream.Models.SOE_Basic
                             markdownSensitivity = _settings.FirmPriceMarkdownSensitivityInZone;
                         }
 
-                        if (_expSales < 0.85*_y_optimal)
-                        //if (_expPotentialSales < _y_optimal)
-                        //if (_expPotentialSales < _y_primo)
+                        //if (_expSales < _y_optimal)
+                        if (_expSales < _y_primo)
                         {
-                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_primo - _expPotentialSales) / _y_primo);
-                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expPotentialSales) / _y_optimal);
-                            double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
+                            //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
+                            double g = markdown * PriceFunc(markdownSensitivity * (_y_primo - _expSales) / _y_primo);
                             p_target = (1 - g) * _expPrice;
                         }
-                        //else
-                        else if (_expPotentialSales > _y_optimal)
-                        //if (_expPotentialSales > _y_optimal)
+                        else if (_expPotentialSales > _y_primo)
                         {
-                            double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _y_optimal) / _y_optimal);
+                            double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _y_primo) / _y_primo);
                             p_target = (1 + g) * _expPrice;
                         }
+                        //else if (_expPotentialSales > _y_optimal)
+                        //{
+                        //    double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _y_optimal) / _y_optimal);
+                        //    p_target = (1 + g) * _expPrice;
+                        //}
+
                     }
                 }
 
@@ -442,7 +453,8 @@ namespace Dream.Models.SOE_Basic
             double avr_prod = 1.0;
             if(_employed.Count>0) avr_prod = l / _employed.Count;
             _expAvrProd = _settings.FirmExpectationSmooth * _expAvrProd + (1 - _settings.FirmExpectationSmooth) * avr_prod;
-            //_expAvrProd = avr_prod;
+            //_expAvrProd = 1.0;
+            _expAvrProd = avr_prod;
 
             _vacancies = 0;
             if (_l_optimal > l)
@@ -480,13 +492,24 @@ namespace Dream.Models.SOE_Basic
                 double w_target = _expWage;
                 //_w = _expWage;
 
-                //if(_age > _settings.FirmStartupPeriod)
+                //if (_expApplications * _expAvrProd < _vacancies + _expQuitters * _expAvrProd)
+                //{
+                //    double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd) / _l_optimal);// _employed.Count);
+                //    w_target = (1 + g) * _expWage;
+                //}
+                //else
+                //{
+                //    double g = markdown * PriceFunc(markdownSensitivity * (_expApplications * _expAvrProd - _vacancies - _expQuitters * _expAvrProd) / _l_optimal);// _employed.Count);
+                //    w_target = (1 + g) * _expWage;
+                //}
+
+
                 if (_vacancies > 0)
                 {
                     if (_expApplications * _expAvrProd < _vacancies + _expQuitters * _expAvrProd)
                     {
                         double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd) / _l_optimal);// _employed.Count);
-                        //double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd));// _employed.Count);
+                        //double g = markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd) / _l_optimal;
                         w_target = (1 + g) * _expWage;
                     }
                 }
@@ -495,7 +518,7 @@ namespace Dream.Models.SOE_Basic
                     if (_expApplications > _expQuitters)
                     {
                         double g = markdown * PriceFunc(markdownSensitivity * (_expApplications * _expAvrProd - _expQuitters * _expAvrProd) / _l_optimal);// _employed.Count);
-                        //double g = markdown * PriceFunc(markdownSensitivity * (_expApplications - _expQuitters) / _l_optimal);// _employed.Count);
+                        //double g = markdownSensitivity * (_expApplications * _expAvrProd - _expQuitters * _expAvrProd) / _l_optimal;
                         w_target = (1 - g) * _expWage;
                     }
                 }

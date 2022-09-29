@@ -186,9 +186,9 @@ namespace Dream.Models.SOE_Basic
 
                 case Event.System.PeriodStart:
                     _statistics.Communicate(EStatistics.FirmNew, _nFirmNewTotal);
-                    int n_firms = 0;
-                    foreach (Agent fs in _sectors)
-                        n_firms += fs.Count;
+                    //int n_firms = 0;
+                    //foreach (Agent fs in _sectors)
+                    //    n_firms += fs.Count;
                     
                     //Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}\t{5:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
                     //    n_firms, _households.Count, _statistics.PublicMarketWageTotal, _statistics.PublicMarketPriceTotal, 
@@ -258,7 +258,6 @@ namespace Dream.Models.SOE_Basic
                             }
                             else  // If multiple sectors
                             {
-
                                 //int z = 0;
                                 //if (_time.Now > 12 * 30)
                                 //        z++;
@@ -337,6 +336,11 @@ namespace Dream.Models.SOE_Basic
         #region GetRandomFirm
         public Firm GetRandomOpenFirm(int sector)
         {
+
+            if (_time.Now < _settings.BurnInPeriod2)
+                return GetRandomFirm(sector);  // HACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            
+            
             Firm f=null;
             bool open = false;
             int i = 0;
@@ -346,7 +350,7 @@ namespace Dream.Models.SOE_Basic
                 open = f.Open;
                 i++;
                 if (i > 1000)
-                    throw new Exception("No open firms");   
+                    throw new Exception("No open firms");
             }
 
             return f;
@@ -400,6 +404,16 @@ namespace Dream.Models.SOE_Basic
             Firm[] lst = new Firm[n];
             for (int i = 0; i < n; i++)
                 lst[i] = GetRandomFirm(sector);
+
+            return lst;
+        }
+        public Firm[] GetRandomOpenFirms(int n, int sector)
+        {
+            if (n < 1) return null;
+
+            Firm[] lst = new Firm[n];
+            for (int i = 0; i < n; i++)
+                lst[i] = GetRandomOpenFirm(sector);
 
             return lst;
         }

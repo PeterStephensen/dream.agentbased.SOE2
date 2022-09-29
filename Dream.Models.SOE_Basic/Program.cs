@@ -35,7 +35,7 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.02; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            double mark = 0.05; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             double sens = 1/0.15;
 
             // Wage ----------------------------------
@@ -75,14 +75,14 @@ namespace Dream.Models.SOE_Basic
             settings.FirmComfortZoneSales = 0.15;
 
             //-----
-            settings.FirmDefaultProbabilityNegativeProfit = 0.5;  // Vigtig for kriser !!!!!!!!!!!!!!!!!!
+            settings.FirmDefaultProbabilityNegativeProfit = 0.5;  
             settings.FirmDefaultStart = 12 * 5;
             settings.FirmNegativeProfitOkAge = 12 * 2;
 
             settings.FirmExpectationSmooth = 0.4;
             settings.FirmMaxEmployment = 1000;  // 700
 
-            settings.FirmVacanciesShare = 0.5;
+            settings.FirmVacanciesShare = 0.1;
             settings.FirmMinRemainingVacancies = 5;
 
             settings.FirmProfitLimitZeroPeriod = (2040 - 2014) * 12;
@@ -90,11 +90,11 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProductivityGrowth = 0.02;
 
             // Households
-            settings.HouseholdNumberFirmsSearchJob = 15;     // Try 20!
-            settings.HouseholdNumberFirmsSearchShop = 15;    //----------------------- 
+            settings.HouseholdNumberFirmsSearchJob = 15;     // 15  
+            settings.HouseholdNumberFirmsSearchShop = 75;    // 15 
             settings.HouseholdProbabilityQuitJob = 0.01;
-            settings.HouseholdProbabilitySearchForJob = 0.01;                        
-            settings.HouseholdProbabilitySearchForShop = 0.1;                          // MEGET LAV???!!!
+            settings.HouseholdProbabilitySearchForJob = 0.25;                        
+            settings.HouseholdProbabilitySearchForShop = 0.25;                          // MEGET LAV???!!!
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
             settings.HouseholdProductivityErrorSigma = 0.02;
@@ -103,16 +103,16 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdDisSaveRateUnemployed = 0.05;
             settings.HouseholdSaveRate = 0.01;
             settings.NumberOfInheritors = 5;
-            settings.HouseholdMaxNumberShops = 15; // When your supplier can not deliver: how many to seach for
+            settings.HouseholdMaxNumberShops = 15; // 5 When your supplier can not deliver: how many to seach for
 
             settings.HouseholdPensionAge = 67 * 12;
             settings.HouseholdStartAge = 18 * 12;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.15*0.5;   // 0.05    5.0....Try 30 !!!!!!            
+            settings.InvestorProfitSensitivity = 0.15;   // 0.05    5.0....Try 30 !!!!!!            
 
             // Statistics
-            settings.StatisticsInitialMarketPrice = 1.0;  //2.0
+            settings.StatisticsInitialMarketPrice = 1.2;  //2.0
             settings.StatisticsInitialMarketWage = 0.2;   //1.0 
             settings.StatisticsInitialInterestRate = Math.Pow(1 + 0.05, 1.0 / 12) - 1; // 5% p.a.
 
@@ -154,7 +154,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 12 * 1;
             
-            settings.StatisticsGraphicsStartPeriod = 12 * 70;   // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            settings.StatisticsGraphicsStartPeriod = 12 * 70;   // 70
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 
@@ -174,7 +174,6 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsWritePeriode = (2075 - 2014) * 12;
 
             // !!!!! Remember some settings are changed in Simulation after BurnIn1 !!!!!
-
             //settings.BurnInPeriod1 = 1;
             ////settings.BurnInPeriod2 = 112 * 5;
             //settings.FirmProfitLimitZeroPeriod = 1;

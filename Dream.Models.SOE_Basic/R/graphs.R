@@ -331,6 +331,16 @@ abline(h=0)
 dd = d_house[sample(1:nrow(d_house),1000), ]
 plot(dd$Age/12, dd$Productivity,pch=19, cex=0.1, xlab="Age (years)", ylab="Productivity", ylim=c(0,5))
 
+mx = max(d$PotensialSales)
+plot(d$Year, d$PotensialSales, main="Potensial sales (Red: Actual sales)", xlab = "year", ylab="Potensial sales", 
+     type="l", xlim=c(y0,mx_yr), ylim=c(0,1.1*mx), cex.main=0.8)
+lines(d$Year, d$Sales, col="red")
+#abline(h=n_households, lty=2)
+abline(v=burnIn, lty=2)
+abline(h=0)
+
+
+
 
 
 #-----------------------------------------------

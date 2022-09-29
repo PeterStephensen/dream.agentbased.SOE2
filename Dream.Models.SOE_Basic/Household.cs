@@ -284,7 +284,7 @@ namespace Dream.Models.SOE_Basic
         void BuyFromShop(int sector)
         {
             if (_firmShopArray[sector] == null)
-                _firmShopArray[sector] = _simulation.GetRandomFirm(sector); //SearchForShop ???????????????????????
+                _firmShopArray[sector] = _simulation.GetRandomOpenFirm(sector); //SearchForShop ???????????????????????
 
 
            
@@ -309,7 +309,7 @@ namespace Dream.Models.SOE_Basic
                 _vc[sector] = _firmShopArray[sector].Price * c;
                 _budget[sector] -= _firmShopArray[sector].Price * c;
 
-                Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
+                Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdMaxNumberShops, sector);
                 firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 int pos = 0;
@@ -435,7 +435,7 @@ namespace Dream.Models.SOE_Basic
         void SearchForShop(int sector)
         {
 
-            Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
             firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowes price first
 
             if (_firmShopArray[sector] == null || firms.First().Price < _firmShopArray[sector].Price)
