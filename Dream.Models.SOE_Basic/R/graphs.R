@@ -35,6 +35,10 @@ d_house = read.delim(paste0(o_dir,"/data_households.txt"))
 d_prod = read.delim(paste0(o_dir,"/data_firms.txt"))
 d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 
+sum(d_house$ConsumptionValue==0)/nrow(d_house)
+
+
+
 #ddd = d_house %>% filter(ConsumptionValue==0 & ConsumptionBudget>0)
 #ddd = d_house %>% filter(ConsumptionValue>0 & ConsumptionValue<0.0*ConsumptionBudget)
 #hist(ddd$Age/12, breaks=50)
@@ -221,7 +225,8 @@ if(yr>burnIn)
   x_mx = max(dd$nUnemployed/dd$n_Households) 
   y_mx = max(dd$nVacancies/dd$n_Households)
   plot(dd$nUnemployed/dd$n_Households, dd$nVacancies/dd$n_Households, main="Beveridge Curve", 
-       xlab="U-rate", ylab="V-rate", type="p", xlim=c(0,1.1*x_mx), ylim=c(0,1.1*y_mx), pch=19, cex=0.3)
+       xlab="U-rate", ylab="V-rate", type="p", pch=19, cex=0.3)
+#        xlab="U-rate", ylab="V-rate", type="p", xlim=c(0,1.1*x_mx), ylim=c(0,1.1*y_mx), pch=19, cex=0.3)
   abline(h=0,v=0)
   
 }else
@@ -236,7 +241,8 @@ if(yr>burnIn)
   y_mx = max(d$Wage/lag(d$Wage)-1, na.rm = T)
   y_mn = min(d$Wage/lag(d$Wage)-1, na.rm = T)
   plot(dd$nUnemployed/dd$n_Households, dd$Wage/lag(dd$Wage)-1, main="Philips Curve", 
-       xlab="U-rate", ylab="W-growth", type="p", xlim=c(0,1.1*x_mx), ylim=c(1.1*y_mn,1.1*y_mx), pch=19, cex=0.3)
+       xlab="U-rate", ylab="W-growth", type="p", pch=19, cex=0.3)
+#       xlab="U-rate", ylab="W-growth", type="p", xlim=c(0,1.1*x_mx), ylim=c(1.1*y_mn,1.1*y_mx), pch=19, cex=0.3)
   abline(h=0,v=0)
   
 }else

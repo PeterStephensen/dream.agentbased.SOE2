@@ -22,6 +22,7 @@ namespace Dream.Models.SOE_Basic
             settings.NumberOfHouseholdsPerFirm = 5;
             settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
+            settings.HouseholdNumberConsumptionPerPeriod = 4; // Weekly consumption
 
             //Firms
             settings.FirmParetoMinPhi = 0.5;
@@ -35,20 +36,20 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.05; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            double sens = 1/0.15;
+            double mark = 0.15; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            double sens = 1/0.05;
 
             // Wage ----------------------------------
             settings.FirmWageMarkup = 1 * mark;                                            //2  !!!!
-            settings.FirmWageMarkupSensitivity = sens;
+            settings.FirmWageMarkupSensitivity = 0.5 * sens;
             settings.FirmWageMarkdown = 1 * mark;    // 0 is ok
-            settings.FirmWageMarkdownSensitivity = sens;
+            settings.FirmWageMarkdownSensitivity = 0.5 * sens;
 
             // In zone
             settings.FirmWageMarkupInZone = 1 * mark;                                      //2  !!!!
-            settings.FirmWageMarkupSensitivityInZone = sens;
+            settings.FirmWageMarkupSensitivityInZone = 0.5 * sens;
             settings.FirmWageMarkdownInZone = 1 * mark;    // 0 is ok
-            settings.FirmWageMarkdownSensitivityInZone = sens;
+            settings.FirmWageMarkdownSensitivityInZone = 0.5 * sens;
 
             settings.FirmProbabilityRecalculateWage = 0.5;
             settings.FirmProbabilityRecalculateWageInZone = 0.5; // 0.2 
@@ -82,7 +83,7 @@ namespace Dream.Models.SOE_Basic
             settings.FirmExpectationSmooth = 0.4;
             settings.FirmMaxEmployment = 1000;  // 700
 
-            settings.FirmVacanciesShare = 0.1;
+            settings.FirmVacanciesShare = 1.0;
             settings.FirmMinRemainingVacancies = 5;
 
             settings.FirmProfitLimitZeroPeriod = (2040 - 2014) * 12;
@@ -154,7 +155,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 12 * 1;
             
-            settings.StatisticsGraphicsStartPeriod = 12 * 70;   // 70
+            settings.StatisticsGraphicsStartPeriod = 12 * 100;   // 70
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 

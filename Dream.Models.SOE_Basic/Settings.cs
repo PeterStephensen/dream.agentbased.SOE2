@@ -233,6 +233,11 @@ namespace Dream.Models.SOE_Basic
         /// </summary>
         public double HouseholdDisSaveRateUnemployed { get; set; } = 0;
 
+        /// <summary>
+        /// Number of times the household consumes in a period
+        /// </summary>
+        public int HouseholdNumberConsumptionPerPeriod { get; set; } = 1;
+
 
         public int NumberOfInheritors { get; set; } = 1;
 

@@ -174,6 +174,11 @@ namespace Dream.Models.SOE_Basic
                     {
                         this.EventProc(Event.System.PeriodStart);
                         this.EventProc(Event.Economics.Update);
+                        for (int i = 0; i < _settings.HouseholdNumberConsumptionPerPeriod; i++)
+                        {
+                            //Console.WriteLine(i);
+                            _households.EventProc(Event.Economics.Consume);
+                        }
                         this.EventProc(Event.System.PeriodEnd);
                         _households.RandomizeAgents();
                         foreach(Agent firms in _sectors)

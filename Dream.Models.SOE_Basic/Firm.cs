@@ -427,7 +427,7 @@ namespace Dream.Models.SOE_Basic
                     }
                 }
 
-                double a = 0;
+                double a = 0.8;
                 _p = a * _p + (1 - a) * p_target;
 
             }
@@ -523,7 +523,7 @@ namespace Dream.Models.SOE_Basic
                     }
                 }
 
-                double a = 0;
+                double a = 0.8;
                 _w = a * _w + (1 - a) * w_target;
             }
         }
