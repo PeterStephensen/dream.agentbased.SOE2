@@ -7,7 +7,7 @@ set EXE_FILE=..\bin\Release\net6.0\Dream.Models.SOE_Basic.exe
 
 if exist %SCENARIO_DIR% rmdir /q /s %SCENARIO_DIR%
 
-for /l %%i in (1 1 22) do (
+for /l %%i in (1 1 38) do (
 	for /l %%x in (1 1 4) do (
 		echo %%i %%x
 		start %EXE_FILE%

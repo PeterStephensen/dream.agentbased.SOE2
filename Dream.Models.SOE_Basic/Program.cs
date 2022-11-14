@@ -6,7 +6,7 @@ namespace Dream.Models.SOE_Basic
     {
         static void Main(string[] args)
         {
-            RunSimulation(args, false); // Mark saveScenario here!!           
+            RunSimulation(args, true); // Mark saveScenario here!!           
         }   
     
         static void RunSimulation(string[] args, bool saveScenario=false)
@@ -110,7 +110,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdStartAge = 18 * 12;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.15;   // 0.05    5.0....Try 30 !!!!!!            
+            settings.InvestorProfitSensitivity = 0.5;   // 0.15            
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.2;  //2.0
@@ -155,7 +155,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 12 * 1;
             
-            settings.StatisticsGraphicsStartPeriod = 12 * 100;   // 70
+            settings.StatisticsGraphicsStartPeriod = (2080 - 2014) * 12;   // 70
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 
@@ -180,6 +180,45 @@ namespace Dream.Models.SOE_Basic
             //settings.FirmProfitLimitZeroPeriod = 1;
             //settings.FirmDefaultStart = 1;
             //settings.LoadDatabase = true;
+
+            settings.RandomParameters=true;
+            if(settings.RandomParameters)
+            {
+
+                Random rnd = new();
+                settings.InvestorProfitSensitivity = rnd.NextDouble(0.2, 0.8);
+
+                double m = rnd.NextDouble(0.05, 0.25);
+                double s = rnd.NextDouble(5.0, 20);
+                settings.FirmPriceMarkup = m;
+                settings.FirmPriceMarkupInZone = m;
+                settings.FirmPriceMarkupSensitivity = s;
+                settings.FirmPriceMarkupSensitivityInZone = s;
+
+                m = rnd.NextDouble(0.05, 0.25);
+                s = rnd.NextDouble(5.0, 20);
+                settings.FirmPriceMarkdown = m;
+                settings.FirmPriceMarkdownInZone = m;
+                settings.FirmPriceMarkdownSensitivity = s;
+                settings.FirmPriceMarkdownSensitivityInZone = s;
+
+                m = rnd.NextDouble(0.05, 0.25);
+                s = rnd.NextDouble(10, 30);
+                settings.FirmWageMarkup = m;
+                settings.FirmWageMarkupInZone = m;
+                settings.FirmWageMarkupSensitivity = s;
+                settings.FirmWageMarkupSensitivityInZone = s;
+
+                m = rnd.NextDouble(0.05, 0.25);
+                s = rnd.NextDouble(10, 30);
+                settings.FirmWageMarkdown = m;
+                settings.FirmWageMarkdownInZone = m;
+                settings.FirmWageMarkdownSensitivity = s;
+                settings.FirmWageMarkdownSensitivityInZone = s;
+
+            }
+
+
 
             var t0 = DateTime.Now;
 
