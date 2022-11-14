@@ -109,8 +109,9 @@ namespace Dream.Models.SOE_Basic
             _marketWageTotal = _settings.StatisticsInitialMarketWage;
             _interestRate = _settings.StatisticsInitialInterestRate;
 
-            string sJson = JsonSerializer.Serialize(_settings);
-            File.WriteAllText(_settings.ROutputDir + "\\Settings.json", sJson);
+            //var options = new JsonSerializerOptions { WriteIndented = true };
+            //string sJson = JsonSerializer.Serialize(_settings, options);
+            //File.WriteAllText(_settings.ROutputDir + "\\Settings.json", sJson);
 
             if (_settings.LoadDatabase)
             {
@@ -656,13 +657,18 @@ namespace Dream.Models.SOE_Basic
 
             string macroPath = _settings.ROutputDir + "\\macro.txt";
             string sectorsPath = _settings.ROutputDir + "\\sectors.txt";
+            string settingsPath = _settings.ROutputDir + "\\settings.json";
 
             #region Scenario-stuff
             if (_settings.SaveScenario)
             {
-                Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios");
-                Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios\\Macro");
-                Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios\\Sectors");
+                if(_settings.NewScenarioDirs)
+                {
+                    Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios");
+                    Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios\\Macro");
+                    Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios\\Sectors");
+                    Directory.CreateDirectory(_settings.ROutputDir + "\\Scenarios\\Settings");
+                }
 
                 string scnPath = _settings.ROutputDir + "\\scenario_info.txt";
                 if (_settings.Shock == EShock.Nothing) // Base run
@@ -687,6 +693,7 @@ namespace Dream.Models.SOE_Basic
 
                     macroPath = _settings.ROutputDir + "\\Scenarios\\Macro\\base_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
                     sectorsPath = _settings.ROutputDir + "\\Scenarios\\Sectors\\base_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
+                    settingsPath = _settings.ROutputDir + "\\Scenarios\\Settings\\base_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".json";
 
                 }
                 else //Counterfactual
@@ -698,6 +705,7 @@ namespace Dream.Models.SOE_Basic
                     _runName = _settings.Shock.ToString();                                    
                     macroPath = _settings.ROutputDir + "\\Scenarios\\Macro\\count_"  + _runName + "_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
                     sectorsPath = _settings.ROutputDir + "\\Scenarios\\Sectors\\count_" + _runName + "_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".txt";
+                    settingsPath = _settings.ROutputDir + "\\Scenarios\\Settings\\count_" + _runName + "_" + _scenario_id.ToString() + "_" + Environment.MachineName + ".json";
                     Console.WriteLine("{0}: {1}, {2}", _runName, _scenario_id, _simulation.Seed);
 
                 }
@@ -715,6 +723,10 @@ namespace Dream.Models.SOE_Basic
             _fileSectors = File.CreateText(sectorsPath);
             _fileSectors.WriteLine("Scenario\tMachine\tRun\tTime\tSector\tPrice\tWage\tPriceTotal\tWageTotal\tEmployment\tProduction\tSales\tExpShapeRatio\tnFirm");
 
+            if (File.Exists(settingsPath)) File.Delete(settingsPath);
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string sJson = JsonSerializer.Serialize(_settings, options);
+            File.WriteAllText(settingsPath, sJson);
 
 
         }

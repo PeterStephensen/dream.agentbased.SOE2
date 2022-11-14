@@ -309,6 +309,17 @@ namespace Dream.Models.SOE_Basic
         public string ROutputDir { get; set; } = "";
         public string RExe { get; set; } = "";
         public int IDScenario { get; set; } = 0;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool RandomParameters { get; set; } = false;
+
+        /// <summary>
+        /// Delete old scenario folders
+        /// </summary>
+        public bool NewScenarioDirs { get; set; } = true;
+
 
     }
 }

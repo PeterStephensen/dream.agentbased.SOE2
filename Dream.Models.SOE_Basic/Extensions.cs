@@ -61,6 +61,20 @@ namespace Dream.Models.SOE_Basic
         }
         #endregion
 
+        #region NextDouble(min, max)
+        /// <summary>
+        /// Returns a random integer between d_min and d_max
+        /// </summary>
+        /// <param name="random"></param>
+        /// <param name="d_min"></param>
+        /// <param name="d_max"></param>
+        /// <returns></returns>
+        public static double NextDouble(this Random random, double d_min, double d_max)
+        {
+            return d_min + (d_max - d_min) * random.NextDouble();
+        }
+        #endregion
+
         #region NextEvent()
         /// <summary>
         /// Returns true with probablility p
