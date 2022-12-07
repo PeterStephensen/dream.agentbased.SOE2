@@ -46,6 +46,7 @@ namespace Dream.Models.SOE_Basic
         double _marketWageTotal = 0;
         double _marketPriceTotal = 0;
         double _profitPerHousehold, _expProfit;
+        double _avrProductivity = 0;
         StreamWriter _fileFirmReport;
         StreamWriter _fileHouseholdReport;
         StreamWriter _fileDBHouseholds;
@@ -234,6 +235,7 @@ namespace Dream.Models.SOE_Basic
                     // Profit income to households. What comes from defaults and deaths during Update
                     //_profitPerHousehold += _totalProfitFromDefaults / _simulation.Households.Count;  
 
+                    // TWO LOOPS over firms !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     double totalRevenues = 0;
                     for (int i = 0; i < _settings.NumberOfSectors; i++)
                     {
@@ -273,6 +275,7 @@ namespace Dream.Models.SOE_Basic
                     double tot_vacancies = 0;
                     double meanWageTot = 0;
                     double meanPriceTot = 0;
+                    double nEmployment = 0;
                     //double potentialSales = 0;
                     int no = 0;
                     int ok = 0;
@@ -282,6 +285,7 @@ namespace Dream.Models.SOE_Basic
                             meanWageTot += f.Wage * f.Employment;
                             meanPriceTot += f.Price * f.Sales;
                             _totalEmployment += f.Employment;
+                            nEmployment += f.NumberOfEmployed; 
                             _totalSales += f.Sales;
                             _totalPotensialSales += f.PotentialSales;   
                             _totalProduction += f.Production;
@@ -294,6 +298,7 @@ namespace Dream.Models.SOE_Basic
                         }
 
 
+                    _avrProductivity = _totalEmployment / nEmployment;
                     //double firmRejectionRate = (double)no / (no + ok);
                     //double potentilaSalesRate = _totalPotensialSales / _totalSales;
                     // Calculation of profitPerHousehold
@@ -512,8 +517,8 @@ namespace Dream.Models.SOE_Basic
                     _nFirmNew = 0;
 
 
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, consLoss);  //h_rejectionRate
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.####}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, consLoss, _avrProductivity);  //h_rejectionRate
                     break;
 
                 case Event.System.Stop:
@@ -725,9 +730,9 @@ namespace Dream.Models.SOE_Basic
 
             if (File.Exists(settingsPath)) File.Delete(settingsPath);
             var options = new JsonSerializerOptions { WriteIndented = true };
-            string sJson = JsonSerializer.Serialize(_settings, options);
+            string sJson = JsonSerializer.Serialize<Settings>(_settings, options);
             File.WriteAllText(settingsPath, sJson);
-
+            File.WriteAllText(_settings.ROutputDir + "\\last_json.json", sJson);
 
         }
         #endregion
@@ -780,6 +785,10 @@ namespace Dream.Models.SOE_Basic
         public double PublicMeanValue
         {
             get { return _meanValue; }
+        }
+        public double PublicAverageProductivity
+        {
+            get { return _avrProductivity; }
         }
 
         public double PublicExpectedProfitPerFirm

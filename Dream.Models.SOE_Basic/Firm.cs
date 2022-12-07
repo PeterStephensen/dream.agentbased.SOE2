@@ -452,24 +452,29 @@ namespace Dream.Models.SOE_Basic
             double l = CalcEmployment();
             double avr_prod = 1.0;
             if(_employed.Count>0) avr_prod = l / _employed.Count;
-            _expAvrProd = _settings.FirmExpectationSmooth * _expAvrProd + (1 - _settings.FirmExpectationSmooth) * avr_prod;
-            //_expAvrProd = 1.0;
-            _expAvrProd = avr_prod;
+            //_expAvrProd = _settings.FirmExpectationSmooth * _expAvrProd + (1 - _settings.FirmExpectationSmooth) * avr_prod;
+            //_expAvrProd = avr_prod;
+            //_expAvrProd = 1.05;
+            _expAvrProd = _statistics.PublicAverageProductivity;
 
             _vacancies = 0;
-            if (_l_optimal > l)
+            double l_target = _l_optimal;
+            //if(_time.Now>12*50)
+            //    l_target = 1.1 * _l_optimal;
+
+            if (l_target > l)
             {
                 double gamma = _age >= _settings.FirmStartupPeriod ? _settings.FirmVacanciesShare : 1.0; 
                 
-                if(_l_optimal - l <= _settings.FirmMinRemainingVacancies)
-                    _vacancies = _l_optimal - l;
+                if(l_target - l <= _settings.FirmMinRemainingVacancies)
+                    _vacancies = l_target - l;
                 else
-                    _vacancies = gamma * (_l_optimal - l);
+                    _vacancies = gamma * (l_target - l);
             }
 
             _v_primo = _vacancies; // Primo vacancies
 
-            bool inZone = Math.Abs((l - _l_optimal) / _l_optimal) < _settings.FirmComfortZoneEmployment;
+            bool inZone = Math.Abs((l - l_target) / l_target) < _settings.FirmComfortZoneEmployment;
             double probRecalculate = inZone ? _settings.FirmProbabilityRecalculateWageInZone : _settings.FirmProbabilityRecalculateWage;
             
             if (_random.NextEvent(probRecalculate))

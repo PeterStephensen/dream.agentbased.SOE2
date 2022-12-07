@@ -69,6 +69,7 @@ namespace Dream.Models.SOE_Basic
 
                 }
             }
+            _settings.RandomSeed = _seed; // Save the seed in the settings so that it is saved in the json-file 
 
             if (_instance != null)
                 throw new Exception("Simulation object is singleton");

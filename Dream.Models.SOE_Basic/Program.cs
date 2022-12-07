@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Runtime;
+using System.Text.Json;
+using System.IO;
 
 namespace Dream.Models.SOE_Basic
 {
@@ -6,7 +9,7 @@ namespace Dream.Models.SOE_Basic
     {
         static void Main(string[] args)
         {
-            RunSimulation(args, true); // Mark saveScenario here!!           
+            RunSimulation(args, false); // Mark saveScenario here!!           
         }   
     
         static void RunSimulation(string[] args, bool saveScenario=false)
@@ -110,7 +113,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdStartAge = 18 * 12;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.5;   // 0.15            
+            settings.InvestorProfitSensitivity = 0.15;   // 0.15            
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.2;  //2.0
@@ -159,13 +162,6 @@ namespace Dream.Models.SOE_Basic
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 
-            if (args.Length == 1)
-            {
-                //settings.Shock = EShock.Tsunami;
-                //settings.IDScenario = Int32.Parse(args[0]);
-                settings.Shock = (EShock)Int32.Parse(args[0]);
-                settings.ShockPeriod = (2105 - 2014) * 12;
-            }
 
             //settings.RandomSeed = 123;  
             //settings.FirmNumberOfNewFirms = 1;
@@ -185,41 +181,55 @@ namespace Dream.Models.SOE_Basic
             if(settings.RandomParameters)
             {
 
-                Random rnd = new();
-                settings.InvestorProfitSensitivity = rnd.NextDouble(0.2, 0.8);
+                if (args.Length != 1)   // Base-run
+                {
+                    Random rnd = new();
+                    settings.InvestorProfitSensitivity = rnd.NextDouble(0.2, 0.8);
 
-                double m = rnd.NextDouble(0.05, 0.25);
-                double s = rnd.NextDouble(5.0, 20);
-                settings.FirmPriceMarkup = m;
-                settings.FirmPriceMarkupInZone = m;
-                settings.FirmPriceMarkupSensitivity = s;
-                settings.FirmPriceMarkupSensitivityInZone = s;
+                    double m = rnd.NextDouble(0.05, 0.25);
+                    double s = rnd.NextDouble(5.0, 20);
+                    settings.FirmPriceMarkup = m;
+                    settings.FirmPriceMarkupInZone = m;
+                    settings.FirmPriceMarkupSensitivity = s;
+                    settings.FirmPriceMarkupSensitivityInZone = s;
 
-                m = rnd.NextDouble(0.05, 0.25);
-                s = rnd.NextDouble(5.0, 20);
-                settings.FirmPriceMarkdown = m;
-                settings.FirmPriceMarkdownInZone = m;
-                settings.FirmPriceMarkdownSensitivity = s;
-                settings.FirmPriceMarkdownSensitivityInZone = s;
+                    m = rnd.NextDouble(0.05, 0.25);
+                    s = rnd.NextDouble(5.0, 20);
+                    settings.FirmPriceMarkdown = m;
+                    settings.FirmPriceMarkdownInZone = m;
+                    settings.FirmPriceMarkdownSensitivity = s;
+                    settings.FirmPriceMarkdownSensitivityInZone = s;
 
-                m = rnd.NextDouble(0.05, 0.25);
-                s = rnd.NextDouble(10, 30);
-                settings.FirmWageMarkup = m;
-                settings.FirmWageMarkupInZone = m;
-                settings.FirmWageMarkupSensitivity = s;
-                settings.FirmWageMarkupSensitivityInZone = s;
+                    m = rnd.NextDouble(0.05, 0.25);
+                    s = rnd.NextDouble(10, 30);
+                    settings.FirmWageMarkup = m;
+                    settings.FirmWageMarkupInZone = m;
+                    settings.FirmWageMarkupSensitivity = s;
+                    settings.FirmWageMarkupSensitivityInZone = s;
 
-                m = rnd.NextDouble(0.05, 0.25);
-                s = rnd.NextDouble(10, 30);
-                settings.FirmWageMarkdown = m;
-                settings.FirmWageMarkdownInZone = m;
-                settings.FirmWageMarkdownSensitivity = s;
-                settings.FirmWageMarkdownSensitivityInZone = s;
+                    m = rnd.NextDouble(0.05, 0.25);
+                    s = rnd.NextDouble(10, 30);
+                    settings.FirmWageMarkdown = m;
+                    settings.FirmWageMarkdownInZone = m;
+                    settings.FirmWageMarkdownSensitivity = s;
+                    settings.FirmWageMarkdownSensitivityInZone = s;
 
+                }
+                else   // Counterfactuals
+                {
+                    settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(settings.ROutputDir + "\\last_json.json"));
+                }
+            }
+            
+            if (args.Length == 1)
+            {
+                //settings.Shock = EShock.Tsunami;
+                //settings.IDScenario = Int32.Parse(args[0]);
+                settings.Shock = (EShock)Int32.Parse(args[0]);
+                settings.ShockPeriod = (2105 - 2014) * 12;
             }
 
-
-
+            settings.NewScenarioDirs = false;
             var t0 = DateTime.Now;
 
             // Run the simulation

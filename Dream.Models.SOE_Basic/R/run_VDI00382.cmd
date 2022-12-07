@@ -5,9 +5,10 @@ time /t
 set SCENARIO_DIR=C:\Users\B007566\Documents\Output\Scenarios
 set EXE_FILE=..\bin\Release\net6.0\Dream.Models.SOE_Basic.exe
 
-if exist %SCENARIO_DIR% rmdir /q /s %SCENARIO_DIR%
+:: if exist %SCENARIO_DIR% rmdir /q /s %SCENARIO_DIR%
 
-for /l %%i in (1 1 38) do (
+:: 38
+for /l %%i in (1 1 114) do (
 	for /l %%x in (1 1 4) do (
 		echo %%i %%x
 		start %EXE_FILE%
