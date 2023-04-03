@@ -15,10 +15,34 @@ if(Sys.info()['nodename'] == "VDI00316")    # Fjernskrivebord
 }
 if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord for agentbased projekt
 {
-  o_dir = "C:/Users/B007566/Documents/Output"  
+  # o_dir = "C:/Users/B007566/Documents/Output"
+  o_dir = "H:/AgentBased/SOE/Output"
+  
 }
 
-d_report = read.delim(paste0(o_dir,"/household_reports.txt"))
+df = read.delim(paste0(o_dir,"/household_reports.txt"))
+
+ids = unique(df$ID)
+par(mfrow=c(1,2))
+i=10
+i=i+1
+d = df %>% filter(ID==ids[i])
+
+plot(d$Time, d$Income/ d$P_macro, type="l", lwd=1)
+lines(d$Time, d$ValConsumption/ d$P_macro, col="red", type="s")
+abline(h=0)
+
+
+plot(d$Time, d$Wealth/ d$P_macro, type="l")
+lines(d$Time, d$ValConsumption/ d$P_macro, col="red")
+lines(d$Time, d$Income/ d$P_macro, col="blue")
+abline(h=0)
+
+plot(d$Time, d$Wealth, type="p")
+
+plot(d$Time, log(d$Wealth), type="p")
+abline(a=-1.1*d$Time[1],b=1.1, lty=2)
+
 
 d = d_report %>% filter(Time>2110 & Time<2120) %>% group_by(Age) %>% 
             dplyr::summarize(Wealth = mean(Wealth), Income = mean(Income), Cons = mean(ValConsumption), P = mean(P_macro))

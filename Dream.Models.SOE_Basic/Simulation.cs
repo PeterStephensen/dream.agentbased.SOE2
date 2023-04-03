@@ -175,11 +175,8 @@ namespace Dream.Models.SOE_Basic
                     {
                         this.EventProc(Event.System.PeriodStart);
                         this.EventProc(Event.Economics.Update);
-                        for (int i = 0; i < _settings.HouseholdNumberConsumptionPerPeriod; i++)
-                        {
-                            //Console.WriteLine(i);
-                            _households.EventProc(Event.Economics.Consume);
-                        }
+                        for (int i = 0; i < _settings.HouseholdNumberShoppingsPerPeriod; i++)
+                            _households.EventProc(Event.Economics.Shopping);
                         this.EventProc(Event.System.PeriodEnd);
                         _households.RandomizeAgents();
                         foreach(Agent firms in _sectors)
@@ -339,6 +336,25 @@ namespace Dream.Models.SOE_Basic
 
         #endregion
 
+        #region GetRandomFirmsFromHouseholds
+        public Firm[] GetRandomFirmsFromHouseholds(int n, int sector)
+        {
+            if (n < 1) return null;
+            if (sector >= _settings.NumberOfSectors) return null;
+
+            Household[] hs = GetRandomHouseholds(n);
+            Firm[] fs = new Firm[n]; 
+            
+            for(int i=0;i<n;i++)
+            {
+                fs[i] = hs[i].FirmShopArray(sector);                
+            }
+            
+            return fs;
+        }
+        #endregion
+
+
         #region GetRandomFirm
         public Firm GetRandomOpenFirm(int sector)
         {
@@ -436,6 +452,29 @@ namespace Dream.Models.SOE_Basic
 
             return lst;
         }
+        
+        public Firm GetNextFirmWithGoods(double budget, int sector, int max_n)
+        {
+            int i = 0;
+            //if(max_n>_firms)
+
+            while (i < max_n)
+            {
+                //Household h = GetRandomHousehold();
+                Firm f = GetRandomFirm(sector);
+
+                if(f.Open)
+                    if ((f.Production - f.Sales) * f.Price > budget)
+                        return f;
+                
+                i++;
+            }
+
+            return null;
+            
+        }
+
+        
         #endregion
 
         #region GetFirmFromID()

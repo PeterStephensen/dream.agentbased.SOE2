@@ -2,6 +2,7 @@
 using System.Runtime;
 using System.Text.Json;
 using System.IO;
+using System.Runtime.Intrinsics.X86;
 
 namespace Dream.Models.SOE_Basic
 {
@@ -25,7 +26,7 @@ namespace Dream.Models.SOE_Basic
             settings.NumberOfHouseholdsPerFirm = 5;
             settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
-            settings.HouseholdNumberConsumptionPerPeriod = 4; // Weekly consumption
+            settings.HouseholdNumberShoppingsPerPeriod = 4; // Weekly consumption
 
             //Firms
             settings.FirmParetoMinPhi = 0.5;
@@ -40,18 +41,18 @@ namespace Dream.Models.SOE_Basic
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
             double mark = 0.15; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            double sens = 1/0.05;
+            double sens = 0.1/0.05;   //1/0.05
 
             // Wage ----------------------------------
             settings.FirmWageMarkup = 1 * mark;                                            //2  !!!!
             settings.FirmWageMarkupSensitivity = 0.5 * sens;
-            settings.FirmWageMarkdown = 1 * mark;    // 0 is ok
+            settings.FirmWageMarkdown = 1 * mark;            // 1        // 0 is ok
             settings.FirmWageMarkdownSensitivity = 0.5 * sens;
 
             // In zone
             settings.FirmWageMarkupInZone = 1 * mark;                                      //2  !!!!
             settings.FirmWageMarkupSensitivityInZone = 0.5 * sens;
-            settings.FirmWageMarkdownInZone = 1 * mark;    // 0 is ok
+            settings.FirmWageMarkdownInZone = 1 * mark;    //1          // 0 is ok
             settings.FirmWageMarkdownSensitivityInZone = 0.5 * sens;
 
             settings.FirmProbabilityRecalculateWage = 0.5;
@@ -72,6 +73,8 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProbabilityRecalculatePrice = 0.5;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
 
+            settings.FirmExpectedExcessPotentialSales = 1.5;
+            
             settings.FirmPriceMechanismStart = 12 * 1;
 
             //-----
@@ -94,10 +97,10 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProductivityGrowth = 0.02;
 
             // Households
-            settings.HouseholdNumberFirmsSearchJob = 15;     // 15  
-            settings.HouseholdNumberFirmsSearchShop = 75;    // 15 
-            settings.HouseholdProbabilityQuitJob = 0.01;
-            settings.HouseholdProbabilitySearchForJob = 0.25;                        
+            settings.HouseholdNumberFirmsSearchJob = 15;              
+            settings.HouseholdNumberFirmsSearchShop = 15;       //75
+            settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
+            settings.HouseholdProbabilitySearchForJob = 0.5;   //0.25                        
             settings.HouseholdProbabilitySearchForShop = 0.25;                          // MEGET LAV???!!!
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
@@ -121,7 +124,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsInitialInterestRate = Math.Pow(1 + 0.05, 1.0 / 12) - 1; // 5% p.a.
 
             settings.StatisticsFirmReportSampleSize = 0.05;
-            settings.StatisticsHouseholdReportSampleSize = 0.001;
+            settings.StatisticsHouseholdReportSampleSize = 0.01;
 
             settings.StatisticsExpectedSharpeRatioSmooth = 0.7;
 
@@ -145,7 +148,8 @@ namespace Dream.Models.SOE_Basic
 
             if (Environment.MachineName == "VDI00382") // Fjernskrivebord til Agentbased projekt
             {
-                settings.ROutputDir = @"C:\Users\B007566\Documents\Output";
+                //settings.ROutputDir = @"C:\Users\B007566\Documents\Output";
+                settings.ROutputDir = @"H:\AgentBased\SOE\Output";            
                 settings.RExe = @"C:\Users\B007566\Documents\R\R-4.1.3\bin\x64\R.exe";
             }
 
@@ -177,7 +181,7 @@ namespace Dream.Models.SOE_Basic
             //settings.FirmDefaultStart = 1;
             //settings.LoadDatabase = true;
 
-            settings.RandomParameters=true;
+            settings.RandomParameters=false;
             if(settings.RandomParameters)
             {
 
@@ -217,7 +221,8 @@ namespace Dream.Models.SOE_Basic
                 }
                 else   // Counterfactuals
                 {
-                    settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(settings.ROutputDir + "\\last_json.json"));
+                    //settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(settings.ROutputDir + "\\last_json.json"));
+                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 }
             }
             

@@ -31,12 +31,14 @@ namespace Dream.Models.SOE_Basic
         double _sales;   // Actual sales
         double _potentialSales;   // Actual sales
         double _profit, _p, _w; // Profits, price, wage 
+        double _w_full;
         double _value = 0;
         List<Household> _employed;
         int _jobApplications = 0;
         int _jobQuitters = 0;
         double _expPrice = 1.0;
         double _expWage = 1.0;
+        double _expWage_lag = 1.0;
         double _expApplications = 0;
         double _expQuitters = 0;
         double _expAvrProd = 0;
@@ -47,10 +49,10 @@ namespace Dream.Models.SOE_Basic
         bool _startFromDatabase = false;
         double _year = 0;
         int _sector=0;
-        double _l_wage;
-        double _b_wage=0;
-        double _l_price;
-        double _b_price=0;
+        //double _l_wage;
+        //double _b_wage=0;
+        //double _l_price;
+        //double _b_price=0;
         int _ok, _no;
         object _returnObject;
         bool _open = false;
@@ -102,6 +104,7 @@ namespace Dream.Models.SOE_Basic
                 _report = true;
 
             _expWage = _statistics.PublicMarketWage[_sector];
+            _expWage_lag = _statistics.PublicMarketWage[_sector];
             _expPrice = _statistics.PublicMarketPrice[_sector];
             _expAvrProd = 1.0;
 
@@ -148,6 +151,7 @@ namespace Dream.Models.SOE_Basic
                     _wageSavedDeath = 0;
                     _no = 0;
                     _ok = 0;
+                    _w_full = _w;
 
                     // Shock: Tsunami shock
                     if (_time.Now == _settings.ShockPeriod)
@@ -206,7 +210,9 @@ namespace Dream.Models.SOE_Basic
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
                     
-                    _profit = _p * _sales - _w * _l_primo + _wageSavedDeath;
+                    _profit = _p * _sales - _w_full * _l_primo + _wageSavedDeath;
+                        
+                    
                     _statistics.Communicate(EStatistics.Profit, this);
 
                     if (_time.Now > 4)
@@ -262,15 +268,40 @@ namespace Dream.Models.SOE_Basic
                     if (_sales + x <= _y_primo)
                     {
                         _sales += x;
+                        _w_full = _w;
                         _ok++;
                         return ECommunicate.Yes;
                     }
                     else
                     {
-                        _returnObject = _y_primo - _sales;
-                        _sales = _y_primo;
-                        _no++;
-                        return ECommunicate.No;
+                        double a = 2.0;
+                        double max_w = 1.0; //1.25
+                        double y_d_bar = (1 + Math.Sqrt((max_w-1)/a)) * _y_primo;
+                        double z = Math.Pow(_sales + x - _y_primo, 2);
+                        if (_sales + x <= y_d_bar)
+                        {
+                            _sales += x;
+                            _ok++;
+                            _w_full = _w * (1 + a * z);
+                            //int zz = 0;
+                            //if (_time.Now > 30 * 12)
+                            //    zz = 1;
+                            return ECommunicate.Yes;
+                        }
+                        else 
+                        {
+                            //_returnObject = _y_primo - _sales;
+                            // x   = _y_primo - _sales + (max_w / a)^0.5
+                            _returnObject = y_d_bar - _sales;
+                            _sales = y_d_bar;
+                            _w_full = _w * max_w;
+                            _no++;
+                            return ECommunicate.No;
+                        }
+                        //int zz = 0;
+                        //if (_w_full>10000)
+                        //    zz = 1;
+
                     }
 
                 case ECommunicate.Initialize:
@@ -299,6 +330,8 @@ namespace Dream.Models.SOE_Basic
         #region Expectations()
         void Expectations()
         {
+
+            _expWage_lag = _expWage;
 
             _expPrice = _settings.FirmExpectationSmooth * _expPrice + (1 - _settings.FirmExpectationSmooth) * _statistics.PublicMarketPrice[_sector];
             _expWage = _settings.FirmExpectationSmooth * _expWage + (1 - _settings.FirmExpectationSmooth) * _statistics.PublicMarketWageTotal;
@@ -333,6 +366,7 @@ namespace Dream.Models.SOE_Basic
         {
             double alpha = _settings.FirmAlpha;
             double fi = _settings.FirmFi;
+            double gamma_y = _settings.FirmGamma_y;
 
             if(_age < _settings.FirmStartupPeriod)
             {
@@ -342,7 +376,7 @@ namespace Dream.Models.SOE_Basic
                 return;
             }
 
-            _l_optimal = Math.Pow(alpha * _phi * _expPrice / _expWage, 1 / (1 - alpha)); // Optimal employment
+            _l_optimal = Math.Pow(alpha * _phi * gamma_y * _expPrice / _expWage, 1 / (1 - alpha)); // Optimal employment
 
             if (_l_optimal > _settings.FirmMaxEmployment)
             {
@@ -358,7 +392,7 @@ namespace Dream.Models.SOE_Basic
             if (z > fi)
             {
                 _y_optimal = _phi * (z - fi);
-                _profit_optimal = _expPrice * _y_optimal - _expWage * _l_optimal;
+                _profit_optimal = _expPrice * _y_optimal * gamma_y - _expWage * _l_optimal;
             }
             else
             {
@@ -381,6 +415,7 @@ namespace Dream.Models.SOE_Basic
 
             bool inZone = Math.Abs((_expSales - _y_optimal) / _y_optimal) < _settings.FirmComfortZoneSales;
             double probRecalculate = inZone ? _settings.FirmProbabilityRecalculatePriceInZone : _settings.FirmProbabilityRecalculatePrice;
+            double gamma_y = _settings.FirmGamma_y;
                         
             
             if (_random.NextEvent(probRecalculate))
@@ -405,17 +440,17 @@ namespace Dream.Models.SOE_Basic
                             markupSensitivity = _settings.FirmPriceMarkupSensitivityInZone;
                             markdownSensitivity = _settings.FirmPriceMarkdownSensitivityInZone;
                         }
-
+                       
                         //if (_expSales < _y_optimal)
-                        if (_expSales < _y_primo)
+                        if (_expSales < _y_primo * gamma_y)
                         {
                             //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
-                            double g = markdown * PriceFunc(markdownSensitivity * (_y_primo - _expSales) / _y_primo);
+                            double g = markdown * PriceFunc(markdownSensitivity * (_y_primo * gamma_y - _expSales) / (_y_primo * gamma_y));
                             p_target = (1 - g) * _expPrice;
                         }
-                        else if (_expPotentialSales > _y_primo)
+                        else if (_expPotentialSales / _settings.FirmExpectedExcessPotentialSales > _y_primo )
                         {
-                            double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _y_primo) / _y_primo);
+                            double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales / _settings.FirmExpectedExcessPotentialSales - _y_primo) / _y_primo);
                             p_target = (1 + g) * _expPrice;
                         }
                         //else if (_expPotentialSales > _y_optimal)
@@ -430,6 +465,12 @@ namespace Dream.Models.SOE_Basic
                 double a = 0.8;
                 _p = a * _p + (1 - a) * p_target;
 
+            }
+            else 
+            {
+                double a = 0.8;
+                //_p = a * _p + (1 - a) * _expPrice; Very slow!
+                //_p = _expPrice;
             }
         }
         
@@ -449,6 +490,12 @@ namespace Dream.Models.SOE_Basic
         /// </summary>
         void HumanResource()
         {
+            if (_age < _settings.FirmStartupPeriod)
+            {
+                //HumanResourceStartUp();
+                //return;
+            }
+
             double l = CalcEmployment();
             double avr_prod = 1.0;
             if(_employed.Count>0) avr_prod = l / _employed.Count;
@@ -462,6 +509,7 @@ namespace Dream.Models.SOE_Basic
             //if(_time.Now>12*50)
             //    l_target = 1.1 * _l_optimal;
 
+            
             if (l_target > l)
             {
                 double gamma = _age >= _settings.FirmStartupPeriod ? _settings.FirmVacanciesShare : 1.0; 
@@ -531,7 +579,37 @@ namespace Dream.Models.SOE_Basic
                 double a = 0.8;
                 _w = a * _w + (1 - a) * w_target;
             }
+            else
+            {
+                double a = 0.8;
+                //_w = a * _w + (1 - a) * _expWage; Very slow!
+                //_w = _expWage;
+            }
         }
+
+        void HumanResourceStartUp()
+        {
+            double l = CalcEmployment();
+
+            _w = _expWage;
+
+            if (l<_settings.FirmStartupEmployment)   // Forced employment!
+            {
+                while(l < _settings.FirmStartupEmployment)
+                {
+                    Household h = _simulation.GetRandomHousehold();
+                    if(h.Age<_settings.HouseholdPensionAge)
+                    {
+                        h.Communicate(ECommunicate.YouAreHiredInStartup, this);
+                        l += h.Productivity;
+                        _employed.Add(h);
+                    }
+                }                
+            }
+        }
+
+
+
         #endregion
 
         #region ReportToStatistics()
@@ -539,8 +617,13 @@ namespace Dream.Models.SOE_Basic
         {
             if (_report & !_settings.SaveScenario)
             {
-                _statistics.StreamWriterFirmReport.WriteLineTab(_year, ID, _phi, _l_primo, _y_primo, _s_primo, 
-                    _v_primo, _expPrice, _expWage, _p, _w, _jobApplications, _jobQuitters, _profit, _value, _potentialSales, _l_optimal, _y_optimal, _expSales);
+                //_statistics.StreamWriterFirmReport.WriteLineTab(_year, ID, _phi, _l_primo, _y_primo, _s_primo, 
+                //    _v_primo, _expPrice, _expWage, _p, _w, _jobApplications, _jobQuitters, _profit, _value, _potentialSales, _l_optimal, _y_optimal, _expSales);
+
+                _statistics.StreamWriterFirmReport.WriteLineTab(_year, ID, _phi, _l_primo, _y_primo, _s_primo,
+                      _v_primo, _expPrice, _expWage, _p, _w, _jobApplications, _jobQuitters, _profit, _value, _potentialSales, _l_optimal, _y_optimal, _expSales,
+                      _expApplications, _expQuitters, _expAvrProd);
+
 
                 _statistics.StreamWriterFirmReport.Flush();
 
@@ -613,6 +696,10 @@ namespace Dream.Models.SOE_Basic
         public double Wage
         {
             get { return _w; }
+        }
+        public double FullWage
+        {
+            get { return _w_full; }
         }
         public int Sector
         {

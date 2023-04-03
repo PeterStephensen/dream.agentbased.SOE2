@@ -184,6 +184,11 @@ namespace Dream.Models.SOE_Basic
                     foreach (var fi in _firmInfo)
                     {
                         _profitPerHousehold += fi.Profit;
+
+                        int zz = 0;
+                        if (_time.Now > 20 * 12)
+                            zz = 1;
+                        
                         discountedProfitsTotal += fi.Profit / Math.Pow(1 + _interestRate, fi.Age); 
                         discountedProfits[fi.Sector] += fi.Profit / Math.Pow(1 + _interestRate, fi.Age);
                         nFirms[fi.Sector]++; 
@@ -444,8 +449,6 @@ namespace Dream.Models.SOE_Basic
                                 sw.Flush();
                             }
 
-
-
                             prod_avr /= n_firms;
                             prod_avr = Math.Pow(prod_avr, 1 - _settings.FirmAlpha);
                             double P_star = 0;  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -456,6 +459,8 @@ namespace Dream.Models.SOE_Basic
 
                             using (StreamWriter sw = File.AppendText(_settings.ROutputDir + "\\data_year.txt"))
                             {
+
+                                
                                 sw.WriteLine("{0:#.##}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t" +
                                     "{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\t{27}", 
                                     1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
@@ -646,7 +651,9 @@ namespace Dream.Models.SOE_Basic
                 if (File.Exists(path)) File.Delete(path);
                 _fileFirmReport = File.CreateText(path);
                 _fileFirmReport.WriteLine("Time\tID\tProductivity\tEmployment\tProduction\tSales\tVacancies\tExpectedPrice\tExpectedWage\tPrice\tWage\tApplications" +
-                    "\tQuitters\tProfit\tValue\tPotensialSales\tOptimalEmployment\tOptimalProduction\tExpectedSales");
+                    "\tQuitters\tProfit\tValue\tPotensialSales\tOptimalEmployment\tOptimalProduction\tExpectedSales\texpApplications\texpQuitters\texpAvrProd");
+
+                
 
                 path = _settings.ROutputDir + "\\household_reports.txt";
                 if (File.Exists(path)) File.Delete(path);

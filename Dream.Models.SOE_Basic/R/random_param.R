@@ -46,12 +46,14 @@ WageMarkdown = rep(0, n)
 WageMarkdownSensi = rep(0, n)
 len = rep(0,n) 
 
+pb = txtProgressBar(min = 0, max = n, initial = 0) 
 
 #for(i in 1:50)
 for(i in 1:n)
 {
   #i=10
-  cat(i,"\n")
+  #cat(i,"\n")
+  setTxtProgressBar(pb,i)
 
   json_d = fromJSON(file = files_json[i])
   s = sub(".json", ".txt", files_json[i])
@@ -72,7 +74,7 @@ for(i in 1:n)
   len[i] = nrow(d0) 
         
 }
-
+close(pb)
 
 
 model <- glm(crash ~ PriceMarkdown+PriceMarkdownSensi+PriceMarkup+PriceMarkupSensi
@@ -85,6 +87,7 @@ summary(model)
 hist(PriceMarkdown[crash])
 hist(PriceMarkup[crash])
 hist(WageMarkup[crash])
+hist(WageMarkdown[crash])
 
 hist(WageMarkupSensi[crash])
 hist(WageMarkdownSensi[crash])
@@ -93,6 +96,32 @@ hist(PriceMarkupSensi[crash])
 hist(PriceMarkdownSensi[crash])
 
 #---------------------------------------
+
+i=0
+
+i=i+1
+
+json_d = fromJSON(file = files_json[i])
+
+s0 = sub(".json", ".txt", files_json[i])
+s0 = sub("Settings", "Macro", s0)
+s1 = sub("base_", "count_Productivity_", s0)
+
+d0 = read.delim(file = s0)
+d1 = read.delim(file = s1)
+
+#plot(d1$nFirms / d0$nFirms - 1, type="l")
+#abline(h=0.1, lty=2)
+#abline(h=0)
+
+plot(d1$Production / d0$Production - 1, type="l")
+abline(h=0.1, lty=2)
+abline(h=0)
+
+lines(d1$Production, col="red")
+
+#---------------------------------------
+
 
 n = length(files_json)
 crash = rep(F, n) 
@@ -106,17 +135,33 @@ WageMarkupSensi = rep(0, n)
 WageMarkdown = rep(0, n)
 WageMarkdownSensi = rep(0, n)
 
+g_prod = rep(0, n)
+base = rep(FALSE, n)
+crash = rep(FALSE, n)
+no_good = rep(FALSE, n)
+g_diff = rep(FALSE, n)
 
-g_prod = 0
-
+pb = txtProgressBar(min = 0, max = n, initial = 0) 
 for(i in 1:n)
 {
-  #i=52
-  cat(i,"\n")
+  #i=1
+  #cat(i,"\n")
+  setTxtProgressBar(pb,i)
+  
   
   if(grepl("base_", files_json[i], fixed = TRUE))
   {
     json_d = fromJSON(file = files_json[i])
+    
+    InvestorProfitSensitivity[i] = json_d$InvestorProfitSensitivity
+    PriceMarkdown[i] = json_d$FirmPriceMarkdown
+    PriceMarkdownSensi[i] = json_d$FirmPriceMarkdownSensitivity
+    PriceMarkup[i] = json_d$FirmPriceMarkup
+    PriceMarkupSensi[i] = json_d$FirmPriceMarkupSensitivity
+    WageMarkdown[i] = json_d$FirmWageMarkdown
+    WageMarkdownSensi[i] = json_d$FirmWageMarkdownSensitivity
+    WageMarkup[i] = json_d$FirmWageMarkup
+    WageMarkupSensi[i] = json_d$FirmWageMarkupSensitivity
     
     s0 = sub(".json", ".txt", files_json[i])
     s0 = sub("Settings", "Macro", s0)
@@ -124,6 +169,14 @@ for(i in 1:n)
 
     d0 = read.delim(file = s0)
     d1 = read.delim(file = s1)
+    
+    if(nrow(d0)==n_time+1)
+    {
+      base[i] = T
+      if(nrow(d1)<n_time+1)
+        crash[i] = T
+    }
+      
     if(nrow(d0)==n_time+1 & nrow(d1)==n_time+1)
     {
       d0 = tail(d0, 1000)
@@ -131,22 +184,42 @@ for(i in 1:n)
       
       d = merge(d0,d1, by="Time")
       
-      g_prod = c(g_prod, mean(d$Production.y /d$Production.x-1))
-      
-      #plot(d$expSharpeRatio.x, type="l")
-      #lines(d$expSharpeRatio.y, col="red")  
-      
-      #plot(d$Production.y /d$Production.x-1)
-      #abline(h=0)  
+      if(is.numeric(d$Production.x) & is.numeric(d$Production.y))
+      {
+        g_prod[i] = mean(d$Production.y /d$Production.x-1)
+        
+        g_diff[i] = mean((d$Production.y /d$Production.x - 1.1)^2)^0.5
+        
+      }
     }
-    
-    
   }
-
 }
-g_prod = g_prod[-1]
+close(pb)
 
-g2 = g_prod[g_prod<1]
+g_prod[base & !crash]
+
+hist(g_diff[g_diff>0 & g_diff<1], breaks=20)
+hist(log((g_prod[g_prod!=0]-0.1)^2), breaks=20)
+
+z = g_prod!=0
+y = log((g_prod[z]-0.1)^2)
+
+InvestorProfitSensitivity = InvestorProfitSensitivity[z]
+PriceMarkdown		  = PriceMarkdown[z]
+PriceMarkdownSensi	  = PriceMarkdownSensi[z]
+PriceMarkup		  = PriceMarkup[z]
+PriceMarkupSensi	  = PriceMarkupSensi[z]
+WageMarkdown		  = WageMarkdown[z]
+WageMarkdownSensi	  = WageMarkdownSensi[z]
+WageMarkup		  = WageMarkup[z]
+WageMarkupSensi		  = WageMarkupSensi[z]
+
+lm1 = lm(y ~ PriceMarkdown+PriceMarkdownSensi+PriceMarkup+PriceMarkupSensi
+         + WageMarkdown+WageMarkdownSensi+WageMarkup+WageMarkupSensi
+         +InvestorProfitSensitivity)
+
+summary(lm1)
+
 
 hist(g2, breaks=20)
 

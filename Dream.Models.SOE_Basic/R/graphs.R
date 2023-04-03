@@ -13,11 +13,13 @@ if(Sys.info()['nodename'] == "VDI00316")    # Fjernskrivebord
 }
 if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord
 {
-  o_dir = "C:/Users/B007566/Documents/Output"  
+  o_dir = "H:/AgentBased/SOE/Output"
+  #o_dir = "C:/Users/B007566/Documents/Output"  
 }
 if(Sys.info()['nodename'] == "C2210098")     # Peters nye maskine
 {
-  o_dir = "C:/Users/B007566/Documents/Output"  
+  #o_dir = "C:/Users/B007566/Documents/Output"
+  
 }
 
 
@@ -36,6 +38,9 @@ d_prod = read.delim(paste0(o_dir,"/data_firms.txt"))
 d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 
 sum(d_house$ConsumptionValue==0)/nrow(d_house)
+
+
+df = read.delim(paste0(o_dir,"/household_reports.txt"))
 
 
 
@@ -123,6 +128,7 @@ mn = min(min(d_house$ConsumptionValue), min(d_house$ConsumptionBudget))
 plot(d_house$ConsumptionBudget, d_house$ConsumptionValue, xlab="Budgetet consumption value", ylab="Actual consumption value", 
      col=cols[3], xlim=c(0,1.1*mx), ylim=c(0,1.1*mx), cex=0.5)
 abline(a=0,b=1, lty=2)
+
 
 #log = "xy", 
 
@@ -416,19 +422,24 @@ par(mfrow=c(2,2))
 
 vv = d_house$ConsumptionValue/d_house$ConsumptionBudget
 vv = vv[!is.na(vv)]
-hist(vv, xlab="Actual-Value/Budget", main="Consumption", breaks=50)
+hist(vv, xlab="Actual-Value/Budget", main="Consumption", breaks=150, xlim=c(-1,2))
 
 infl = exp(diff(log(d$Price)))^12-1
 mx = max(infl)
-mn = min(0,min(infl))
-plot(d$Year[-1], exp(diff(log(d$Price)))^12-1, type="l", ylim=c(mn, 1.1*mx), ylab="", main="Inflation")
+mn = min(infl)
+if(mx < 0 ) mx=0
+if(mn > 0 ) mn=0
+
+plot(d$Year[-1], exp(diff(log(d$Price)))^12-1, type="l", ylim=c(mn, mx), ylab="", main="Inflation")
 abline(h=0)
 
 
-hist(d_house$Price, breaks=50)
+mx = max(d_house$Price)
+hist(d_house$Price, breaks=15, xlim=c(0,1.2*mx))
 
 d_h2 = d_house %>% filter(Wage>0)
-hist(d_h2$Wage, breaks=50)
+mx = max(d_h2$Wage)
+hist(d_h2$Wage, breaks=15, xlim=c(0,1.2*mx))
 
 #p = d$Price[nrow(d)]
 #hist(d_house$Price, breaks=50, xlim=c(0.2*p, 1.5*p))

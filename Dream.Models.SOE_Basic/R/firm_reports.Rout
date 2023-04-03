@@ -43,12 +43,14 @@ De følgende objekter er maskerede fra 'package:base':
 + }
 > if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord for agentbased projekt
 + {
-+   o_dir = "C:/Users/B007566/Documents/Output"  
++   #o_dir = "C:/Users/B007566/Documents/Output" 
++   o_dir = "H:/AgentBased/SOE/Output"
++   
 + }
 > 
 > d_report = read.delim(paste0(o_dir,"/file_reports.txt"))
 > 
-> plot(d_report$Time, d_report$Productivity)
+> #plot(d_report$Time, d_report$Productivity)
 > 
 > dd = d_report %>% filter(Productivity>8)
 > 
@@ -74,9 +76,10 @@ De følgende objekter er maskerede fra 'package:base':
 > 
 > for(i in 1:n)
 + {
-+   #i=222
++   #i=5121
 +   dr = d_report %>% filter(ID==ids[i])
-+   #dr = dr %>% filter(Time>2050)
++   #dr = d_report %>% filter(ID==78408)
++ 
 +   
 +   if(nrow(dr)<2)
 +     next
@@ -99,14 +102,16 @@ De følgende objekter er maskerede fra 'package:base':
 +   if(sum(dr$Profit / dr$Price>0)==0)
 +     next
 +   
++   cat(i, "/", n, "\n")
 +   
-+   mx = max(max(dr$Employment), max(dr$OptimalEmployment))
-+   plot(dr$Time, dr$Employment, type="s", ylab="Employment", xlab="Time", main="", col=cols[3], ylim=c(0,1.1*mx))
-+   lines(dr$Time, dr$OptimalEmployment, col=cols[4], type="s")
-+   abline(v=2050, lty=2)
-+   abline(h=0)
-+   ContourFunctions::multicolor.title(c("Actual employment ","Optimal employment"), 3:4, cex.main = 0.7)
 +   
++     mx = max(max(dr$Employment), max(dr$OptimalEmployment))
++     plot(dr$Time, dr$Employment, type="s", ylab="Employment", xlab="Time", main="", col=cols[3], ylim=c(0,1.1*mx))
++     lines(dr$Time, dr$OptimalEmployment, col=cols[4], type="s")
++     abline(v=2050, lty=2)
++     abline(h=0)
++     ContourFunctions::multicolor.title(c("Actual employment ","Optimal employment"), 3:4, cex.main = 0.7)
++ 
 +   mx = max(max(dr$Production), max(dr$PotensialSales), max(dr$OptimalProduction))
 +   plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
 +        xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
@@ -119,16 +124,28 @@ De følgende objekter er maskerede fra 'package:base':
 +   abline(h=0)
 +   ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
 + 
-+   mx = max(max(dr$Production), max(dr$OptimalProduction))
-+   plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
++ 
++   mx = max(max(dr$Sales), max(dr$ExpectedSales))
++   plot(dr$Time, dr$Sales, type="l", ylab="Sales", main="", 
 +        xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
-+   lines(dr$Time, dr$PotensialSales, col=cols[2], type="s")
-+   lines(dr$Time, dr$ExpectedSales, col=cols[3], type="l")
-+   lines(dr$Time, dr$OptimalProduction, col=cols[4], type="l")
-+   lines(dr$Time, 0.85*dr$OptimalProduction, lty=2, type="l")
-+   abline(v=2050, lty=2)
-+   abline(h=0)
-+   ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
++   lines(dr$Time, dr$ExpectedSales, col=cols[2], type="l")
++   lines(dr$Time, dr$Production, col=cols[3], type="l")
++ 
++   
++   if(F)
++   {
++     mx = max(max(dr$Production), max(dr$OptimalProduction))
++     plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
++          xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
++     lines(dr$Time, dr$PotensialSales, col=cols[2], type="s")
++     lines(dr$Time, dr$ExpectedSales, col=cols[3], type="l")
++     lines(dr$Time, dr$OptimalProduction, col=cols[4], type="l")
++     lines(dr$Time, 0.85*dr$OptimalProduction, lty=2, type="l")
++     abline(v=2050, lty=2)
++     abline(h=0)
++     ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
++     
++   }
 +   
 +   mx = max(dr$Wage / dr$ExpectedWage[1])
 +   mn = min(dr$Wage / dr$ExpectedWage[1])
@@ -136,6 +153,14 @@ De følgende objekter er maskerede fra 'package:base':
 +        main="", xlab="Time", col=cols[3], ylim=c(0.9*mn, 1.1*mx))   #
 +   lines(dr$Time, dr$ExpectedWage / dr$ExpectedWage[1], lty=2)
 + 
++   
++   #plot(dr$Time, dr$Wage / dr$ExpectedWage[1] - dr$ExpectedWage / dr$ExpectedWage[1], type="b")   #
++   #lines(dr$Time, 0.001*dr$Quitters, col="red")
++   #abline(h=0)  
++   
++   #plot(dr$Wage / dr$ExpectedWage[1] - dr$ExpectedWage / dr$ExpectedWage[1], dr$Quitters)
++   #abline(h=5,v=0)
++   
 +   plot(dr$Time, dr$Vacancies, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[3])
 +   abline(v=2050, lty=2)
 +   abline(h=0)
@@ -152,14 +177,31 @@ De følgende objekter er maskerede fra 'package:base':
 +   #plot(dr$Time, dr$Sales, type="s")
 +   #lines(dr$Time, dr$ExpectedSales)
 +   
-+     
++   #plot(dr$Time, dr$Vacancies, type="l", xlab="Time", ylab="", main="", col=cols[3])
++   
++   #plot(dr$Time, dr$Applications-dr$Quitters-dr$Vacancies, type="l", xlab="Time", ylab="", main="", col=cols[3])
++   #lines(dr$Time, dr$Quitters, type="l", col=cols[4])
++   #lines(dr$Time, dr$Vacancies, type="l", col=cols[5])
++   #abline(h=0)
++ 
++   
++   #plot(dr$Time, dr$expApplications- dr$expQuitters, type="l")  
++   #lines(dr$Time, dr$Vacancies, type="s", col="red")
++   #abline(h=0)
++       
 +   mx = max(max(dr$Applications), max(dr$Quitters))
-+   plot(dr$Time, dr$Applications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[3])
-+   lines(dr$Time, dr$Quitters, type="s", col=cols[4])
++   plot(dr$Time, dr$expApplications, type="l", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[3])
++   #lines(dr$Time, dr$expApplications, lty=2, col=cols[3])
++   lines(dr$Time, dr$expQuitters, type="l", col=cols[4])
++   #lines(dr$Time, dr$expQuitters, lty=2, col=cols[4])
 +   abline(h=0)
 +   abline(v=2050, lty=2)
 +   ContourFunctions::multicolor.title(c("Applications ","Quitters"), 3:4, cex.main = 0.7)
++   #lines(dr$Time, 200*(dr$Wage / dr$Wage[1]-1), lty=2)
++   #lines(dr$Time, 200*(dr$ExpectedWage / dr$ExpectedWage[1]-1), lty=1)
 +   
++   
++     
 +   if(sum(is.nan(dr$Profit / dr$Price))==0)
 +   {
 +     plot(dr$Time, dr$Profit / dr$Price, type="s", ylab="Profit / Price", xlab="Time", 
@@ -190,13 +232,269 @@ De følgende objekter er maskerede fra 'package:base':
 +   text(0.5,1-d*5, dec(dr$Time[nrow(dr)]-dr$Time[1], 1), adj=0, cex=0.8)  
 + 
 + }
+3 / 12625 
+7 / 12625 
+10 / 12625 
+16 / 12625 
+20 / 12625 
+78 / 12625 
+118 / 12625 
+161 / 12625 
+212 / 12625 
+217 / 12625 
+342 / 12625 
+363 / 12625 
+375 / 12625 
+422 / 12625 
+448 / 12625 
+460 / 12625 
+462 / 12625 
+516 / 12625 
+520 / 12625 
+557 / 12625 
+582 / 12625 
+589 / 12625 
+648 / 12625 
+723 / 12625 
+724 / 12625 
+743 / 12625 
+762 / 12625 
+777 / 12625 
+785 / 12625 
+799 / 12625 
+815 / 12625 
+832 / 12625 
+840 / 12625 
+860 / 12625 
+882 / 12625 
+910 / 12625 
+976 / 12625 
+1034 / 12625 
+1136 / 12625 
+1160 / 12625 
+1268 / 12625 
+1367 / 12625 
+1395 / 12625 
+1415 / 12625 
+1428 / 12625 
+1485 / 12625 
+1520 / 12625 
+1525 / 12625 
+1543 / 12625 
+1603 / 12625 
+1633 / 12625 
+1687 / 12625 
+1757 / 12625 
+1779 / 12625 
+1833 / 12625 
+1852 / 12625 
+1954 / 12625 
+1965 / 12625 
+1967 / 12625 
+2015 / 12625 
+2067 / 12625 
+2104 / 12625 
+2131 / 12625 
+2146 / 12625 
+2158 / 12625 
+2209 / 12625 
+2245 / 12625 
+2282 / 12625 
+2306 / 12625 
+2348 / 12625 
+2352 / 12625 
+2394 / 12625 
+2450 / 12625 
+2469 / 12625 
+2504 / 12625 
+2571 / 12625 
+2575 / 12625 
+2603 / 12625 
+2610 / 12625 
+2657 / 12625 
+2871 / 12625 
+2922 / 12625 
+2928 / 12625 
+2937 / 12625 
+2996 / 12625 
+3060 / 12625 
+3122 / 12625 
+3295 / 12625 
+3299 / 12625 
+3364 / 12625 
+3368 / 12625 
+3374 / 12625 
+3428 / 12625 
+3448 / 12625 
+3577 / 12625 
+3609 / 12625 
+3648 / 12625 
+3680 / 12625 
+3681 / 12625 
+3700 / 12625 
+3740 / 12625 
+3743 / 12625 
+3788 / 12625 
+3790 / 12625 
+3832 / 12625 
+3855 / 12625 
+3890 / 12625 
+4078 / 12625 
+4110 / 12625 
+4279 / 12625 
+4311 / 12625 
+4352 / 12625 
+4382 / 12625 
+4386 / 12625 
+4417 / 12625 
+4426 / 12625 
+4471 / 12625 
+4551 / 12625 
+4580 / 12625 
+4621 / 12625 
+4686 / 12625 
+4694 / 12625 
+4775 / 12625 
+4776 / 12625 
+4865 / 12625 
+4883 / 12625 
+4899 / 12625 
+4905 / 12625 
+4907 / 12625 
+4919 / 12625 
+4959 / 12625 
+4982 / 12625 
+5028 / 12625 
+5030 / 12625 
+5033 / 12625 
+5048 / 12625 
+5089 / 12625 
+5253 / 12625 
+5268 / 12625 
+5286 / 12625 
+5339 / 12625 
+5438 / 12625 
+5472 / 12625 
+5481 / 12625 
+5518 / 12625 
+5556 / 12625 
+5651 / 12625 
+5652 / 12625 
+5665 / 12625 
+5700 / 12625 
+5717 / 12625 
+5730 / 12625 
+5769 / 12625 
+5850 / 12625 
+5869 / 12625 
+5870 / 12625 
+5877 / 12625 
+5947 / 12625 
+5959 / 12625 
+5981 / 12625 
+6145 / 12625 
+6149 / 12625 
+6391 / 12625 
+6491 / 12625 
+6498 / 12625 
+6534 / 12625 
+6786 / 12625 
+6790 / 12625 
+6812 / 12625 
+6851 / 12625 
+6862 / 12625 
+7019 / 12625 
+7062 / 12625 
+7087 / 12625 
+7120 / 12625 
+7123 / 12625 
+7133 / 12625 
+7136 / 12625 
+7184 / 12625 
+7268 / 12625 
+7285 / 12625 
+7286 / 12625 
+7292 / 12625 
+7323 / 12625 
+7409 / 12625 
+7440 / 12625 
+7446 / 12625 
+7631 / 12625 
+7730 / 12625 
+7824 / 12625 
+7919 / 12625 
+8063 / 12625 
+8107 / 12625 
+8165 / 12625 
+8254 / 12625 
+8322 / 12625 
+8359 / 12625 
+8428 / 12625 
+8924 / 12625 
+9027 / 12625 
+9195 / 12625 
+9347 / 12625 
+9366 / 12625 
+9446 / 12625 
+9522 / 12625 
+9568 / 12625 
+9615 / 12625 
+9668 / 12625 
+9700 / 12625 
+9863 / 12625 
+9877 / 12625 
+9896 / 12625 
+9897 / 12625 
+9952 / 12625 
+9974 / 12625 
+9979 / 12625 
+10057 / 12625 
+10141 / 12625 
+10147 / 12625 
+10203 / 12625 
+10298 / 12625 
+10451 / 12625 
+10501 / 12625 
+10528 / 12625 
+10564 / 12625 
+10626 / 12625 
+10675 / 12625 
+10701 / 12625 
+10737 / 12625 
+11114 / 12625 
+11160 / 12625 
+11216 / 12625 
+11265 / 12625 
+11367 / 12625 
+11371 / 12625 
+11390 / 12625 
+11422 / 12625 
+11484 / 12625 
+11487 / 12625 
+11488 / 12625 
+11576 / 12625 
+11701 / 12625 
+11780 / 12625 
+11785 / 12625 
+11810 / 12625 
+11902 / 12625 
+12172 / 12625 
+12190 / 12625 
+12211 / 12625 
+12282 / 12625 
+12315 / 12625 
+12345 / 12625 
+12448 / 12625 
+12465 / 12625 
+12492 / 12625 
+12571 / 12625 
 > 
 > 
 > 
 > dev.off()
-pdf 
-  2 
+null device 
+          1 
 > 
 > proc.time()
   bruger   system forløbet 
-   49.17     0.81    50.73 
+  112.28     3.75   147.54 

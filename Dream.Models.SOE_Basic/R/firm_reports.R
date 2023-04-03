@@ -13,12 +13,14 @@ if(Sys.info()['nodename'] == "VDI00316")    # Fjernskrivebord
 }
 if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord for agentbased projekt
 {
-  o_dir = "C:/Users/B007566/Documents/Output"  
+  #o_dir = "C:/Users/B007566/Documents/Output" 
+  o_dir = "H:/AgentBased/SOE/Output"
+  
 }
 
 d_report = read.delim(paste0(o_dir,"/file_reports.txt"))
 
-plot(d_report$Time, d_report$Productivity)
+#plot(d_report$Time, d_report$Productivity)
 
 dd = d_report %>% filter(Productivity>8)
 
@@ -44,9 +46,10 @@ par(mfrow=c(3,3))
 
 for(i in 1:n)
 {
-  #i=222
+  #i=5121
   dr = d_report %>% filter(ID==ids[i])
-  #dr = dr %>% filter(Time>2050)
+  #dr = d_report %>% filter(ID==78408)
+
   
   if(nrow(dr)<2)
     next
@@ -69,14 +72,16 @@ for(i in 1:n)
   if(sum(dr$Profit / dr$Price>0)==0)
     next
   
+  cat(i, "/", n, "\n")
   
-  mx = max(max(dr$Employment), max(dr$OptimalEmployment))
-  plot(dr$Time, dr$Employment, type="s", ylab="Employment", xlab="Time", main="", col=cols[3], ylim=c(0,1.1*mx))
-  lines(dr$Time, dr$OptimalEmployment, col=cols[4], type="s")
-  abline(v=2050, lty=2)
-  abline(h=0)
-  ContourFunctions::multicolor.title(c("Actual employment ","Optimal employment"), 3:4, cex.main = 0.7)
   
+    mx = max(max(dr$Employment), max(dr$OptimalEmployment))
+    plot(dr$Time, dr$Employment, type="s", ylab="Employment", xlab="Time", main="", col=cols[3], ylim=c(0,1.1*mx))
+    lines(dr$Time, dr$OptimalEmployment, col=cols[4], type="s")
+    abline(v=2050, lty=2)
+    abline(h=0)
+    ContourFunctions::multicolor.title(c("Actual employment ","Optimal employment"), 3:4, cex.main = 0.7)
+
   mx = max(max(dr$Production), max(dr$PotensialSales), max(dr$OptimalProduction))
   plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
        xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
@@ -89,16 +94,28 @@ for(i in 1:n)
   abline(h=0)
   ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
 
-  mx = max(max(dr$Production), max(dr$OptimalProduction))
-  plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
+
+  mx = max(max(dr$Sales), max(dr$ExpectedSales))
+  plot(dr$Time, dr$Sales, type="l", ylab="Sales", main="", 
        xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
-  lines(dr$Time, dr$PotensialSales, col=cols[2], type="s")
-  lines(dr$Time, dr$ExpectedSales, col=cols[3], type="l")
-  lines(dr$Time, dr$OptimalProduction, col=cols[4], type="l")
-  lines(dr$Time, 0.85*dr$OptimalProduction, lty=2, type="l")
-  abline(v=2050, lty=2)
-  abline(h=0)
-  ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
+  lines(dr$Time, dr$ExpectedSales, col=cols[2], type="l")
+  lines(dr$Time, dr$Production, col=cols[3], type="l")
+
+  
+  if(F)
+  {
+    mx = max(max(dr$Production), max(dr$OptimalProduction))
+    plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
+         xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
+    lines(dr$Time, dr$PotensialSales, col=cols[2], type="s")
+    lines(dr$Time, dr$ExpectedSales, col=cols[3], type="l")
+    lines(dr$Time, dr$OptimalProduction, col=cols[4], type="l")
+    lines(dr$Time, 0.85*dr$OptimalProduction, lty=2, type="l")
+    abline(v=2050, lty=2)
+    abline(h=0)
+    ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
+    
+  }
   
   mx = max(dr$Wage / dr$ExpectedWage[1])
   mn = min(dr$Wage / dr$ExpectedWage[1])
@@ -106,6 +123,14 @@ for(i in 1:n)
        main="", xlab="Time", col=cols[3], ylim=c(0.9*mn, 1.1*mx))   #
   lines(dr$Time, dr$ExpectedWage / dr$ExpectedWage[1], lty=2)
 
+  
+  #plot(dr$Time, dr$Wage / dr$ExpectedWage[1] - dr$ExpectedWage / dr$ExpectedWage[1], type="b")   #
+  #lines(dr$Time, 0.001*dr$Quitters, col="red")
+  #abline(h=0)  
+  
+  #plot(dr$Wage / dr$ExpectedWage[1] - dr$ExpectedWage / dr$ExpectedWage[1], dr$Quitters)
+  #abline(h=5,v=0)
+  
   plot(dr$Time, dr$Vacancies, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[3])
   abline(v=2050, lty=2)
   abline(h=0)
@@ -122,14 +147,31 @@ for(i in 1:n)
   #plot(dr$Time, dr$Sales, type="s")
   #lines(dr$Time, dr$ExpectedSales)
   
-    
+  #plot(dr$Time, dr$Vacancies, type="l", xlab="Time", ylab="", main="", col=cols[3])
+  
+  #plot(dr$Time, dr$Applications-dr$Quitters-dr$Vacancies, type="l", xlab="Time", ylab="", main="", col=cols[3])
+  #lines(dr$Time, dr$Quitters, type="l", col=cols[4])
+  #lines(dr$Time, dr$Vacancies, type="l", col=cols[5])
+  #abline(h=0)
+
+  
+  #plot(dr$Time, dr$expApplications- dr$expQuitters, type="l")  
+  #lines(dr$Time, dr$Vacancies, type="s", col="red")
+  #abline(h=0)
+      
   mx = max(max(dr$Applications), max(dr$Quitters))
-  plot(dr$Time, dr$Applications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[3])
-  lines(dr$Time, dr$Quitters, type="s", col=cols[4])
+  plot(dr$Time, dr$expApplications, type="l", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[3])
+  #lines(dr$Time, dr$expApplications, lty=2, col=cols[3])
+  lines(dr$Time, dr$expQuitters, type="l", col=cols[4])
+  #lines(dr$Time, dr$expQuitters, lty=2, col=cols[4])
   abline(h=0)
   abline(v=2050, lty=2)
   ContourFunctions::multicolor.title(c("Applications ","Quitters"), 3:4, cex.main = 0.7)
+  #lines(dr$Time, 200*(dr$Wage / dr$Wage[1]-1), lty=2)
+  #lines(dr$Time, 200*(dr$ExpectedWage / dr$ExpectedWage[1]-1), lty=1)
   
+  
+    
   if(sum(is.nan(dr$Profit / dr$Price))==0)
   {
     plot(dr$Time, dr$Profit / dr$Price, type="s", ylab="Profit / Price", xlab="Time", 

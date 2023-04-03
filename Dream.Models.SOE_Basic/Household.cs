@@ -34,7 +34,6 @@ namespace Dream.Models.SOE_Basic
         double _consumption_budget = 0;
         double _consumption_value = 0;
         double _wealth = 0;
-        double _year;
         double[] _c = null;  // Consumption
         double[] _vc = null; // Value of consumption
         double[] _budget = null;
@@ -43,7 +42,7 @@ namespace Dream.Models.SOE_Basic
         double _P_CES = 0;
         bool _fired = false;
         int _no, _ok;
-        int _nConsumption = 0;
+        int _nShoppings = 0;
         //bool _dead = false;
 
         #endregion
@@ -126,7 +125,6 @@ namespace Dream.Models.SOE_Basic
                     bool unemployed = _fired | _w == 0;  // Unemployed if just fired or if wage is zero
                     if (_fired) _fired = false; // Fired only 1 period
 
-                    _year = _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
                     ReportToStatistics();
 
                     _unempDuration = !unemployed ? 0 : _unempDuration+1;
@@ -148,38 +146,45 @@ namespace Dream.Models.SOE_Basic
 
                 case Event.Economics.Update:
                     // Income calculadet here because PublicProfitPerHousehold is calculated during PeriodStart-event by the Statistics object
+
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
 
                     #region Not used (Saving)
-                    if (_age >= _settings.HouseholdPensionAge) // If pensioner
-                    {
-                        _consumption_budget = _settings.HouseholdDisSaveRatePensioner * _wealth;
-                        _wealth = _wealth - _consumption_budget;
-                    }
-                    else if (_w > 0)                            // If employed
-                    {
-                        _consumption_budget = (1 - _settings.HouseholdSaveRate) * _income;
-                        _wealth = _wealth + _settings.HouseholdSaveRate * _income;
-                    }
-                    else                                     // If unemployed 
-                    {
-                        _consumption_budget = _settings.HouseholdDisSaveRateUnemployed * _wealth;
-                        _wealth = _wealth - _consumption_budget;
-                    }
+                    //if (_age >= _settings.HouseholdPensionAge) // If pensioner
+                    //{
+                    //    _consumption_budget = _settings.HouseholdDisSaveRatePensioner * _wealth;
+                    //    _wealth = _wealth - _consumption_budget;
+                    //}
+                    //else if (_w > 0)                            // If employed
+                    //{
+                    //    _consumption_budget = (1 - _settings.HouseholdSaveRate) * _income;
+                    //    _wealth = _wealth + _settings.HouseholdSaveRate * _income;
+                    //}
+                    //else                                     // If unemployed 
+                    //{
+                    //    _consumption_budget = _settings.HouseholdDisSaveRateUnemployed * _wealth;
+                    //    _wealth = _wealth - _consumption_budget;
+                    //}
                     #endregion
 
                     // This overwrites code above *****************************************************
-                    _consumption_budget = _income; // **************************************************
+                    //PSP
+                    double pos_wealth = Math.Max(_wealth, 0);
+                    _consumption_budget = _income + 0.0* pos_wealth;    
+                    if (_consumption_budget > 1.9 * _income)
+                        _consumption_budget = 1.9 * _income;
 
-                    if (_age==_settings.HouseholdPensionAge)
+                    //_consumption_budget = _income;
+
+                    if (_age==_settings.HouseholdPensionAge)  // Retirement
                     {
-                        if(_firmEmployment != null)
+                        if(_firmEmployment != null)           // If employed
                         {
                             _firmEmployment.Communicate(ECommunicate.IQuit, this);
                             _firmEmployment = null;
                         }
                     }
-                    else if(_age<_settings.HouseholdPensionAge)
+                    else if(_age<_settings.HouseholdPensionAge) // If in labor force
                     {
                         if (_firmEmployment == null)  // If unemployed
                             SearchForJob();
@@ -218,26 +223,31 @@ namespace Dream.Models.SOE_Basic
                     //    RemoveThisAgent();
                     //    return;
                     //}
-                    _nConsumption = 0; // Initialize
+                    _nShoppings = 0; // Initialize
                     break;
 
-                case Event.Economics.Consume:
+                case Event.Economics.Shopping:
                     BuyFromShops();
-                    _yr_consumption += _consumption;
-
-
-
-
-
+                    _yr_consumption += _consumption;  // Kill this
 
                     // Consume before die: Last consumption in period                    
-                    if (_nConsumption + 1 == _settings.HouseholdNumberConsumptionPerPeriod)
+                    if (_nShoppings + 1 == _settings.HouseholdNumberShoppingsPerPeriod)
                     {
+                        
                         _consumption_value = 0;
                         for (int s = 0; s < _settings.NumberOfSectors; s++)
                             _consumption_value += _vc[s];
 
-                        if (_random.NextEvent(ProbabilityDeath()))
+                        //PSP
+                        _wealth += _income - _consumption_value;
+
+                        int zz = 0;
+                        if (_time.Now > 40 * 12)
+                            if(_wealth<0)
+                                zz = 22;
+
+
+                        if (_random.NextEvent(ProbabilityDeath())) // If dead
                         {
                             if (_firmEmployment != null)
                             {
@@ -253,7 +263,7 @@ namespace Dream.Models.SOE_Basic
 
 
 
-                    _nConsumption++;
+                    _nShoppings++;
                     break;
 
 
@@ -268,7 +278,7 @@ namespace Dream.Models.SOE_Basic
                         else
                             _productivity = 0;
 
-                    _w = _firmEmployment == null ? 0.0 : _firmEmployment.Wage;
+                    _w = _firmEmployment == null ? 0.0 : _firmEmployment.FullWage;
 
                     _age++;
                     break;
@@ -305,11 +315,81 @@ namespace Dream.Models.SOE_Basic
         void BuyFromShop(int sector)
         {
 
+            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
 
-            int nRemaining = _settings.HouseholdNumberConsumptionPerPeriod - _nConsumption;
+
+            if (_firmShopArray[sector] == null)
+                _firmShopArray[sector] = _simulation.GetRandomOpenFirm(sector); //SearchForShop ???????????????????????
+
+            if (_budget[sector] < 0)
+            {
+                _c[sector] = 0;
+                _vc[sector] = 0;
+                return;
+            }
+
+            _ok++;
+            double buy = _budget[sector] / nRemaining;
+            if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, buy / _firmShopArray[sector].Price) == ECommunicate.Yes)
+            {
+                _c[sector] += buy / _firmShopArray[sector].Price;
+                _vc[sector] += buy;
+                _budget[sector] -= buy;
+                if (_budget[sector] < 0)
+                    throw new Exception("Budget is negative");
+                return;
+            }
+            else
+            {
+                double c = (double)_firmShopArray[sector].ReturnObject;
+                _c[sector] += c;
+                _vc[sector] += _firmShopArray[sector].Price * c;
+                _budget[sector] -= _firmShopArray[sector].Price * c;
+                buy -= _firmShopArray[sector].Price * c;
+
+                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 100);
+
+
+                int zz = 0;
+                if (_time.Now > 12 * 40 & nRemaining == 1)
+                    //if (_time.Now > 12 * 40)
+                    zz = 22;
+
+
+                if (f!=null)
+                    if (f.Communicate(ECommunicate.CanIBuy, buy / f.Price) == ECommunicate.Yes)
+                    {
+                        _firmShopArray[sector] = f;
+                        _c[sector] += buy / _firmShopArray[sector].Price;
+                        _vc[sector] += buy;
+                        _budget[sector] -= buy;
+                        return;
+                    }
+
+                _no++;
+                _ok--;
+                //_vc[sector] = 0;
+                //_c[sector] = 0;
+
+                //_statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
+                return;
+
+            }
+        }
+
+
+
+        //------------------------
+
+        void BuyFromShop2(int sector)
+        {
+
+            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
 
             int zz = 0;
-            if (_time.Now > 12 * 30 & nRemaining==2)
+            if (_time.Now > 12 * 40 & nRemaining==1)
+            //if (_time.Now > 12 * 40)
                 zz = 22;
 
             if (_firmShopArray[sector] == null)
@@ -341,7 +421,9 @@ namespace Dream.Models.SOE_Basic
                 _budget[sector] -= _firmShopArray[sector].Price * c;
                 buy -= _firmShopArray[sector].Price * c;
 
-                Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdMaxNumberShops, sector);
+                //Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdMaxNumberShops, sector);
+                Firm[] firms = _simulation.GetRandomFirmsFromHouseholds(_settings.HouseholdMaxNumberShops, sector);
+
                 firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                 foreach (Firm f in firms)
@@ -365,7 +447,6 @@ namespace Dream.Models.SOE_Basic
                         }
                 }
 
-
                 _no++;
                 _ok--;
                 //_vc[sector] = 0;
@@ -378,7 +459,7 @@ namespace Dream.Models.SOE_Basic
             }
         }
 
-        #region CalculateCESPrice
+        #region MakeBudget
         void MakeBudget()
         {
             // Calculate CES-priceindex
@@ -433,7 +514,6 @@ namespace Dream.Models.SOE_Basic
 
 
                 List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector).ToList<Firm>();
-                //Firm[] firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector);
 
                 //firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -536,9 +616,11 @@ namespace Dream.Models.SOE_Basic
         void ReportToStatistics()
         {
             if (_report & !_settings.SaveScenario)
-            {               
-                _statistics.StreamWriterHouseholdReport.WriteLineTab(_year, this.ID, _productivity, _age/ _settings.PeriodsPerYear, 
-                    _consumption, _consumption_budget, _income, _wealth, _w, _statistics.PublicMarketPriceTotal);
+            {
+                double year = _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
+
+                _statistics.StreamWriterHouseholdReport.WriteLineTab(year, this.ID, _productivity, _age/ _settings.PeriodsPerYear, 
+                    _consumption, _consumption_value, _income, _wealth, _w, _statistics.PublicMarketPriceTotal);
                 _statistics.StreamWriterHouseholdReport.Flush();
             }
         }
@@ -555,7 +637,15 @@ namespace Dream.Models.SOE_Basic
                     _fired = true;
                     //_firmEmployment = null;
                     return ECommunicate.Ok;
-               
+
+                case ECommunicate.YouAreHiredInStartup:  // Forced hiring in startup
+                    if (_firmEmployment != null)
+                        _firmEmployment.Communicate(ECommunicate.IQuit, this);
+                    _firmEmployment = (Firm)o;
+                    _w = _firmEmployment.Wage;
+                    return ECommunicate.Ok;
+
+
                 case ECommunicate.Initialize:
                     _firmEmployment = (Firm)o;
                     return ECommunicate.Ok;
@@ -643,6 +733,10 @@ namespace Dream.Models.SOE_Basic
         public Firm FirmEmployment
         {
             get { return _firmEmployment; }
+        }
+        public Firm FirmShopArray(int sector)
+        {
+            return _firmShopArray[sector]; 
         }
 
         public double ConsumptionBudget

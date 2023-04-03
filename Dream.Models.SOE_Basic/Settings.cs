@@ -37,6 +37,9 @@ namespace Dream.Models.SOE_Basic
         /// </summary>
         public double FirmFi { get; set; } = 1.0;
 
+        public double FirmGamma_y { get; set; } = 0.8;
+
+
         /// <summary>
         /// Wage markup if hard to find people (outside comfort zone)
         /// </summary>
@@ -86,6 +89,11 @@ namespace Dream.Models.SOE_Basic
         /// </summary>
         public double FirmPriceMarkdownInZone { get; set; } = 0.001;
         public double FirmPriceMarkdownSensitivityInZone { get; set; } = 1.0;
+
+        /// <summary>
+        /// Expected excess potential sales
+        /// </summary>
+        public double FirmExpectedExcessPotentialSales { get; set; } = 1.5;
 
 
         /// <summary>
@@ -236,7 +244,7 @@ namespace Dream.Models.SOE_Basic
         /// <summary>
         /// Number of times the household consumes in a period
         /// </summary>
-        public int HouseholdNumberConsumptionPerPeriod { get; set; } = 1;
+        public int HouseholdNumberShoppingsPerPeriod { get; set; } = 1;
 
 
         public int NumberOfInheritors { get; set; } = 1;

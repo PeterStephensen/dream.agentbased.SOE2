@@ -27,7 +27,7 @@ namespace Dream.Models.SOE_Basic
         {
             //public const int Delivery = 10;
             public const int Update = 11;
-            public const int Consume = 12;
+            public const int Shopping = 12;
 
         }
         #endregion 

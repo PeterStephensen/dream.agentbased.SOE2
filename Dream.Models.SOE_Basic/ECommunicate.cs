@@ -14,6 +14,8 @@ namespace Dream.Models.SOE_Basic
         Ok,
         ThankYou,
         YouAreFired,
+        YouAreHiredInStartup,
+        YouAreCustomerInStartup,
         JobApplication,
         IQuit,
         Death,
