@@ -142,6 +142,8 @@ namespace Dream.Models.SOE_Basic
                     if (unemployed) _w = 0;
                     _no = 0;
                     _ok = 0;
+                    _nShoppings = 0; // Initialize
+
                     break;
 
                 case Event.Economics.Update:
@@ -208,6 +210,7 @@ namespace Dream.Models.SOE_Basic
 
                     MakeBudget();
 
+
                     //BuyFromShops(); 
                     //_yr_consumption += _consumption;
 
@@ -223,10 +226,11 @@ namespace Dream.Models.SOE_Basic
                     //    RemoveThisAgent();
                     //    return;
                     //}
-                    _nShoppings = 0; // Initialize
                     break;
 
                 case Event.Economics.Shopping:
+
+                    //Console.WriteLine(_nShoppings);
                     BuyFromShops();
                     _yr_consumption += _consumption;  // Kill this
 
@@ -238,14 +242,7 @@ namespace Dream.Models.SOE_Basic
                         for (int s = 0; s < _settings.NumberOfSectors; s++)
                             _consumption_value += _vc[s];
 
-                        //PSP
                         _wealth += _income - _consumption_value;
-
-                        int zz = 0;
-                        if (_time.Now > 40 * 12)
-                            if(_wealth<0)
-                                zz = 22;
-
 
                         if (_random.NextEvent(ProbabilityDeath())) // If dead
                         {
@@ -260,8 +257,6 @@ namespace Dream.Models.SOE_Basic
                             return;
                         }
                     }
-
-
 
                     _nShoppings++;
                     break;
@@ -330,6 +325,9 @@ namespace Dream.Models.SOE_Basic
 
             _ok++;
             double buy = _budget[sector] / nRemaining;
+            if (buy < 0)
+                throw new Exception("Can only buy positive number.");
+
             if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, buy / _firmShopArray[sector].Price) == ECommunicate.Yes)
             {
                 _c[sector] += buy / _firmShopArray[sector].Price;
@@ -347,16 +345,9 @@ namespace Dream.Models.SOE_Basic
                 _budget[sector] -= _firmShopArray[sector].Price * c;
                 buy -= _firmShopArray[sector].Price * c;
 
-                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 100);
+                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 10);
 
-
-                int zz = 0;
-                if (_time.Now > 12 * 40 & nRemaining == 1)
-                    //if (_time.Now > 12 * 40)
-                    zz = 22;
-
-
-                if (f!=null)
+                if (f != null)
                     if (f.Communicate(ECommunicate.CanIBuy, buy / f.Price) == ECommunicate.Yes)
                     {
                         _firmShopArray[sector] = f;
@@ -377,88 +368,8 @@ namespace Dream.Models.SOE_Basic
 
             }
         }
-
-
-
-        //------------------------
-
-        void BuyFromShop2(int sector)
-        {
-
-            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
-
-            int zz = 0;
-            if (_time.Now > 12 * 40 & nRemaining==1)
-            //if (_time.Now > 12 * 40)
-                zz = 22;
-
-            if (_firmShopArray[sector] == null)
-                _firmShopArray[sector] = _simulation.GetRandomOpenFirm(sector); //SearchForShop ???????????????????????
-           
-            if (_budget[sector] < 0)
-            {
-                _c[sector] = 0;
-                _vc[sector] = 0;
-                return;
-            }
-
-            _ok++;
-            double buy = _budget[sector] / nRemaining; 
-            if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, buy / _firmShopArray[sector].Price) == ECommunicate.Yes)
-            {
-                _c[sector] += buy / _firmShopArray[sector].Price;
-                _vc[sector] += buy;
-                _budget[sector] -= buy;
-                if(_budget[sector]<0)
-                    throw new Exception("Budget is negative");
-                return;
-            }
-            else
-            {
-                double c = (double)_firmShopArray[sector].ReturnObject;
-                _c[sector] += c;
-                _vc[sector] += _firmShopArray[sector].Price * c;
-                _budget[sector] -= _firmShopArray[sector].Price * c;
-                buy -= _firmShopArray[sector].Price * c;
-
-                //Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdMaxNumberShops, sector);
-                Firm[] firms = _simulation.GetRandomFirmsFromHouseholds(_settings.HouseholdMaxNumberShops, sector);
-
-                firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                foreach (Firm f in firms)
-                {
-                    if(f.Open)
-                        if (f.Communicate(ECommunicate.CanIBuy, buy / f.Price) == ECommunicate.Yes)
-                        {
-                            _firmShopArray[sector] = f;
-                            _c[sector] += buy / _firmShopArray[sector].Price;
-                            _vc[sector] += buy;
-                            _budget[sector] -= buy;
-                            return;
-                        }
-                        else
-                        {
-                            c = (double)_firmShopArray[sector].ReturnObject;
-                            _c[sector] += c;
-                            _vc[sector] += _firmShopArray[sector].Price * c;
-                            _budget[sector] -= _firmShopArray[sector].Price * c;
-                            buy -= _firmShopArray[sector].Price * c;
-                        }
-                }
-
-                _no++;
-                _ok--;
-                //_vc[sector] = 0;
-                //_c[sector] = 0;
-
-                //_statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
-                return;
-
-            }
-        }
-
+        
+        
         #region MakeBudget
         void MakeBudget()
         {
@@ -486,62 +397,6 @@ namespace Dream.Models.SOE_Basic
 
         #endregion
 
-
-        void BuyFromShop_NEW(int sector)
-        {
-            if (_firmShopArray[sector] == null)
-                _firmShopArray[sector] = _simulation.GetRandomFirm(sector); //SearchForShop ???????????????????????
-
-            if (_budget[sector] < 0)
-            {
-                _vc[sector] = 0;
-                _c[sector] = 0;
-                return;
-            }
-
-            if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, _budget[sector] / _firmShopArray[sector].Price) == ECommunicate.Yes)
-            {
-                _vc[sector] = _budget[sector];
-                _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
-                _ok++;
-                return;
-            }
-            else
-            {
-                _vc[sector] = _budget[sector];
-                _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
-                _no++;
-
-
-                List<Firm> firms = _simulation.GetRandomFirms(_settings.HouseholdMaxNumberShops, sector).ToList<Firm>();
-
-                //firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first   // Speeder up!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                for (int j = 0; j < 10; j++)
-                {
-                    Firm f = firms.MinBy(x => x.Price);
-                    if (f.Communicate(ECommunicate.CanIBuy, _budget[sector] / f.Price) == ECommunicate.Yes)
-                    {
-                        _firmShopArray[sector] = f;
-                        _vc[sector] = _budget[sector];
-                        _c[sector] = _budget[sector] / _firmShopArray[sector].Price;
-                        return;
-                    }
-                    firms.Remove(f);
-
-                }
-
-                _vc[sector] = 0;
-                _c[sector] = 0;
-
-                _statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
-                return;
-
-            }
-        }
-
-
         #endregion
 
         #region SearchForJob()
@@ -549,8 +404,9 @@ namespace Dream.Models.SOE_Basic
         {
 
             double wageNow = _firmEmployment != null ? _firmEmployment.Wage : 0.0;
-            
-            var firms = _simulation.GetRandomFirmsAllSectors(_settings.HouseholdNumberFirmsSearchJob);
+
+            //var firms = _simulation.GetRandomFirmsAllSectors(_settings.HouseholdNumberFirmsSearchJob);
+            var firms = _simulation.GetRandomFirmsFromHouseholdsEmployment(_settings.HouseholdNumberFirmsSearchJob);
             firms = firms.OrderByDescending(x => x.Wage).ToArray<Firm>(); // Order by wage. Highest wage first
 
             foreach (Firm f in firms)
@@ -572,7 +428,12 @@ namespace Dream.Models.SOE_Basic
         void SearchForShop(int sector)
         {
 
-            Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            //Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            Firm[] firms = _simulation.GetRandomFirmsFromHouseholds(_settings.HouseholdNumberFirmsSearchShop, sector);
+
+            if (_time.Now<12) // Solving up-start problem
+                firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
+            
             firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowes price first
 
             if (_firmShopArray[sector] == null || firms.First().Price < _firmShopArray[sector].Price)
@@ -631,6 +492,7 @@ namespace Dream.Models.SOE_Basic
         #region Communicate
         public ECommunicate Communicate(ECommunicate comID, object o)
         {
+            Firm f=null;
             switch (comID)
             {
                 case ECommunicate.YouAreFired:
@@ -638,11 +500,31 @@ namespace Dream.Models.SOE_Basic
                     //_firmEmployment = null;
                     return ECommunicate.Ok;
 
-                case ECommunicate.YouAreHiredInStartup:  // Forced hiring in startup
-                    if (_firmEmployment != null)
-                        _firmEmployment.Communicate(ECommunicate.IQuit, this);
-                    _firmEmployment = (Firm)o;
-                    _w = _firmEmployment.Wage;
+                //case ECommunicate.YouAreHiredInStartup:  // Forced hiring in startup
+                //    if (_firmEmployment != null)
+                //        _firmEmployment.Communicate(ECommunicate.IQuit, this);
+                //    _firmEmployment = (Firm)o;
+                //    _w = _firmEmployment.Wage;
+                //    return ECommunicate.Ok;
+
+                case ECommunicate.AvertiseJob:
+                    f = (Firm)o; 
+                    if (f.Wage > _w)
+                        if (f.Communicate(ECommunicate.JobApplication, this) == ECommunicate.Yes)
+                        {
+                            if (_firmEmployment != null)
+                                _firmEmployment.Communicate(ECommunicate.IQuit, this);
+
+                            _firmEmployment = f;
+                        }
+
+                    return ECommunicate.Ok;
+
+                case ECommunicate.AvertiseGood:
+                    f = (Firm)o;
+                    if(_firmShopArray[f.Sector]!=null)
+                        if (f.Price < _firmShopArray[f.Sector].Price)
+                            _firmShopArray[f.Sector] = f;
                     return ECommunicate.Ok;
 
 

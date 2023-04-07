@@ -343,15 +343,36 @@ namespace Dream.Models.SOE_Basic
             if (sector >= _settings.NumberOfSectors) return null;
 
             Household[] hs = GetRandomHouseholds(n);
-            Firm[] fs = new Firm[n]; 
+            List<Firm> fs = new(); 
             
             for(int i=0;i<n;i++)
-            {
-                fs[i] = hs[i].FirmShopArray(sector);                
-            }
+                if(hs[i].FirmShopArray(sector)!=null)
+                    fs.Add(hs[i].FirmShopArray(sector));                
             
+            return fs.ToArray();
+        }
+
+        public Firm[] GetRandomFirmsFromHouseholdsEmployment(int n)
+        {
+            if (n < 1) return null;
+
+            Firm[] fs = new Firm[n];
+
+            int i=0;
+            while(i<n)
+            {
+                var h = GetRandomHousehold();
+                if(h.FirmEmployment!=null)
+                {
+                    fs[i] = h.FirmEmployment;
+                    i++;
+                }
+            }
+
             return fs;
         }
+
+
         #endregion
 
 
@@ -456,11 +477,9 @@ namespace Dream.Models.SOE_Basic
         public Firm GetNextFirmWithGoods(double budget, int sector, int max_n)
         {
             int i = 0;
-            //if(max_n>_firms)
 
             while (i < max_n)
             {
-                //Household h = GetRandomHousehold();
                 Firm f = GetRandomFirm(sector);
 
                 if(f.Open)

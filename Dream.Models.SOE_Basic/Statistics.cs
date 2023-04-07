@@ -185,10 +185,6 @@ namespace Dream.Models.SOE_Basic
                     {
                         _profitPerHousehold += fi.Profit;
 
-                        int zz = 0;
-                        if (_time.Now > 20 * 12)
-                            zz = 1;
-                        
                         discountedProfitsTotal += fi.Profit / Math.Pow(1 + _interestRate, fi.Age); 
                         discountedProfits[fi.Sector] += fi.Profit / Math.Pow(1 + _interestRate, fi.Age);
                         nFirms[fi.Sector]++; 
@@ -231,6 +227,13 @@ namespace Dream.Models.SOE_Basic
                     _firmInfo = new List<FirmInfo>();
 
                     //_totalProfit = 0;
+
+                    //_nFirmCloseNatural = 0;
+                    //_nFirmCloseTooBig = 0;
+                    //_nFirmCloseNegativeProfit = 0;
+                    //_nFirmCloseZeroEmployment = 0;
+                    //_nFirmNew = 0;
+
                     break;
 
                 case Event.System.PeriodEnd:
@@ -467,7 +470,7 @@ namespace Dream.Models.SOE_Basic
                                     _simulation.Households.Count, prod_avr, nUnemp, tot_opt_l, P_star, _totalEmployment, 
                                     tot_vacancies, _marketWageTotal, _marketPriceTotal, _totalSales, _profitPerHousehold,
                                     n_firms, _expProfit, mean_age, _meanValue, _nFirmCloseNatural, 
-                                    _nFirmCloseNegativeProfit, _nFirmCloseTooBig, _nFirmNew, _discountedProfits, 
+                                    _nFirmCloseZeroEmployment, _nFirmCloseTooBig, _nFirmNew, _discountedProfits, 
                                     _expDiscountedProfits, _sharpeRatioTotal, _expSharpeRatioTotal, laborSupply, _yr_consumption, _yr_employment, _totalPotensialSales);
                                 sw.Flush();
 

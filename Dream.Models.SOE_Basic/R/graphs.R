@@ -108,8 +108,6 @@ abline(h=0)
 abline(v=burnIn, lty=2)
 
 
-
-
 #hist(d_prod$Productivity, breaks = 50, xlab="Firm Productivity", main=paste("Year:",yr), col=cols[3])
 
 mx = max(max(d_prod$OptimalEmployment), max(d_prod$Employment))
@@ -256,7 +254,6 @@ if(yr>burnIn)
   plot(0)
 }
 
-
 z = d$Sales / d$nEmployment / corr
 plot(d$Year, z, main="", type="l", xlim=c(y0,mx_yr), ylim=c(0, 1.1*max(z)), ylab="Productivity", xlab="year")
 abline(h=0)
@@ -292,14 +289,12 @@ z = d$nFirmCloseNegativeProfit + d$nFirmCloseNatural + d$nFirmCloseTooBig
 mx = max(max(z), max(d$nFirmNew))
 plot(d$Year, z, xlab = "year", ylab="Flow of firms", ylim=c(0, 1.1*mx), 
      type="l", xlim=c(y0,mx_yr), main="", cex.main=0.7)
-lines(d$Year, d$nFirmCloseNatural, col=cols[2], type="l")
-lines(d$Year, d$nFirmCloseTooBig, col=cols[3], type="s")
 abline(h=120, lty=2)
-lines(d$Year, d$nFirmNew, col=cols[4], type="l")
+lines(d$Year, d$nFirmNew, col=cols[2], type="l")
 abline(h=0)
 abline(v=burnIn, lty=2)
 abline(v=2050, lty=2)
-ContourFunctions::multicolor.title(c("Closed:Total  ","Closed:Natural  ", "Closed:TooBig  ", "New"), 1:4, cex.main = 0.7)
+ContourFunctions::multicolor.title(c("Closed  ", "New"), 1:2, cex.main = 0.7)
 
 
 plot(d$Year, d$SharpeRatio, main="", xlab = "year", ylab="SharpeRatio", 
@@ -308,13 +303,6 @@ lines(d$Year, d$ExpSharpRatio, col=cols[4])
 abline(h=0)
 abline(v=burnIn, lty=2)
 ContourFunctions::multicolor.title(c("SharpeRatio  ","Expected SharpeRatio"), 3:4, cex.main = 0.7)
-
-
-#plot(d$Year, d$DiscountedProfits / d$nFirms, main="", xlab = "year", ylab="Discounted Profits per firm", 
-#     type="l", xlim=c(y0,mx_yr))
-#lines(d$Year, d$ExpDiscountedProfits / d$nFirms, lty=2)
-#abline(h=0)
-#abline(v=burnIn, lty=2)
 
 
 #-------

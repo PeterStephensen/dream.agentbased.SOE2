@@ -189,7 +189,17 @@ namespace Dream.Models.SOE_Basic
         /// </summary>
         public double FirmVacanciesShare { get; set; } = 0.1;
         public int FirmMinRemainingVacancies { get; set; } = 0;
+
+        /// <summary>
+        /// Number of messages send to random households for good advertisment
+        /// </summary>
+        public int FirmNumberOfGoodAdvertisements { get; set; } = 25;
         
+        /// <summary>
+        /// Number of messages send to random households for job advertisment
+        /// </summary>
+        public int FirmNumberOfJobAdvertisements { get; set; } = 10;
+
 
         //---------------------------------
         /// <summary>

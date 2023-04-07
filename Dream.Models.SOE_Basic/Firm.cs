@@ -176,13 +176,6 @@ namespace Dream.Models.SOE_Basic
                                         CloseFirm(EStatistics.FirmCloseZeroEmployment);
                                         break;
                                     }
-                                //if (_profit < 0 & _age>12*10)
-                                //    if (_random.NextEvent(0.5)) 
-                                //    {
-                                //        CloseFirm(EStatistics.FirmCloseZeroEmployment);
-                                //        break;
-                                //    }
-
                             }
 
                     if (_random.NextEvent(_settings.FirmDefaultProbability))
@@ -264,6 +257,9 @@ namespace Dream.Models.SOE_Basic
 
                 case ECommunicate.CanIBuy:
                     double x = (double)o;
+                    //if (x < 0)
+                    //    throw new Exception("Can only buy positive number.");
+                    
                     _potentialSales += x;
                     if (_sales + x <= _y_primo)
                     {
@@ -298,9 +294,6 @@ namespace Dream.Models.SOE_Basic
                             _no++;
                             return ECommunicate.No;
                         }
-                        //int zz = 0;
-                        //if (_w_full>10000)
-                        //    zz = 1;
 
                     }
 
@@ -409,15 +402,15 @@ namespace Dream.Models.SOE_Basic
         /// Selling the good: Setting price
         /// </summary>
 
-        
+
         void Marketing()
         {
 
             bool inZone = Math.Abs((_expSales - _y_optimal) / _y_optimal) < _settings.FirmComfortZoneSales;
             double probRecalculate = inZone ? _settings.FirmProbabilityRecalculatePriceInZone : _settings.FirmProbabilityRecalculatePrice;
             double gamma_y = _settings.FirmGamma_y;
-                        
-            
+            bool advertise = false;
+
             if (_random.NextEvent(probRecalculate))
             {
 
@@ -447,6 +440,9 @@ namespace Dream.Models.SOE_Basic
                             //double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
                             double g = markdown * PriceFunc(markdownSensitivity * (_y_primo * gamma_y - _expSales) / (_y_primo * gamma_y));
                             p_target = (1 - g) * _expPrice;
+                            
+                            if(_age<12*5)
+                                advertise = true;
                         }
                         else if (_expPotentialSales / _settings.FirmExpectedExcessPotentialSales > _y_primo )
                         {
@@ -464,6 +460,8 @@ namespace Dream.Models.SOE_Basic
 
                 double a = 0.8;
                 _p = a * _p + (1 - a) * p_target;
+                if (advertise)
+                    AdvertiseGood();
 
             }
             else 
@@ -496,6 +494,7 @@ namespace Dream.Models.SOE_Basic
                 //return;
             }
 
+            bool advertise = false;
             double l = CalcEmployment();
             double avr_prod = 1.0;
             if(_employed.Count>0) avr_prod = l / _employed.Count;
@@ -564,6 +563,8 @@ namespace Dream.Models.SOE_Basic
                         double g = markup * PriceFunc(markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd) / _l_optimal);// _employed.Count);
                         //double g = markupSensitivity * (_vacancies + _expQuitters * _expAvrProd - _expApplications * _expAvrProd) / _l_optimal;
                         w_target = (1 + g) * _expWage;
+                        if (_age < 12 * 5)
+                            advertise = true;
                     }
                 }
                 else
@@ -578,6 +579,8 @@ namespace Dream.Models.SOE_Basic
 
                 double a = 0.8;
                 _w = a * _w + (1 - a) * w_target;
+                if (advertise)
+                    AdvertiseJob();
             }
             else
             {
@@ -587,29 +590,46 @@ namespace Dream.Models.SOE_Basic
             }
         }
 
-        void HumanResourceStartUp()
+        //void HumanResourceStartUp()
+        //{
+        //    double l = CalcEmployment();
+
+        //    _w = _expWage;
+
+        //    if (l<_settings.FirmStartupEmployment)   // Forced employment!
+        //    {
+        //        while(l < _settings.FirmStartupEmployment)
+        //        {
+        //            Household h = _simulation.GetRandomHousehold();
+        //            if(h.Age<_settings.HouseholdPensionAge)
+        //            {
+        //                h.Communicate(ECommunicate.YouAreHiredInStartup, this);
+        //                l += h.Productivity;
+        //                _employed.Add(h);
+        //            }
+        //        }                
+        //    }
+        //}
+
+
+
+        #endregion
+
+        #region Advertising
+        void AdvertiseGood()
         {
-            double l = CalcEmployment();
+            foreach (var h in _simulation.GetRandomHouseholds(_settings.FirmNumberOfGoodAdvertisements))
+                h.Communicate(ECommunicate.AvertiseGood, this);
 
-            _w = _expWage;
-
-            if (l<_settings.FirmStartupEmployment)   // Forced employment!
-            {
-                while(l < _settings.FirmStartupEmployment)
-                {
-                    Household h = _simulation.GetRandomHousehold();
-                    if(h.Age<_settings.HouseholdPensionAge)
-                    {
-                        h.Communicate(ECommunicate.YouAreHiredInStartup, this);
-                        l += h.Productivity;
-                        _employed.Add(h);
-                    }
-                }                
-            }
         }
 
+        void AdvertiseJob()
+        {
 
+            foreach (var h in _simulation.GetRandomHouseholds(_settings.FirmNumberOfJobAdvertisements))
+                h.Communicate(ECommunicate.AvertiseJob, this);
 
+        }
         #endregion
 
         #region ReportToStatistics()
@@ -659,7 +679,7 @@ namespace Dream.Models.SOE_Basic
         }
         #endregion
         #endregion
-
+        
         #region Public proporties
         public bool Open
         {
@@ -735,7 +755,7 @@ namespace Dream.Models.SOE_Basic
         public double Sales
         {
             //get { return _s_primo; }
-            get { return _sales; }
+            get {return _sales; }
         }
         public double PotentialSales
         {
@@ -770,9 +790,6 @@ namespace Dream.Models.SOE_Basic
         public double Utility { get; set; } = 0;
 
         #endregion
-
-    
-        ///
     
     }
 }

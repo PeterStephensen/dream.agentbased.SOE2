@@ -71,7 +71,7 @@ Registered S3 method overwritten by 'quantmod':
 > d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 > 
 > sum(d_house$ConsumptionValue==0)/nrow(d_house)
-[1] 0
+[1] 0.006869419
 > 
 > 
 > df = read.delim(paste0(o_dir,"/household_reports.txt"))
@@ -142,8 +142,6 @@ Registered S3 method overwritten by 'quantmod':
 > abline(v=burnIn, lty=2)
 > 
 > 
-> 
-> 
 > #hist(d_prod$Productivity, breaks = 50, xlab="Firm Productivity", main=paste("Year:",yr), col=cols[3])
 > 
 > mx = max(max(d_prod$OptimalEmployment), max(d_prod$Employment))
@@ -151,9 +149,9 @@ Registered S3 method overwritten by 'quantmod':
 +      log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.5)
 Advarselsbeskeder:
 1: I xy.coords(x, y, xlabel, ylabel, log) :
-  197 x værdier <= 0 udeladt fra logaritmisk plot
+  32 x værdier <= 0 udeladt fra logaritmisk plot
 2: I xy.coords(x, y, xlabel, ylabel, log) :
-  171 y værdier <= 0 udeladt fra logaritmisk plot
+  46 y værdier <= 0 udeladt fra logaritmisk plot
 > abline(a=0,b=1, lty=2)
 > 
 > mx = max(max(d_prod$OptimalProduction), max(d_prod$Sales))
@@ -162,9 +160,9 @@ Advarselsbeskeder:
 +      log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.5)
 Advarselsbeskeder:
 1: I xy.coords(x, y, xlabel, ylabel, log) :
-  844 x værdier <= 0 udeladt fra logaritmisk plot
+  153 x værdier <= 0 udeladt fra logaritmisk plot
 2: I xy.coords(x, y, xlabel, ylabel, log) :
-  785 y værdier <= 0 udeladt fra logaritmisk plot
+  143 y værdier <= 0 udeladt fra logaritmisk plot
 > abline(a=0,b=1, lty=2)
 > 
 > mx = max(max(d_house$ConsumptionValue), max(d_house$ConsumptionBudget))
@@ -300,7 +298,6 @@ Advarselsbeskeder:
 +   plot(0)
 + }
 > 
-> 
 > z = d$Sales / d$nEmployment / corr
 > plot(d$Year, z, main="", type="l", xlim=c(y0,mx_yr), ylim=c(0, 1.1*max(z)), ylab="Productivity", xlab="year")
 > abline(h=0)
@@ -336,14 +333,14 @@ Advarselsbeskeder:
 > mx = max(max(z), max(d$nFirmNew))
 > plot(d$Year, z, xlab = "year", ylab="Flow of firms", ylim=c(0, 1.1*mx), 
 +      type="l", xlim=c(y0,mx_yr), main="", cex.main=0.7)
-> lines(d$Year, d$nFirmCloseNatural, col=cols[2], type="l")
-> lines(d$Year, d$nFirmCloseTooBig, col=cols[3], type="s")
+> #lines(d$Year, d$nFirmCloseNatural, col=cols[2], type="l")
+> #lines(d$Year, d$nFirmCloseTooBig, col=cols[3], type="s")
 > abline(h=120, lty=2)
-> lines(d$Year, d$nFirmNew, col=cols[4], type="l")
+> lines(d$Year, d$nFirmNew, col=cols[2], type="l")
 > abline(h=0)
 > abline(v=burnIn, lty=2)
 > abline(v=2050, lty=2)
-> ContourFunctions::multicolor.title(c("Closed:Total  ","Closed:Natural  ", "Closed:TooBig  ", "New"), 1:4, cex.main = 0.7)
+> ContourFunctions::multicolor.title(c("Closed  ", "New"), 1:2, cex.main = 0.7)
 > 
 > 
 > plot(d$Year, d$SharpeRatio, main="", xlab = "year", ylab="SharpeRatio", 
@@ -352,13 +349,6 @@ Advarselsbeskeder:
 > abline(h=0)
 > abline(v=burnIn, lty=2)
 > ContourFunctions::multicolor.title(c("SharpeRatio  ","Expected SharpeRatio"), 3:4, cex.main = 0.7)
-> 
-> 
-> #plot(d$Year, d$DiscountedProfits / d$nFirms, main="", xlab = "year", ylab="Discounted Profits per firm", 
-> #     type="l", xlim=c(y0,mx_yr))
-> #lines(d$Year, d$ExpDiscountedProfits / d$nFirms, lty=2)
-> #abline(h=0)
-> #abline(v=burnIn, lty=2)
 > 
 > 
 > #-------
@@ -509,4 +499,4 @@ null device
 > 
 > proc.time()
   bruger   system forløbet 
-    7.18     0.53    34.11 
+    2.65     0.39     6.51 

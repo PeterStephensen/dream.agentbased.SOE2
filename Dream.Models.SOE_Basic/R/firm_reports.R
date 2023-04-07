@@ -27,7 +27,7 @@ dd = d_report %>% filter(Productivity>8)
 
 pdf(paste0(o_dir,"/firm_reports.pdf"))
 
-
+#ID=34151
 d_report = d_report %>% arrange(ID)
 ids=unique(d_report$ID)
 n = length(ids)
@@ -44,13 +44,14 @@ dec = function(x,n=3)
 
 par(mfrow=c(3,3))
 
+
 for(i in 1:n)
 {
-  #i=5121
+  #i=31
+  #i=i+1
+  #i=which(ids==34421)
   dr = d_report %>% filter(ID==ids[i])
-  #dr = d_report %>% filter(ID==78408)
 
-  
   if(nrow(dr)<2)
     next
   
@@ -75,12 +76,12 @@ for(i in 1:n)
   cat(i, "/", n, "\n")
   
   
-    mx = max(max(dr$Employment), max(dr$OptimalEmployment))
-    plot(dr$Time, dr$Employment, type="s", ylab="Employment", xlab="Time", main="", col=cols[3], ylim=c(0,1.1*mx))
-    lines(dr$Time, dr$OptimalEmployment, col=cols[4], type="s")
-    abline(v=2050, lty=2)
-    abline(h=0)
-    ContourFunctions::multicolor.title(c("Actual employment ","Optimal employment"), 3:4, cex.main = 0.7)
+  mx = max(max(dr$Employment), max(dr$OptimalEmployment))
+  plot(dr$Time, dr$Employment, type="s", ylab="Employment", xlab="Time", main="", col=cols[3], ylim=c(0,1.1*mx))
+  lines(dr$Time, dr$OptimalEmployment, col=cols[4], type="s")
+  abline(v=2050, lty=2)
+  abline(h=0)
+  ContourFunctions::multicolor.title(c("Actual employment ","Optimal employment"), 3:4, cex.main = 0.7)
 
   mx = max(max(dr$Production), max(dr$PotensialSales), max(dr$OptimalProduction))
   plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
@@ -100,7 +101,8 @@ for(i in 1:n)
        xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
   lines(dr$Time, dr$ExpectedSales, col=cols[2], type="l")
   lines(dr$Time, dr$Production, col=cols[3], type="l")
-
+  ContourFunctions::multicolor.title(c("Sales ","ExpectedSales ", "Production "), 1:3, cex.main = 0.7)
+  
   
   if(F)
   {
@@ -159,6 +161,9 @@ for(i in 1:n)
   #lines(dr$Time, dr$Vacancies, type="s", col="red")
   #abline(h=0)
       
+  #dr = d_report %>% filter(ID==83164)
+  
+  
   mx = max(max(dr$Applications), max(dr$Quitters))
   plot(dr$Time, dr$expApplications, type="l", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[3])
   #lines(dr$Time, dr$expApplications, lty=2, col=cols[3])
@@ -167,8 +172,8 @@ for(i in 1:n)
   abline(h=0)
   abline(v=2050, lty=2)
   ContourFunctions::multicolor.title(c("Applications ","Quitters"), 3:4, cex.main = 0.7)
-  #lines(dr$Time, 200*(dr$Wage / dr$Wage[1]-1), lty=2)
-  #lines(dr$Time, 200*(dr$ExpectedWage / dr$ExpectedWage[1]-1), lty=1)
+  lines(dr$Time, 200*(dr$Wage / dr$Wage[1]-1), lty=2)
+  lines(dr$Time, 200*(dr$ExpectedWage / dr$ExpectedWage[1]-1), lty=1)
   
   
     
