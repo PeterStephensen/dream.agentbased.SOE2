@@ -26,7 +26,7 @@ namespace Dream.Models.SOE_Basic
             settings.NumberOfHouseholdsPerFirm = 5;
             settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
-            settings.HouseholdNumberShoppingsPerPeriod = 4; // Weekly consumption
+            settings.HouseholdNumberShoppingsPerPeriod = 2; // Weekly consumption
 
             //Firms
             settings.FirmParetoMinPhi = 0.5;
@@ -73,8 +73,9 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProbabilityRecalculatePrice = 0.5;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
 
-            settings.FirmExpectedExcessPotentialSales = 1.5;
-            
+            settings.FirmExpectedExcessPotentialSales = 1.5; // 1.1  !!!!!!!!!!!!!!!!
+            settings.FirmGamma_y = 0.8; //0.95
+
             settings.FirmPriceMechanismStart = 12 * 1;
 
             //-----
@@ -86,8 +87,11 @@ namespace Dream.Models.SOE_Basic
             settings.FirmDefaultStart = 12 * 5;
             settings.FirmNegativeProfitOkAge = 12 * 2;
 
-            settings.FirmExpectationSmooth = 0.4;
+            settings.FirmExpectationSmooth = 0.4; //0.9
             settings.FirmMaxEmployment = 1000;  // 700
+
+            settings.FirmNumberOfGoodAdvertisements = 25; 
+            settings.FirmNumberOfJobAdvertisements = 10;  
 
             settings.FirmVacanciesShare = 1.0;
             settings.FirmMinRemainingVacancies = 5;
@@ -98,10 +102,10 @@ namespace Dream.Models.SOE_Basic
 
             // Households
             settings.HouseholdNumberFirmsSearchJob = 15;              
-            settings.HouseholdNumberFirmsSearchShop = 15;       //75
+            settings.HouseholdNumberFirmsSearchShop = 5;       //15
             settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
-            settings.HouseholdProbabilitySearchForJob = 0.5;   //0.25                        
-            settings.HouseholdProbabilitySearchForShop = 0.25;                          // MEGET LAV???!!!
+            settings.HouseholdProbabilitySearchForJob = 0.5;   //0.5                        
+            settings.HouseholdProbabilitySearchForShop = 0.5;     //0.25                    
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
             settings.HouseholdProductivityErrorSigma = 0.02;
@@ -111,12 +115,13 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdSaveRate = 0.01;
             settings.NumberOfInheritors = 5;
             settings.HouseholdMaxNumberShops = 15; // 5 When your supplier can not deliver: how many to seach for
-
+            settings.HouseholdProbabilityReactOnAdvertisingJob = 1.0;
+            settings.HouseholdProbabilityReactOnAdvertisingGood = 1.0;
             settings.HouseholdPensionAge = 67 * 12;
             settings.HouseholdStartAge = 18 * 12;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.15;   // 0.15            
+            settings.InvestorProfitSensitivity = 0.05;   // 0.15            
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.2;  //2.0
@@ -162,7 +167,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 12 * 1;
             
-            settings.StatisticsGraphicsStartPeriod = (2080 - 2014) * 12;   // 70
+            settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12;   // 70
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 

@@ -12,6 +12,12 @@ if(Sys.info()['nodename'] == "VDI00316")    # Fjernskrivebord
 {
   o_dir = "C:/Users/B007566/Documents/Output"  
 }
+if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord for agentbased projekt
+{
+  #o_dir = "C:/Users/B007566/Documents/Output" 
+  o_dir = "H:/AgentBased/SOE/Output"
+  
+}
 
 d_report = read.delim(paste0(o_dir,"/household_reports.txt"))
 

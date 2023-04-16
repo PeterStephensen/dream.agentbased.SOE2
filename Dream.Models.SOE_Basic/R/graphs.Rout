@@ -71,7 +71,7 @@ Registered S3 method overwritten by 'quantmod':
 > d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 > 
 > sum(d_house$ConsumptionValue==0)/nrow(d_house)
-[1] 0.006869419
+[1] 0.1649716
 > 
 > 
 > df = read.delim(paste0(o_dir,"/household_reports.txt"))
@@ -149,9 +149,9 @@ Registered S3 method overwritten by 'quantmod':
 +      log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.5)
 Advarselsbeskeder:
 1: I xy.coords(x, y, xlabel, ylabel, log) :
-  32 x værdier <= 0 udeladt fra logaritmisk plot
+  33 x værdier <= 0 udeladt fra logaritmisk plot
 2: I xy.coords(x, y, xlabel, ylabel, log) :
-  46 y værdier <= 0 udeladt fra logaritmisk plot
+  47 y værdier <= 0 udeladt fra logaritmisk plot
 > abline(a=0,b=1, lty=2)
 > 
 > mx = max(max(d_prod$OptimalProduction), max(d_prod$Sales))
@@ -160,9 +160,9 @@ Advarselsbeskeder:
 +      log = "xy", col=cols[3], xlim=c(1,1.1*mx), ylim=c(1,1.1*mx), cex=0.5)
 Advarselsbeskeder:
 1: I xy.coords(x, y, xlabel, ylabel, log) :
-  153 x værdier <= 0 udeladt fra logaritmisk plot
+  150 x værdier <= 0 udeladt fra logaritmisk plot
 2: I xy.coords(x, y, xlabel, ylabel, log) :
-  143 y værdier <= 0 udeladt fra logaritmisk plot
+  135 y værdier <= 0 udeladt fra logaritmisk plot
 > abline(a=0,b=1, lty=2)
 > 
 > mx = max(max(d_house$ConsumptionValue), max(d_house$ConsumptionBudget))
@@ -178,6 +178,14 @@ Advarselsbeskeder:
 > if(last(d$nUnemployed/d$LaborSupply) < 0.2)
 + {
 +   mx = 0.2
++ }
+> if(last(d$nUnemployed/d$LaborSupply) < 0.1)
++ {
++   mx = 0.1
++ }
+> if(last(d$nUnemployed/d$LaborSupply) < 0.05)
++ {
++   mx = 0.05
 + }
 > 
 > plot(d$Year, d$nUnemployed/d$LaborSupply, main="Unemployment rate", xlab = "year", ylab="", 
@@ -216,9 +224,10 @@ Advarselsbeskeder:
 > abline(h=0)
 > abline(v=burnIn, lty=2)
 > 
-> mx = max(d$Sales / corr)
-> plot(d$Year, d$Sales / corr, main="Sales", xlab = "year", ylab="sales", 
+> mx = max(max(d$Sales / corr), max(d$Consumption / corr))
+> plot(d$Year, d$Sales / corr, main="Sales (red=Consumption)", xlab = "year", ylab="sales", 
 +      type="l", xlim=c(y0,mx_yr), ylim=c(0,1.1*mx), cex.main=0.8)
+> lines(d$Year, d$Consumption / corr, col="red")
 > abline(h=0)
 > abline(v=burnIn, lty=2)
 > 
@@ -333,8 +342,6 @@ Advarselsbeskeder:
 > mx = max(max(z), max(d$nFirmNew))
 > plot(d$Year, z, xlab = "year", ylab="Flow of firms", ylim=c(0, 1.1*mx), 
 +      type="l", xlim=c(y0,mx_yr), main="", cex.main=0.7)
-> #lines(d$Year, d$nFirmCloseNatural, col=cols[2], type="l")
-> #lines(d$Year, d$nFirmCloseTooBig, col=cols[3], type="s")
 > abline(h=120, lty=2)
 > lines(d$Year, d$nFirmNew, col=cols[2], type="l")
 > abline(h=0)
@@ -385,7 +392,15 @@ Advarselsbeskeder:
 > abline(v=burnIn, lty=2)
 > abline(h=0)
 > 
+> mx = max(max(d$ConsumptionValue / d$Price / corr), max(d$ConsumptionBudget / d$Price / corr))
+> plot(d$Year, d$ConsumptionValue / d$Price / corr, main="Consumption (black=value, red=budget)", xlab = "year", ylab="value", 
++      type="l", xlim=c(y0,mx_yr), ylim=c(0,1.1*mx), cex.main=0.8)
+> lines(d$Year, d$ConsumptionBudget / d$Price / corr, col="red")
+> abline(h=0)
+> abline(v=burnIn, lty=2)
 > 
+> plot(d$Year, d$ConsumptionValue / d$ConsumptionBudget, main="Consumption: Value as share of budget", xlab = "year", ylab="share", 
++      type="l", xlim=c(y0,mx_yr), ylim=c(0,1), cex.main=0.8)
 > 
 > 
 > 
@@ -417,7 +432,6 @@ Advarselsbeskeder:
 +   lines(dd$Time/12, dd$nFirm, col=col[i])
 + }
 > abline(h=0)
-> 
 > 
 > #d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 > dd = d_sector %>% group_by(Time) %>% summarise(P=mean(Price))
@@ -493,10 +507,30 @@ null device
 > 
 > #-----------------------------------------------
 > 
-> 
+> if(F)
++ {
++   
++   plot(d$Year, d$Sales/corr, type="l")
++   plot(d$Year, d$nEmployment, type="l")
++   plot(d$Year, d$PotensialSales/corr,  type="l")
++   plot(d_house$ConsumptionValue,  type="l")
++   
++   plot(d$Year, d$PotensialSales/corr,  type="l", col="black")
++   lines(d$Year, d$Sales/corr,  col="red")
++   lines(d$Year, d$Production/corr,  col="blue")
++   
++   lines(d$Year, 1000*d$nFirmNew,  col="green")
++   
++ 
++   lines(d$Year, 15000-500*d$nFirmCloseNegativeProfit,  col="blue")
++   
++ 
++   
++   
++ }
 > 
 > 
 > 
 > proc.time()
   bruger   system forløbet 
-    2.65     0.39     6.51 
+    5.70     0.62    16.71 

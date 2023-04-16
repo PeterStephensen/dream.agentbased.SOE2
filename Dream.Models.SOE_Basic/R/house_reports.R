@@ -22,41 +22,50 @@ if(Sys.info()['nodename'] == "VDI00382")    # Fjernskrivebord for agentbased pro
 
 df = read.delim(paste0(o_dir,"/household_reports.txt"))
 
-ids = unique(df$ID)
-par(mfrow=c(1,2))
-i=10
-i=i+1
-d = df %>% filter(ID==ids[i])
+d_tot = df %>% group_by(Time) %>% summarise(totConsumption=sum(ValConsumption))
 
-plot(d$Time, d$Income/ d$P_macro, type="l", lwd=1)
-lines(d$Time, d$ValConsumption/ d$P_macro, col="red", type="s")
-abline(h=0)
-
-
-plot(d$Time, d$Wealth/ d$P_macro, type="l")
-lines(d$Time, d$ValConsumption/ d$P_macro, col="red")
-lines(d$Time, d$Income/ d$P_macro, col="blue")
-abline(h=0)
-
-plot(d$Time, d$Wealth, type="p")
-
-plot(d$Time, log(d$Wealth), type="p")
-abline(a=-1.1*d$Time[1],b=1.1, lty=2)
-
-
-d = d_report %>% filter(Time>2110 & Time<2120) %>% group_by(Age) %>% 
-            dplyr::summarize(Wealth = mean(Wealth), Income = mean(Income), Cons = mean(ValConsumption), P = mean(P_macro))
-
-plot(d$Age, d$Wealth/d$P, type="l")
-lines(d$Age, 12*d$Income/d$P, col="red")
-lines(d$Age, 12*d$Cons/d$P, col="blue")
-abline(h=0)
+ids=unique(d_report$ID)
+n = length(ids)
 
 
 
 
+pdf(paste0(o_dir,"/hous_reports.pdf"))
 
-#pdf(paste0(o_dir,"/firm_reports.pdf"))
+par(mfrow=c(2,2))
+
+for(i in 1:n)
+{
+  #i=1
+  cat(i, "/", n, "\n")
+  
+  d = df %>% filter(ID==ids[i])
+  d = merge(d, d_tot)
+  
+  plot(d$Time, d$Income/ d$P_macro, type="s", lwd=1)
+  lines(d$Time, d$ValConsumption/ d$P_macro, col="red", type="s")
+  abline(h=0)
+
+  plot(d$Time, d$ValConsumption/d$Income, type="l", lwd=1, ylim=c(0,1))
+  abline(h=0)
+  abline(h=mean(d$ValConsumption/d$Income, na.rm = T), lty=2)
+
+  mx = max(d$ValConsumption/d$totConsumption, na.rm = T)
+  plot(d$Time, d$ValConsumption/d$totConsumption, type="l", lwd=1, ylim=c(0,1.1*mx))
+  abline(h=0)
+
+  plot(d$Time, d$Wealth/ d$P_macro, type="l")
+  lines(d$Time, d$ValConsumption/ d$P_macro, col="red")
+  lines(d$Time, d$Income/ d$P_macro, col="blue")
+  abline(h=0)
+
+}
+
+dev.off()
+
+
+
+
 
 
 d_report = d_report %>% arrange(ID)

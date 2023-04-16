@@ -135,6 +135,14 @@ if(last(d$nUnemployed/d$LaborSupply) < 0.2)
 {
   mx = 0.2
 }
+if(last(d$nUnemployed/d$LaborSupply) < 0.1)
+{
+  mx = 0.1
+}
+if(last(d$nUnemployed/d$LaborSupply) < 0.05)
+{
+  mx = 0.05
+}
 
 plot(d$Year, d$nUnemployed/d$LaborSupply, main="Unemployment rate", xlab = "year", ylab="", 
      type="l", xlim=c(y0,mx_yr), ylim=c(0,mx), cex.main=0.8)
@@ -172,9 +180,10 @@ plot(d$Year, d$Wage / d$Price / corr, main="", xlab = "year", ylab="Wage / Price
 abline(h=0)
 abline(v=burnIn, lty=2)
 
-mx = max(d$Sales / corr)
-plot(d$Year, d$Sales / corr, main="Sales", xlab = "year", ylab="sales", 
+mx = max(max(d$Sales / corr), max(d$Consumption / corr))
+plot(d$Year, d$Sales / corr, main="Sales (red=Consumption)", xlab = "year", ylab="sales", 
      type="l", xlim=c(y0,mx_yr), ylim=c(0,1.1*mx), cex.main=0.8)
+lines(d$Year, d$Consumption / corr, col="red")
 abline(h=0)
 abline(v=burnIn, lty=2)
 
@@ -339,7 +348,15 @@ lines(d$Year, d$Sales, col="red")
 abline(v=burnIn, lty=2)
 abline(h=0)
 
+mx = max(max(d$ConsumptionValue / d$Price / corr), max(d$ConsumptionBudget / d$Price / corr))
+plot(d$Year, d$ConsumptionValue / d$Price / corr, main="Consumption (black=value, red=budget)", xlab = "year", ylab="value", 
+     type="l", xlim=c(y0,mx_yr), ylim=c(0,1.1*mx), cex.main=0.8)
+lines(d$Year, d$ConsumptionBudget / d$Price / corr, col="red")
+abline(h=0)
+abline(v=burnIn, lty=2)
 
+plot(d$Year, d$ConsumptionValue / d$ConsumptionBudget, main="Consumption: Value as share of budget", xlab = "year", ylab="share", 
+     type="l", xlim=c(y0,mx_yr), ylim=c(0,1), cex.main=0.8)
 
 
 
@@ -371,7 +388,6 @@ for(i in 2:S)
   lines(dd$Time/12, dd$nFirm, col=col[i])
 }
 abline(h=0)
-
 
 #d_sector = read.delim(paste0(o_dir,"/sector_year.txt"))
 dd = d_sector %>% group_by(Time) %>% summarise(P=mean(Price))
@@ -445,6 +461,26 @@ dev.off()
 
 #-----------------------------------------------
 
+if(F)
+{
+  
+  plot(d$Year, d$Sales/corr, type="l")
+  plot(d$Year, d$nEmployment, type="l")
+  plot(d$Year, d$PotensialSales/corr,  type="l")
+  plot(d_house$ConsumptionValue,  type="l")
+  
+  plot(d$Year, d$PotensialSales/corr,  type="l", col="black")
+  lines(d$Year, d$Sales/corr,  col="red")
+  lines(d$Year, d$Production/corr,  col="blue")
+  
+  lines(d$Year, 1000*d$nFirmNew,  col="green")
+  
 
+  lines(d$Year, 15000-500*d$nFirmCloseNegativeProfit,  col="blue")
+  
+
+  
+  
+}
 
 

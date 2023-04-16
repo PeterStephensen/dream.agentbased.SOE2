@@ -18,7 +18,6 @@ namespace Dream.Models.SOE_Basic
         Simulation _simulation;
         Settings _settings;
         Time _time;
-        Statistics _statistics;
         #endregion
 
         #region Constructor

@@ -46,7 +46,6 @@ namespace Dream.Models.SOE_Basic
         double _expSales = 0, _expPotentialSales = 0; 
         int _age = 0;
         bool _report = false;
-        bool _startFromDatabase = false;
         double _year = 0;
         int _sector=0;
         //double _l_wage;
@@ -75,7 +74,7 @@ namespace Dream.Models.SOE_Basic
             _profit = file.GetDouble("Profit");
 
             _report = true;
-            _startFromDatabase = true;  
+            //_startFromDatabase = true;  
         }
 
 
@@ -121,14 +120,16 @@ namespace Dream.Models.SOE_Basic
         {
             switch (idEvent)
             {
-
                 case Event.System.Start:
+                    #region Event.System.Start
                     // If initial firm
                     _phi0 = _random.NextPareto(_settings.FirmParetoMinPhiInitial, _settings.FirmPareto_k);
                     _phi = _phi0;
                     break;
+                    #endregion
 
                 case Event.System.PeriodStart:
+                    #region Event.System.PeriodStart
                     _year = 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
                     ReportToStatistics();
 
@@ -163,8 +164,10 @@ namespace Dream.Models.SOE_Basic
                         _open = true;    
 
                     break;
+                    #endregion
 
                 case Event.Economics.Update:
+                    #region Event.Economics.Update
                     // Default
                     if (_time.Now > _settings.FirmDefaultStart)  // 12*5
                         if (_time.Now > _settings.BurnInPeriod1)  //2030
@@ -198,13 +201,14 @@ namespace Dream.Models.SOE_Basic
                         }
                     }
                     break;
+                    #endregion
 
                 case Event.System.PeriodEnd:
+                    #region Event.System.PeriodEnd
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
                     
-                    _profit = _p * _sales - _w_full * _l_primo + _wageSavedDeath;
-                        
+                    _profit = _p * _sales - _w_full * _l_primo + _wageSavedDeath;                        
                     
                     _statistics.Communicate(EStatistics.Profit, this);
 
@@ -213,6 +217,7 @@ namespace Dream.Models.SOE_Basic
 
                     _age++;
                     break;
+                    #endregion
 
                 case Event.System.Stop:
                     break;
@@ -257,44 +262,23 @@ namespace Dream.Models.SOE_Basic
 
                 case ECommunicate.CanIBuy:
                     double x = (double)o;
-                    //if (x < 0)
-                    //    throw new Exception("Can only buy positive number.");
+                    if (x < 0)
+                        throw new Exception("Can only buy positive number.");
                     
+                    _w_full = _w;  // Remove this!!!
                     _potentialSales += x;
                     if (_sales + x <= _y_primo)
                     {
                         _sales += x;
-                        _w_full = _w;
                         _ok++;
                         return ECommunicate.Yes;
                     }
                     else
                     {
-                        double a = 2.0;
-                        double max_w = 1.0; //1.25
-                        double y_d_bar = (1 + Math.Sqrt((max_w-1)/a)) * _y_primo;
-                        double z = Math.Pow(_sales + x - _y_primo, 2);
-                        if (_sales + x <= y_d_bar)
-                        {
-                            _sales += x;
-                            _ok++;
-                            _w_full = _w * (1 + a * z);
-                            //int zz = 0;
-                            //if (_time.Now > 30 * 12)
-                            //    zz = 1;
-                            return ECommunicate.Yes;
-                        }
-                        else 
-                        {
-                            //_returnObject = _y_primo - _sales;
-                            // x   = _y_primo - _sales + (max_w / a)^0.5
-                            _returnObject = y_d_bar - _sales;
-                            _sales = y_d_bar;
-                            _w_full = _w * max_w;
-                            _no++;
-                            return ECommunicate.No;
-                        }
-
+                        _returnObject = _y_primo - _sales;
+                        _sales = _y_primo;
+                        _no++;
+                        return ECommunicate.No;
                     }
 
                 case ECommunicate.Initialize:
@@ -330,7 +314,7 @@ namespace Dream.Models.SOE_Basic
             _expWage = _settings.FirmExpectationSmooth * _expWage + (1 - _settings.FirmExpectationSmooth) * _statistics.PublicMarketWageTotal;
             _expQuitters = _settings.FirmExpectationSmooth * _expQuitters + (1 - _settings.FirmExpectationSmooth) * _jobQuitters;
             _expApplications = _settings.FirmExpectationSmooth * _expApplications + (1 - _settings.FirmExpectationSmooth) * _jobApplications;
-            //_expProfit = _settings.FirmExpectationSmooth * _expProfit + (1 - _settings.FirmExpectationSmooth) * _profit;
+            //_expApplications = 0.99 * _expApplications + (1 - 0.99) * _jobApplications;
             _expPotentialSales = _settings.FirmExpectationSmooth * _expPotentialSales + (1 - _settings.FirmExpectationSmooth) * _potentialSales;
             _expSales = _settings.FirmExpectationSmooth * _expSales + (1 - _settings.FirmExpectationSmooth) * _sales;
 

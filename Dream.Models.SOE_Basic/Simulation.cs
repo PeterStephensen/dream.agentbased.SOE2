@@ -169,6 +169,7 @@ namespace Dream.Models.SOE_Basic
             switch (idEvent)
             {
                 case Event.System.Start:
+                    #region Event.System.Start
                     base.EventProc(idEvent);
                     // Event pump
                     do
@@ -176,9 +177,11 @@ namespace Dream.Models.SOE_Basic
                         this.EventProc(Event.System.PeriodStart);
                         this.EventProc(Event.Economics.Update);
                         for (int i = 0; i < _settings.HouseholdNumberShoppingsPerPeriod; i++)
+                        {
                             _households.EventProc(Event.Economics.Shopping);
+                            _households.RandomizeAgents();
+                        }
                         this.EventProc(Event.System.PeriodEnd);
-                        _households.RandomizeAgents();
                         foreach(Agent firms in _sectors)
                            firms.RandomizeAgents();
                     } while (_time.NextPeriod());
@@ -186,16 +189,11 @@ namespace Dream.Models.SOE_Basic
                     _t0 = DateTime.Now;
                     this.EventProc(Event.System.Stop);
                     break;
+                    #endregion
 
                 case Event.System.PeriodStart:
+                    #region Event.System.PeriodStart
                     _statistics.Communicate(EStatistics.FirmNew, _nFirmNewTotal);
-                    //int n_firms = 0;
-                    //foreach (Agent fs in _sectors)
-                    //    n_firms += fs.Count;
-                    
-                    //Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.######}\t{4:#.######}\t{5:#.######}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                    //    n_firms, _households.Count, _statistics.PublicMarketWageTotal, _statistics.PublicMarketPriceTotal, 
-                    //    _statistics.PublicMarketWageTotal/ _statistics.PublicMarketPriceTotal);
                     
                     if (_time.Now % _settings.PeriodsPerYear == 0)  // Once a year
                     {
@@ -206,8 +204,10 @@ namespace Dream.Models.SOE_Basic
 
                     base.EventProc(idEvent);
                     break;
+                    #endregion
 
-               case Event.System.PeriodEnd:
+                case Event.System.PeriodEnd:
+                    #region Event.System.PeriodEnd
                     base.EventProc(idEvent);
                     // New households
                     for (int i = 0; i < _settings.HouseholdNewBorn; i++)
@@ -219,7 +219,6 @@ namespace Dream.Models.SOE_Basic
                         if(_settings.Shock==EShock.LaborSupply)
                             for (int i = 0; i < 0.1 * _households.Count; i++)
                                 _households += new Household();
-
                     }
 
                     // After burn-in-stuff    
@@ -283,6 +282,7 @@ namespace Dream.Models.SOE_Basic
                         }
                     }                   
                     break;
+                    #endregion
 
                 case Event.System.Stop:
                     base.EventProc(idEvent);
@@ -293,17 +293,13 @@ namespace Dream.Models.SOE_Basic
                     break;
             }
         }
-        double Func(double x)
-        {
-            return x < 1 ? x : 1;
-        }
-
         #endregion
 
+        #region Internal methods
+        #region GetRandom..
         #region GetRandomHousehold
         public Household GetRandomHousehold()
         {
-
             if (_randomHousehold != null)
             {
                 if (_households.Count == 1)
@@ -317,7 +313,6 @@ namespace Dream.Models.SOE_Basic
                 _randomHousehold = (Household)_households.FirstAgent;
             }
             return _randomHousehold;
-
         }
 
         #endregion
@@ -329,7 +324,7 @@ namespace Dream.Models.SOE_Basic
 
             Household[] lst = new Household[n];
             for (int i = 0; i < n; i++)
-                lst[i] =GetRandomHousehold();
+                lst[i] = GetRandomHousehold();
 
             return lst;
         }
@@ -337,21 +332,39 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region GetRandomFirmsFromHouseholds
-        public Firm[] GetRandomFirmsFromHouseholds(int n, int sector)
+        /// <summary>
+        /// Get random firm households: The firm the household use to buy goods from a given sector 
+        /// </summary>
+        /// <param name="n">Number of firms</param>
+        /// <param name="sector">Sector</param>
+        /// <returns>Array<Firm></returns>
+        public Firm[] GetRandomFirmsFromHouseholdsGood(int n, int sector)
         {
+
             if (n < 1) return null;
-            if (sector >= _settings.NumberOfSectors) return null;
 
-            Household[] hs = GetRandomHouseholds(n);
-            List<Firm> fs = new(); 
-            
-            for(int i=0;i<n;i++)
-                if(hs[i].FirmShopArray(sector)!=null)
-                    fs.Add(hs[i].FirmShopArray(sector));                
-            
-            return fs.ToArray();
+            Firm[] fs = new Firm[n];
+
+            int i = 0;
+            while (i < n)
+            {
+                var h = GetRandomHousehold();
+                if (h.FirmShopArray(sector) != null)
+                {
+                    fs[i] = h.FirmShopArray(sector);
+                    i++;
+                }
+            }
+
+            return fs;
+
         }
-
+        /// <summary>
+        /// Get random firm households: The firm where the household works 
+        /// </summary>
+        /// <param name="n">Number of firms</param>
+        /// <returns>Array<Firm></returns>
+        /// <returns></returns>
         public Firm[] GetRandomFirmsFromHouseholdsEmployment(int n)
         {
             if (n < 1) return null;
@@ -375,30 +388,7 @@ namespace Dream.Models.SOE_Basic
 
         #endregion
 
-
         #region GetRandomFirm
-        public Firm GetRandomOpenFirm(int sector)
-        {
-
-            if (_time.Now < _settings.BurnInPeriod2)
-                return GetRandomFirm(sector);  // HACK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            
-            
-            Firm f=null;
-            bool open = false;
-            int i = 0;
-            while(!open)
-            {
-                f = GetRandomFirm(sector);
-                open = f.Open;
-                i++;
-                if (i > 1000)
-                    throw new Exception("No open firms");
-            }
-
-            return f;
-
-        }
         public Firm GetRandomFirm(int sector)
         {
             if (_randomFirm[sector] == null)
@@ -418,25 +408,28 @@ namespace Dream.Models.SOE_Basic
             return _randomFirm[sector];
 
         }
-
-        public Firm GetRandomFirm_OLD(int sector)
+        public Firm GetRandomOpenFirm(int sector)
         {
 
-            if (_randomFirm[sector] != null)
+            if (_time.Now < _settings.BurnInPeriod2)
+                return GetRandomFirm(sector);  // HACK to get started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            Firm f = null;
+            bool open = false;
+            int i = 0;
+            while (!open)
             {
-                if (_sectorList[sector].Count == 1)
-                    return _randomFirm[sector];
-                _randomFirm[sector] = (Firm)_randomFirm[sector].NextAgent;
+                f = GetRandomFirm(sector);
+                open = f.Open;
+                i++;
+                if (i > 1000)
+                    throw new Exception("No open firms");
             }
 
-            if (_randomFirm[sector] == null)
-            {
-                _sectorList[sector].RandomizeAgents();
-                _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
-            }
-            return _randomFirm[sector];
+            return f;
 
         }
+
         #endregion
 
         #region GetRandomFirms
@@ -493,7 +486,8 @@ namespace Dream.Models.SOE_Basic
             
         }
 
-        
+
+        #endregion
         #endregion
 
         #region GetFirmFromID()
@@ -513,6 +507,7 @@ namespace Dream.Models.SOE_Basic
 
             return null;
         }
+        #endregion
         #endregion
 
         #region Public properties

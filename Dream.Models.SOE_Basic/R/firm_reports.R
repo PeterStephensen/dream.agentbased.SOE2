@@ -49,7 +49,7 @@ for(i in 1:n)
 {
   #i=31
   #i=i+1
-  #i=which(ids==34421)
+  #i=which(ids==44669)
   dr = d_report %>% filter(ID==ids[i])
 
   if(nrow(dr)<2)
@@ -95,88 +95,32 @@ for(i in 1:n)
   abline(h=0)
   ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
 
+  mx = max(max(dr$Applications), max(dr$Quitters))
+  plot(dr$Time, dr$Applications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[1])
+  lines(dr$Time, dr$expApplications, lty=1, col=cols[2])
+  lines(dr$Time, dr$expQuitters, type="l", col=cols[3])
+  #lines(dr$Time, dr$expQuitters, lty=2, col=cols[4])
+  abline(h=0)
+  abline(v=2050, lty=2)
+  ContourFunctions::multicolor.title(c("Applications ","ExpApplications ", "Quitters"), 1:3, cex.main = 0.7)
 
-  mx = max(max(dr$Sales), max(dr$ExpectedSales))
-  plot(dr$Time, dr$Sales, type="l", ylab="Sales", main="", 
-       xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
-  lines(dr$Time, dr$ExpectedSales, col=cols[2], type="l")
-  lines(dr$Time, dr$Production, col=cols[3], type="l")
-  ContourFunctions::multicolor.title(c("Sales ","ExpectedSales ", "Production "), 1:3, cex.main = 0.7)
-  
-  
-  if(F)
-  {
-    mx = max(max(dr$Production), max(dr$OptimalProduction))
-    plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
-         xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
-    lines(dr$Time, dr$PotensialSales, col=cols[2], type="s")
-    lines(dr$Time, dr$ExpectedSales, col=cols[3], type="l")
-    lines(dr$Time, dr$OptimalProduction, col=cols[4], type="l")
-    lines(dr$Time, 0.85*dr$OptimalProduction, lty=2, type="l")
-    abline(v=2050, lty=2)
-    abline(h=0)
-    ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
-    
-  }
-  
+
   mx = max(dr$Wage / dr$ExpectedWage[1])
   mn = min(dr$Wage / dr$ExpectedWage[1])
   plot(dr$Time, dr$Wage / dr$ExpectedWage[1], type="s", ylab="Wage", 
        main="", xlab="Time", col=cols[3], ylim=c(0.9*mn, 1.1*mx))   #
   lines(dr$Time, dr$ExpectedWage / dr$ExpectedWage[1], lty=2)
-
   
-  #plot(dr$Time, dr$Wage / dr$ExpectedWage[1] - dr$ExpectedWage / dr$ExpectedWage[1], type="b")   #
-  #lines(dr$Time, 0.001*dr$Quitters, col="red")
-  #abline(h=0)  
-  
-  #plot(dr$Wage / dr$ExpectedWage[1] - dr$ExpectedWage / dr$ExpectedWage[1], dr$Quitters)
-  #abline(h=5,v=0)
-  
-  plot(dr$Time, dr$Vacancies, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[3])
-  abline(v=2050, lty=2)
-  abline(h=0)
-
   mx = max(dr$Price / dr$ExpectedPrice[1])  
   mn = min(dr$Price / dr$ExpectedPrice[1])
   plot(dr$Time, dr$Price / dr$ExpectedPrice[1], type="s", ylab="Price", main="", 
        xlab="Time", col=cols[3], ylim=c(0.9*mn, 1.1*mx)) 
   lines(dr$Time, dr$ExpectedPrice / dr$ExpectedPrice[1], lty=2)
-  #abline(h=1)
-  #abline(h=0.95, lty=2)
-  #abline(h=1.05, lty=2)
-
-  #plot(dr$Time, dr$Sales, type="s")
-  #lines(dr$Time, dr$ExpectedSales)
   
-  #plot(dr$Time, dr$Vacancies, type="l", xlab="Time", ylab="", main="", col=cols[3])
-  
-  #plot(dr$Time, dr$Applications-dr$Quitters-dr$Vacancies, type="l", xlab="Time", ylab="", main="", col=cols[3])
-  #lines(dr$Time, dr$Quitters, type="l", col=cols[4])
-  #lines(dr$Time, dr$Vacancies, type="l", col=cols[5])
-  #abline(h=0)
-
-  
-  #plot(dr$Time, dr$expApplications- dr$expQuitters, type="l")  
-  #lines(dr$Time, dr$Vacancies, type="s", col="red")
-  #abline(h=0)
-      
-  #dr = d_report %>% filter(ID==83164)
-  
-  
-  mx = max(max(dr$Applications), max(dr$Quitters))
-  plot(dr$Time, dr$expApplications, type="l", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[3])
-  #lines(dr$Time, dr$expApplications, lty=2, col=cols[3])
-  lines(dr$Time, dr$expQuitters, type="l", col=cols[4])
-  #lines(dr$Time, dr$expQuitters, lty=2, col=cols[4])
-  abline(h=0)
+  plot(dr$Time, dr$Vacancies, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[3])
   abline(v=2050, lty=2)
-  ContourFunctions::multicolor.title(c("Applications ","Quitters"), 3:4, cex.main = 0.7)
-  lines(dr$Time, 200*(dr$Wage / dr$Wage[1]-1), lty=2)
-  lines(dr$Time, 200*(dr$ExpectedWage / dr$ExpectedWage[1]-1), lty=1)
-  
-  
-    
+  abline(h=0)
+
   if(sum(is.nan(dr$Profit / dr$Price))==0)
   {
     plot(dr$Time, dr$Profit / dr$Price, type="s", ylab="Profit / Price", xlab="Time", 
@@ -188,7 +132,12 @@ for(i in 1:n)
   {
     plot(0)
   }
+  
+  
+  
 
+  plot(0)
+  
   plot.new()
 
   d = 0.15

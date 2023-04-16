@@ -242,12 +242,12 @@ namespace Dream.Models.SOE_Basic
         public double HouseholdSaveRate { get; set; } = 0;
 
         /// <summary>
-        /// Share of welath consumed when pensioned
+        /// Share of wealth consumed when pensioned
         /// </summary>
         public double HouseholdDisSaveRatePensioner { get; set; } = 0;
 
         /// <summary>
-        /// Share of welath consumed when unemployed
+        /// Share of wealth consumed when unemployed
         /// </summary>
         public double HouseholdDisSaveRateUnemployed { get; set; } = 0;
 
@@ -255,6 +255,16 @@ namespace Dream.Models.SOE_Basic
         /// Number of times the household consumes in a period
         /// </summary>
         public int HouseholdNumberShoppingsPerPeriod { get; set; } = 1;
+
+        /// <summary>
+        /// Probability that the household react on a job advertisement
+        /// </summary>
+        public double HouseholdProbabilityReactOnAdvertisingJob { get; set; } = 1.0;
+
+        /// <summary>
+        /// Probability that the household react on a good advertisement
+        /// </summary>
+        public double HouseholdProbabilityReactOnAdvertisingGood { get; set; } = 1.0;
 
 
         public int NumberOfInheritors { get; set; } = 1;

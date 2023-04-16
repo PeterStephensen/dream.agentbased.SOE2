@@ -16,6 +16,7 @@ using Dream.IO;
 namespace Dream.Models.SOE_Basic
 {
 
+    #region FirmInfo Class
     /// <summary>
     /// This class contains information to the Statistics object
     /// </summary>
@@ -32,8 +33,8 @@ namespace Dream.Models.SOE_Basic
             Profit = firm.Profit;
         }
     }
-    
-    
+    #endregion
+
     public class Statistics : Agent
     {
 
@@ -143,7 +144,8 @@ namespace Dream.Models.SOE_Basic
                     break;
 
                 case Event.System.PeriodStart:
-                    
+                    #region Event.System.PeriodStart
+
                     if (_time.Now == _settings.StatisticsWritePeriode)
                     {
 
@@ -235,8 +237,10 @@ namespace Dream.Models.SOE_Basic
                     //_nFirmNew = 0;
 
                     break;
+                    #endregion
 
                 case Event.System.PeriodEnd:
+                    #region Event.System.PeriodEnd
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
 
@@ -294,9 +298,9 @@ namespace Dream.Models.SOE_Basic
                             meanPriceTot += f.Price * f.Sales;
                             _totalEmployment += f.Employment;
                             nEmployment += f.NumberOfEmployed; 
-                            _totalSales += f.Sales;
-                            _totalPotensialSales += f.PotentialSales;   
-                            _totalProduction += f.Production;
+                            _totalSales += f.Sales;                              // Hmm..
+                            _totalPotensialSales += f.PotentialSales;            // Hmm..
+                            _totalProduction += f.Production;                    // Hmm..
                             _meanValue += f.Value;
                             mean_age += f.Age;
                             tot_vacancies += f.Vacancies;
@@ -304,8 +308,7 @@ namespace Dream.Models.SOE_Basic
                             no += f.NumberOfNo;
                             ok += f.NumberOfOK;
                         }
-
-
+                   
                     _avrProductivity = _totalEmployment / nEmployment;
                     //double firmRejectionRate = (double)no / (no + ok);
                     //double potentilaSalesRate = _totalPotensialSales / _totalSales;
@@ -341,6 +344,7 @@ namespace Dream.Models.SOE_Basic
                     _n_laborSupply = 0;
                     _laborSupply = 0;
                     _n_unemployed = 0;
+                    double totalConsumption = 0;
                     int h_no = 0;
                     int h_ok = 0;
                     double consValue = 0, consBudget = 0;
@@ -358,6 +362,7 @@ namespace Dream.Models.SOE_Basic
                         h_ok += h.Ok;
                         consValue += h.ConsumptionValue;
                         consBudget += h.ConsumptionBudget;
+                        totalConsumption += h.Consumption;
                     }
                     //double h_rejectionRate = (double)h_no / (h_no + h_ok);
                     double consLoss = 1.0 - consValue / consBudget;
@@ -464,14 +469,13 @@ namespace Dream.Models.SOE_Basic
                             {
 
                                 
-                                sw.WriteLine("{0:#.##}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t" +
-                                    "{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\t{27}", 
-                                    1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                                sw.WriteLineTab(1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
                                     _simulation.Households.Count, prod_avr, nUnemp, tot_opt_l, P_star, _totalEmployment, 
                                     tot_vacancies, _marketWageTotal, _marketPriceTotal, _totalSales, _profitPerHousehold,
                                     n_firms, _expProfit, mean_age, _meanValue, _nFirmCloseNatural, 
                                     _nFirmCloseZeroEmployment, _nFirmCloseTooBig, _nFirmNew, _discountedProfits, 
-                                    _expDiscountedProfits, _sharpeRatioTotal, _expSharpeRatioTotal, laborSupply, _yr_consumption, _yr_employment, _totalPotensialSales);
+                                    _expDiscountedProfits, _sharpeRatioTotal, _expSharpeRatioTotal, laborSupply, _yr_consumption, _yr_employment, 
+                                    _totalPotensialSales, _totalProduction, totalConsumption, consValue, consBudget);
                                 sw.Flush();
 
                             }
@@ -524,12 +528,13 @@ namespace Dream.Models.SOE_Basic
                     _nFirmCloseZeroEmployment = 0;
                     _nFirmNew = 0;
 
-
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.####}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, consLoss, _avrProductivity);  //h_rejectionRate
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.####}\t{7:#.#}\t{8:#.#}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, consLoss, _avrProductivity, _totalSales/1000, totalConsumption/1000);  //h_rejectionRate
                     break;
+                    #endregion
 
                 case Event.System.Stop:
+                    #region Event.System.Stop
                     CloseFiles();
                     if(!_settings.SaveScenario)
                     {
@@ -545,6 +550,7 @@ namespace Dream.Models.SOE_Basic
                         RunRScript("..\\..\\..\\R\\firm_reports.R");
                     }
                     break;
+                    #endregion
 
                 default:
                     base.EventProc(idEvent);
@@ -643,7 +649,8 @@ namespace Dream.Models.SOE_Basic
                 using (StreamWriter sw = File.CreateText(path))
                     sw.WriteLine("Year\tn_Households\tavr_productivity\tnUnemployed\tnOptimalEmplotment\tP_star\tnEmployment\tnVacancies\tWage\tPrice\t" +
                         "Sales\tProfitPerHousehold\tnFirms\tProfitPerFirm\tMeanAge\tMeanValue\tnFirmCloseNatural\tnFirmCloseNegativeProfit\tnFirmCloseTooBig\t" +
-                        "nFirmNew\tDiscountedProfits\tExpDiscountedProfits\tSharpeRatio\tExpSharpRatio\tLaborSupply\tYearConsumption\tYearEmployment\tPotensialSales");
+                        "nFirmNew\tDiscountedProfits\tExpDiscountedProfits\tSharpeRatio\tExpSharpRatio\tLaborSupply\tYearConsumption\tYearEmployment\t" +
+                        "PotensialSales\tProduction\tConsumption\tConsumptionValue\tConsumptionBudget");
 
                 path = _settings.ROutputDir + "\\sector_year.txt";
                 if (File.Exists(path)) File.Delete(path);

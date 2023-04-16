@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -48,6 +49,7 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region Constructors
+        #region Household()
         public Household()
         {
 
@@ -75,6 +77,9 @@ namespace Dream.Models.SOE_Basic
 
 
         }
+        #endregion
+
+        #region Household(TabFileReader file) : this()
         public Household(TabFileReader file) : this()
         {
 
@@ -101,6 +106,7 @@ namespace Dream.Models.SOE_Basic
 
         }
         #endregion
+        #endregion
 
         #region EventProc
         public override void EventProc(int idEvent)
@@ -109,7 +115,8 @@ namespace Dream.Models.SOE_Basic
             {
 
                 case Event.System.Start:  // Initial households
-                    if(_startFromDatabase)
+                    #region Event.System.Start
+                    if (_startFromDatabase)
                     {
                         _initialHousehold = false;
                     }
@@ -120,8 +127,11 @@ namespace Dream.Models.SOE_Basic
                         _initialHousehold = true;
                     }
                     break;
+                    #endregion
 
                 case Event.System.PeriodStart:
+                    #region Event.System.PeriodStart
+
                     bool unemployed = _fired | _w == 0;  // Unemployed if just fired or if wage is zero
                     if (_fired) _fired = false; // Fired only 1 period
 
@@ -136,17 +146,24 @@ namespace Dream.Models.SOE_Basic
                         _yr_employment = 0;
                     }
 
-                    if (!unemployed) _yr_employment++;
-                   
+                    if (!unemployed) _yr_employment++;                  
                     
                     if (unemployed) _w = 0;
                     _no = 0;
                     _ok = 0;
                     _nShoppings = 0; // Initialize
+                    for (int s = 0; s < _settings.NumberOfSectors; s++)
+                    {
+                        _c[s] = 0; // Initialization
+                        _vc[s] = 0; // Initialization
+                    }
+
 
                     break;
+                    #endregion
 
                 case Event.Economics.Update:
+                    #region Event.Economics.Update
                     // Income calculadet here because PublicProfitPerHousehold is calculated during PeriodStart-event by the Statistics object
 
                     _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
@@ -171,12 +188,14 @@ namespace Dream.Models.SOE_Basic
 
                     // This overwrites code above *****************************************************
                     //PSP
-                    double pos_wealth = Math.Max(_wealth, 0);
-                    _consumption_budget = _income + 0.0* pos_wealth;    
-                    if (_consumption_budget > 1.9 * _income)
-                        _consumption_budget = 1.9 * _income;
+                    //double pos_wealth = Math.Max(_wealth, 0);
+                    //_consumption_budget = _income + 0.0* pos_wealth;    
+                    //if (_consumption_budget > 1.9 * _income)
+                    //    _consumption_budget = 1.9 * _income;
 
-                    //_consumption_budget = _income;
+                    _consumption_budget = _income;
+                    if (_income < 0)
+                        _consumption_budget = 0;
 
                     if (_age==_settings.HouseholdPensionAge)  // Retirement
                     {
@@ -210,26 +229,11 @@ namespace Dream.Models.SOE_Basic
 
                     MakeBudget();
 
-
-                    //BuyFromShops(); 
-                    //_yr_consumption += _consumption;
-
-                    //if (_random.NextEvent(ProbabilityDeath()))
-                    //{
-                    //    if (_firmEmployment != null)
-                    //    {
-                    //        _firmEmployment.Communicate(ECommunicate.Death, this);
-                    //        _statistics.Communicate(EStatistics.Death, _w * _productivity); // Wage earned this period
-                    //    }
-
-                    //    //Inheritance();
-                    //    RemoveThisAgent();
-                    //    return;
-                    //}
                     break;
+                    #endregion
 
                 case Event.Economics.Shopping:
-
+                    #region Event.Economics.Shopping
                     //Console.WriteLine(_nShoppings);
                     BuyFromShops();
                     _yr_consumption += _consumption;  // Kill this
@@ -260,9 +264,10 @@ namespace Dream.Models.SOE_Basic
 
                     _nShoppings++;
                     break;
-
+                    #endregion
 
                 case Event.System.PeriodEnd:
+                    #region Event.System.PeriodEnd
                     if (_time.Now == _settings.StatisticsWritePeriode)
                         Write();
 
@@ -277,6 +282,7 @@ namespace Dream.Models.SOE_Basic
 
                     _age++;
                     break;
+                    #endregion
 
                 case Event.System.Stop:
                     break;
@@ -289,7 +295,7 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region Internal methods
-        #region BuyFromShops
+        #region BuyFromShops()
         void BuyFromShops()
         {
 
@@ -306,22 +312,16 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region BuyFromShop()
-
         void BuyFromShop(int sector)
         {
 
-            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
+            if (_budget[sector] < 0)
+                throw new Exception("Budget is negative");
 
+            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
 
             if (_firmShopArray[sector] == null)
                 _firmShopArray[sector] = _simulation.GetRandomOpenFirm(sector); //SearchForShop ???????????????????????
-
-            if (_budget[sector] < 0)
-            {
-                _c[sector] = 0;
-                _vc[sector] = 0;
-                return;
-            }
 
             _ok++;
             double buy = _budget[sector] / nRemaining;
@@ -333,8 +333,6 @@ namespace Dream.Models.SOE_Basic
                 _c[sector] += buy / _firmShopArray[sector].Price;
                 _vc[sector] += buy;
                 _budget[sector] -= buy;
-                if (_budget[sector] < 0)
-                    throw new Exception("Budget is negative");
                 return;
             }
             else
@@ -345,7 +343,7 @@ namespace Dream.Models.SOE_Basic
                 _budget[sector] -= _firmShopArray[sector].Price * c;
                 buy -= _firmShopArray[sector].Price * c;
 
-                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 10);
+                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 50);
 
                 if (f != null)
                     if (f.Communicate(ECommunicate.CanIBuy, buy / f.Price) == ECommunicate.Yes)
@@ -354,23 +352,26 @@ namespace Dream.Models.SOE_Basic
                         _c[sector] += buy / _firmShopArray[sector].Price;
                         _vc[sector] += buy;
                         _budget[sector] -= buy;
-                        return;
+                    }
+                    else
+                    {
+                        c = (double)f.ReturnObject;
+                        _c[sector] += c;
+                        _vc[sector] += f.Price * c;
+                        _budget[sector] -= f.Price * c;
                     }
 
                 _no++;
                 _ok--;
-                //_vc[sector] = 0;
-                //_c[sector] = 0;
-
-                //_statistics.Communicate(EStatistics.Death, _budget[sector]); // Trick to get money back in circulation !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 _statistics.Communicate(EStatistics.CouldNotFindSupplier, this);
                 return;
 
             }
         }
-        
-        
-        #region MakeBudget
+
+        #endregion
+
+        #region MakeBudget()
         void MakeBudget()
         {
             // Calculate CES-priceindex
@@ -378,7 +379,13 @@ namespace Dream.Models.SOE_Basic
             for (int s = 0; s < _settings.NumberOfSectors; s++)
             {
                 if (_firmShopArray[s] == null)
-                    _firmShopArray[s] = _simulation.GetRandomFirm(s);
+                {
+                    if(_time.Now<2*12)                        
+                        _firmShopArray[s] = _simulation.GetRandomFirm(s); // Just to get up and running
+                    else
+                        _firmShopArray[s] = _simulation.GetRandomFirmsFromHouseholdsGood(1, s)[0];
+
+                }
 
                 _P_CES += _s_CES[s] * Math.Pow(_firmShopArray[s].Price, 1 - _settings.HouseholdCES_Elasticity);
             }
@@ -394,8 +401,6 @@ namespace Dream.Models.SOE_Basic
 
 
         }
-
-        #endregion
 
         #endregion
 
@@ -429,7 +434,7 @@ namespace Dream.Models.SOE_Basic
         {
 
             //Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
-            Firm[] firms = _simulation.GetRandomFirmsFromHouseholds(_settings.HouseholdNumberFirmsSearchShop, sector);
+            Firm[] firms = _simulation.GetRandomFirmsFromHouseholdsGood(_settings.HouseholdNumberFirmsSearchShop, sector);
 
             if (_time.Now<12) // Solving up-start problem
                 firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
@@ -486,7 +491,6 @@ namespace Dream.Models.SOE_Basic
             }
         }
         #endregion
-
         #endregion
 
         #region Communicate
@@ -497,36 +501,36 @@ namespace Dream.Models.SOE_Basic
             {
                 case ECommunicate.YouAreFired:
                     _fired = true;
-                    //_firmEmployment = null;
                     return ECommunicate.Ok;
-
-                //case ECommunicate.YouAreHiredInStartup:  // Forced hiring in startup
-                //    if (_firmEmployment != null)
-                //        _firmEmployment.Communicate(ECommunicate.IQuit, this);
-                //    _firmEmployment = (Firm)o;
-                //    _w = _firmEmployment.Wage;
-                //    return ECommunicate.Ok;
 
                 case ECommunicate.AvertiseJob:
-                    f = (Firm)o; 
-                    if (f.Wage > _w)
-                        if (f.Communicate(ECommunicate.JobApplication, this) == ECommunicate.Yes)
-                        {
-                            if (_firmEmployment != null)
-                                _firmEmployment.Communicate(ECommunicate.IQuit, this);
+                    if(_random.NextEvent(_settings.HouseholdProbabilityReactOnAdvertisingJob))
+                    {
+                        f = (Firm)o;
+                        if (f.Wage > _w)
+                            if (f.Communicate(ECommunicate.JobApplication, this) == ECommunicate.Yes)
+                            {
+                                if (_firmEmployment != null)
+                                    _firmEmployment.Communicate(ECommunicate.IQuit, this);
 
-                            _firmEmployment = f;
-                        }
+                                _firmEmployment = f;
+                            }
 
-                    return ECommunicate.Ok;
+                        return ECommunicate.Ok;
+                    }
+                    return ECommunicate.No;
 
                 case ECommunicate.AvertiseGood:
-                    f = (Firm)o;
-                    if(_firmShopArray[f.Sector]!=null)
-                        if (f.Price < _firmShopArray[f.Sector].Price)
-                            _firmShopArray[f.Sector] = f;
-                    return ECommunicate.Ok;
+                    if (_random.NextEvent(_settings.HouseholdProbabilityReactOnAdvertisingGood))
+                    {
+                        f = (Firm)o;
+                        if (_firmShopArray[f.Sector] != null)
+                            if (f.Price < _firmShopArray[f.Sector].Price)
+                                _firmShopArray[f.Sector] = f;
+                        return ECommunicate.Ok;
 
+                    }
+                    return ECommunicate.No;
 
                 case ECommunicate.Initialize:
                     _firmEmployment = (Firm)o;
@@ -629,6 +633,10 @@ namespace Dream.Models.SOE_Basic
         public double ConsumptionValue
         {
             get { return _consumption_value; }
+        }
+        public double Consumption
+        {
+            get { return _c[0]; } //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
 
         #endregion
