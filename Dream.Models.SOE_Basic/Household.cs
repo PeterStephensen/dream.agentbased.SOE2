@@ -164,7 +164,7 @@ namespace Dream.Models.SOE_Basic
                 case Event.Economics.Update:
                     #region Event.Economics.Update
                     // Income calculadet here because PublicProfitPerHousehold is calculated during PeriodStart-event by the Statistics object
-                    _income = _w * _productivity + 0 * _simulation.Statistics.PublicProfitPerHousehold; //!!!!!!!!!!!!!!!
+                    _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold; //!!!!!!!!!!!!!!!
 
                     #region Not used (Saving)
                     //if (_age >= _settings.HouseholdPensionAge) // If pensioner
@@ -231,9 +231,10 @@ namespace Dream.Models.SOE_Basic
 
                 case Event.Economics.Shopping:
                     #region Event.Economics.Shopping
-                    //if (_time.Now > 12 * 30)
-                    //    if (_consumption_budget > 0 & _budget[0] == 0)
-                    //        Console.WriteLine(_nShoppings);
+                    if (_nShoppings == 0)
+                        if (_consumption_budget > 0 & _budget[0] == 0) //???????????????????????????????!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            _budget[0] = _consumption_budget;
+
 
                     BuyFromShops();
                     _yr_consumption += _consumption;  // Kill this
@@ -245,10 +246,6 @@ namespace Dream.Models.SOE_Basic
                         _consumption_value = 0;
                         for (int s = 0; s < _settings.NumberOfSectors; s++)
                             _consumption_value += _vc[s];
-
-                        int zz = 0;
-                        if (_time.Now > 12 * 30)
-                            zz = 1;
 
                         _wealth += _income - _consumption_value;
 
