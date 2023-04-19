@@ -81,7 +81,15 @@ namespace Dream.Models.SOE_Basic
         int _n_laborSupply = 0;   // Measured in heads
         int _n_unemployed = 0;     // Measured in heads
         int _n_couldNotFindSupplier=0;
-        List<FirmInfo> _firmInfo = new List<FirmInfo>(); 
+        List<FirmInfo> _firmInfo = new List<FirmInfo>();
+        int _nChangeShopInSearchForShop = 0;
+        int _nChangeShopInBuyFromShopNull = 0;
+        int _nChangeShopInBuyFromShopLookingForGoods = 0;
+        int _nCouldNotFindFirmWithGoods = 0;
+        int _nBuyFromShop = 0;
+        int _nSuccesfullTrade = 0;
+        int _nZeroBudget = 0;
+        int _nSuccesfullTradeNonZero = 0;
         #endregion
 
         #region Constructor
@@ -140,7 +148,8 @@ namespace Dream.Models.SOE_Basic
             {
 
                 case Event.System.Start:
-                    OpenFiles();                   
+                    OpenFiles();
+                    //File.Copy("..\\..\\..\\R\\graphs.R", _settings.ROutputDir + "\\graphs.R", true);
                     break;
 
                 case Event.System.PeriodStart:
@@ -235,6 +244,14 @@ namespace Dream.Models.SOE_Basic
                     //_nFirmCloseNegativeProfit = 0;
                     //_nFirmCloseZeroEmployment = 0;
                     //_nFirmNew = 0;
+                    _nChangeShopInSearchForShop = 0;
+                    _nChangeShopInBuyFromShopNull = 0;
+                    _nChangeShopInBuyFromShopLookingForGoods = 0;
+                    _nCouldNotFindFirmWithGoods = 0;
+                    _nBuyFromShop = 0;
+                    _nSuccesfullTrade = 0;
+                    _nZeroBudget = 0;
+                    _nSuccesfullTradeNonZero = 0;
 
                     break;
                     #endregion
@@ -469,13 +486,15 @@ namespace Dream.Models.SOE_Basic
                             {
 
                                 
-                                sw.WriteLineTab(1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
+                                sw.WriteLineTab(1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear, _time.Now,
                                     _simulation.Households.Count, prod_avr, nUnemp, tot_opt_l, P_star, _totalEmployment, 
                                     tot_vacancies, _marketWageTotal, _marketPriceTotal, _totalSales, _profitPerHousehold,
                                     n_firms, _expProfit, mean_age, _meanValue, _nFirmCloseNatural, 
                                     _nFirmCloseZeroEmployment, _nFirmCloseTooBig, _nFirmNew, _discountedProfits, 
                                     _expDiscountedProfits, _sharpeRatioTotal, _expSharpeRatioTotal, laborSupply, _yr_consumption, _yr_employment, 
-                                    _totalPotensialSales, _totalProduction, totalConsumption, consValue, consBudget);
+                                    _totalPotensialSales, _totalProduction, totalConsumption, consValue, consBudget,
+                                    _nChangeShopInSearchForShop, _nChangeShopInBuyFromShopNull, _nChangeShopInBuyFromShopLookingForGoods, 
+                                    _nCouldNotFindFirmWithGoods, _nBuyFromShop, _nSuccesfullTrade, _nZeroBudget, _nSuccesfullTradeNonZero);
                                 sw.Flush();
 
                             }
@@ -486,11 +505,14 @@ namespace Dream.Models.SOE_Basic
                                 foreach (Household h in _simulation.Households)
                                 {
                                     double w = h.FirmEmployment!=null ? h.FirmEmployment.Wage : 0;
-                                    sw.WriteLineTab(h.UnemploymentDuration, h.Productivity, h.Age, h.ConsumptionValue, h.ConsumptionBudget, h.CES_Price, w, h.Income);
+                                    if(_simulation.Random.NextEvent(0.1))
+                                        sw.WriteLineTab(h.UnemploymentDuration, h.Productivity, h.Age, h.ConsumptionValue, h.ConsumptionBudget, h.CES_Price, w, h.Income);
                                 }
                             }
 
-                            RunRScript("..\\..\\..\\R\\graphs.R");
+                            //RunRScript("..\\..\\..\\R\\graphs.R");
+                            //Console.WriteLine("Running R..");
+                            RunRScript(_settings.ROutputDir + "\\graphs.R");
 
                         }
                     #endregion
@@ -607,6 +629,38 @@ namespace Dream.Models.SOE_Basic
                     _n_couldNotFindSupplier ++;
                     return;
 
+                case EStatistics.ChangeShopInSearchForShop:
+                    _nChangeShopInSearchForShop++;
+                    return;
+
+                case EStatistics.ChangeShopInBuyFromShopNull:
+                    _nChangeShopInBuyFromShopNull++;
+                    return;
+                    
+                case EStatistics.ChangeShopInBuyFromShopLookingForGoods:
+                    _nChangeShopInBuyFromShopLookingForGoods++;
+                    return;
+
+                case EStatistics.CouldNotFindFirmWithGoods:
+                    _nCouldNotFindFirmWithGoods++;
+                    return;
+
+                case EStatistics.BuyFromShop:
+                    _nBuyFromShop++;
+                    return;
+
+                case EStatistics.SuccesfullTrade:
+                    _nSuccesfullTrade++;
+                    return;
+
+                case EStatistics.ZeroBudget:
+                    _nZeroBudget++;
+                    return;
+
+                case EStatistics.SuccesfullTradeNonZero:
+                    _nSuccesfullTradeNonZero++;
+                    return;
+
                 default:
                     return;
             }
@@ -647,10 +701,12 @@ namespace Dream.Models.SOE_Basic
                 string path = _settings.ROutputDir + "\\data_year.txt";
                 if (File.Exists(path)) File.Delete(path);
                 using (StreamWriter sw = File.CreateText(path))
-                    sw.WriteLine("Year\tn_Households\tavr_productivity\tnUnemployed\tnOptimalEmplotment\tP_star\tnEmployment\tnVacancies\tWage\tPrice\t" +
+                    sw.WriteLine("Year\tPeriod\tn_Households\tavr_productivity\tnUnemployed\tnOptimalEmplotment\tP_star\tnEmployment\tnVacancies\tWage\tPrice\t" +
                         "Sales\tProfitPerHousehold\tnFirms\tProfitPerFirm\tMeanAge\tMeanValue\tnFirmCloseNatural\tnFirmCloseNegativeProfit\tnFirmCloseTooBig\t" +
                         "nFirmNew\tDiscountedProfits\tExpDiscountedProfits\tSharpeRatio\tExpSharpRatio\tLaborSupply\tYearConsumption\tYearEmployment\t" +
-                        "PotensialSales\tProduction\tConsumption\tConsumptionValue\tConsumptionBudget");
+                        "PotensialSales\tProduction\tConsumption\tConsumptionValue\tConsumptionBudget\tnChangeShopInSearchForShop\t" +
+                        "nChangeShopInBuyFromShopNull\tnChangeShopInBuyFromShopLookingForGoods\tnCouldNotFindFirmWithGoods\tnBuyFromShop\tnSuccesfullTrade\t" +
+                        "nZeroBudget\tnSuccesfullTradeNonZero");
 
                 path = _settings.ROutputDir + "\\sector_year.txt";
                 if (File.Exists(path)) File.Delete(path);

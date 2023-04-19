@@ -158,15 +158,13 @@ namespace Dream.Models.SOE_Basic
                         _vc[s] = 0; // Initialization
                     }
 
-
                     break;
                     #endregion
 
                 case Event.Economics.Update:
                     #region Event.Economics.Update
                     // Income calculadet here because PublicProfitPerHousehold is calculated during PeriodStart-event by the Statistics object
-
-                    _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold;
+                    _income = _w * _productivity + 0 * _simulation.Statistics.PublicProfitPerHousehold; //!!!!!!!!!!!!!!!
 
                     #region Not used (Saving)
                     //if (_age >= _settings.HouseholdPensionAge) // If pensioner
@@ -228,23 +226,29 @@ namespace Dream.Models.SOE_Basic
                             SearchForShop(s);
 
                     MakeBudget();
-
                     break;
                     #endregion
 
                 case Event.Economics.Shopping:
                     #region Event.Economics.Shopping
-                    //Console.WriteLine(_nShoppings);
+                    //if (_time.Now > 12 * 30)
+                    //    if (_consumption_budget > 0 & _budget[0] == 0)
+                    //        Console.WriteLine(_nShoppings);
+
                     BuyFromShops();
                     _yr_consumption += _consumption;  // Kill this
 
-                    // Consume before die: Last consumption in period                    
+                    // Consume before die: Last shopping in period                    
                     if (_nShoppings + 1 == _settings.HouseholdNumberShoppingsPerPeriod)
                     {
                         
                         _consumption_value = 0;
                         for (int s = 0; s < _settings.NumberOfSectors; s++)
                             _consumption_value += _vc[s];
+
+                        int zz = 0;
+                        if (_time.Now > 12 * 30)
+                            zz = 1;
 
                         _wealth += _income - _consumption_value;
 
@@ -307,6 +311,7 @@ namespace Dream.Models.SOE_Basic
                 //_consumption_value = _vc[s];
                 
             }
+
         }
 
         #endregion
@@ -315,13 +320,22 @@ namespace Dream.Models.SOE_Basic
         void BuyFromShop(int sector)
         {
 
+            _statistics.Communicate(EStatistics.BuyFromShop, this);
             if (_budget[sector] < 0)
                 throw new Exception("Budget is negative");
 
             int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
 
             if (_firmShopArray[sector] == null)
+            {
                 _firmShopArray[sector] = _simulation.GetRandomOpenFirm(sector); //SearchForShop ???????????????????????
+                _statistics.Communicate(EStatistics.ChangeShopInBuyFromShopNull, this);
+            }
+
+            if(_budget[sector] == 0)
+            {
+                _statistics.Communicate(EStatistics.ZeroBudget, this);
+            }
 
             _ok++;
             double buy = _budget[sector] / nRemaining;
@@ -330,22 +344,29 @@ namespace Dream.Models.SOE_Basic
 
             if (_firmShopArray[sector].Communicate(ECommunicate.CanIBuy, buy / _firmShopArray[sector].Price) == ECommunicate.Yes)
             {
+                
                 _c[sector] += buy / _firmShopArray[sector].Price;
                 _vc[sector] += buy;
                 _budget[sector] -= buy;
+
+                _statistics.Communicate(EStatistics.SuccesfullTrade, this);
+                if (_budget[sector]>0) 
+                    _statistics.Communicate(EStatistics.SuccesfullTradeNonZero, this);
                 return;
             }
             else
             {
+                
                 double c = (double)_firmShopArray[sector].ReturnObject;
                 _c[sector] += c;
                 _vc[sector] += _firmShopArray[sector].Price * c;
                 _budget[sector] -= _firmShopArray[sector].Price * c;
                 buy -= _firmShopArray[sector].Price * c;
 
-                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 50);
+                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 10);
 
                 if (f != null)
+                {
                     if (f.Communicate(ECommunicate.CanIBuy, buy / f.Price) == ECommunicate.Yes)
                     {
                         _firmShopArray[sector] = f;
@@ -360,6 +381,12 @@ namespace Dream.Models.SOE_Basic
                         _vc[sector] += f.Price * c;
                         _budget[sector] -= f.Price * c;
                     }
+                    _statistics.Communicate(EStatistics.ChangeShopInBuyFromShopLookingForGoods, this);
+                }
+                else
+                {
+                    _statistics.Communicate(EStatistics.CouldNotFindFirmWithGoods, this);
+                }
 
                 _no++;
                 _ok--;
@@ -399,7 +426,6 @@ namespace Dream.Models.SOE_Basic
                 _vc[s] = 0; // Initialization
             }
 
-
         }
 
         #endregion
@@ -434,18 +460,22 @@ namespace Dream.Models.SOE_Basic
         {
 
             //Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
-            Firm[] firms = _simulation.GetRandomFirmsFromHouseholdsGood(_settings.HouseholdNumberFirmsSearchShop, sector);
 
-            if (_time.Now<12) // Solving up-start problem
+            Firm[] firms = null;
+            if (_time.Now<12*5) // Solving up-start problem
                 firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
-            
-            firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowes price first
+            else
+                firms = _simulation.GetRandomFirmsFromHouseholdsGood(_settings.HouseholdNumberFirmsSearchShop, sector);
+
+
+            firms = firms.OrderBy(x => x.Price).ToArray<Firm>(); // Order by price. Lowest price first
 
             if (_firmShopArray[sector] == null || firms.First().Price < _firmShopArray[sector].Price)
+            {
                 _firmShopArray[sector] = firms.First();
-
+                _statistics.Communicate(EStatistics.ChangeShopInSearchForShop, this);
+            }
         }
-
         #endregion
 
         #region Inheritance

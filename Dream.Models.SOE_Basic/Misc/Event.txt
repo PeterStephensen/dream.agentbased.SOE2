@@ -2,35 +2,51 @@
 PeriodStart
 ------------------------------------------
 - Household:
-	_income: _w>0 if just fired. Statistics.PublicProfitPerHousehold is used
-	if _dead = true:
-		Add _income to _totalProfitFromDefaults
-		RemoveThisAgent() 
-	
-	_w: Set _w=0 if unemployed
+	Initializations
 
 - Firm
 	_phi
 	_l_primo
-	_s_primo          ???
+	_s_primo          
 	Expectations()
 	Produce()
 	Management(): _profit_optimal
 	Marketing()
 	HumanResource()
+	
+	Initializations
 
 ------------------------------------------
 Update
 ------------------------------------------
 - Household:
-	SearchForJob()
-	SearchForShop()
-	BuyFromShops()
-	Death (Report to employer and statistics)
+	_income
+	_consumption_budget
+	Retirement
+	SearchForJob(): unemployed + on-the-job-search
+	Quit job
+	SearchForShops()
+	MakeBudget()
 
 - Firm
-	CloseFirm(): Closed after a while if _profit_optimal < 0. _totalProfitFromDefaults added to PublicProfitPerHousehold
+	CloseFirm(): Closed after a while if _profit_optimal <= 0 | _employed.Count == 0
+	Default with probability FirmDefaultProbability
 	Firings
+
+
+------------------------------------------
+Shopping
+------------------------------------------
+- Household
+	BuyFromShops()
+
+	If last shopping period:
+		_consumption_value
+		_wealth
+		Death? (Report to employer and statistics): First consume - the die
+		RemoveThisAgent()
+	
+	_nShoppings++
 
 ------------------------------------------
 PeriodEnd
@@ -38,9 +54,11 @@ PeriodEnd
 - Household:
 	_productivity
 	_w
+	age++
 
 - Firm
 	_profit
+	_age++
 
 - Statistics
 	A lot of statistics..

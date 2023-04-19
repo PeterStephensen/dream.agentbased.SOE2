@@ -389,7 +389,29 @@ namespace Dream.Models.SOE_Basic
         #endregion
 
         #region GetRandomFirm
-        public Firm GetRandomFirm(int sector)
+        public Firm GetRandomFirm(int sector, bool randomize=true)
+        {
+            // Initialization
+            if (_randomFirm[sector] == null)
+                _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
+
+            if (_sectorList[sector].Count == 1)
+                return _randomFirm[sector];
+
+            _randomFirm[sector] = (Firm)_randomFirm[sector].NextAgent;
+            if (_randomFirm[sector] == null) // If no more firms i list
+            {
+                if (randomize)
+                    _sectorList[sector].RandomizeAgents();
+                
+                _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
+            }
+
+            return _randomFirm[sector];
+
+        }
+        
+        public Firm GetRandomFirmJump(int sector)
         {
             if (_randomFirm[sector] == null)
                 _randomFirm[sector] = (Firm)_sectorList[sector].FirstAgent;
@@ -476,10 +498,15 @@ namespace Dream.Models.SOE_Basic
                 Firm f = GetRandomFirm(sector);
 
                 if(f.Open)
+                {
                     if ((f.Production - f.Sales) * f.Price > budget)
                         return f;
-                
+                    
+                    // Maybe i++ here????
+                }
+
                 i++;
+
             }
 
             return null;

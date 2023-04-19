@@ -38,7 +38,15 @@ namespace Dream.Models.SOE_Basic
         FirmNew,
         Death,
         Profit,
-        CouldNotFindSupplier
+        CouldNotFindSupplier,
+        ChangeShopInSearchForShop,
+        ChangeShopInBuyFromShopNull,
+        ChangeShopInBuyFromShopLookingForGoods,
+        CouldNotFindFirmWithGoods,
+        SuccesfullTrade,
+        SuccesfullTradeNonZero,
+        ZeroBudget,
+        BuyFromShop
     }
     #endregion
 

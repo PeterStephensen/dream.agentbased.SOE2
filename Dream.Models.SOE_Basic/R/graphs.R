@@ -439,11 +439,11 @@ abline(h=0)
 
 
 mx = max(d_house$Price)
-hist(d_house$Price, breaks=15, xlim=c(0,1.2*mx))
+hist(d_house$Price, breaks=50, xlim=c(0,1.2*mx))
 
 d_h2 = d_house %>% filter(Wage>0)
 mx = max(d_h2$Wage)
-hist(d_h2$Wage, breaks=15, xlim=c(0,1.2*mx))
+hist(d_h2$Wage, breaks=50, xlim=c(0,1.2*mx))
 
 #p = d$Price[nrow(d)]
 #hist(d_house$Price, breaks=50, xlim=c(0.2*p, 1.5*p))
@@ -454,6 +454,78 @@ hist(d_h2$Wage, breaks=15, xlim=c(0,1.2*mx))
 #hist(d_h2$Wage, breaks=50, xlim=c(0.9*w, 1.1*w))
 #abline(v=w, col="red", lwd=2, lty=2)
 
+#-----------------------------------------------
+par(mfrow=c(2,1))
+
+mx=max(max(d$nChangeShopInBuyFromShopLookingForGoods), max(d$nChangeShopInSearchForShop))
+plot(d$Year, d$nChangeShopInBuyFromShopLookingForGoods, type="l", ylim=c(0,1.1*mx), ylab="Number", main="Number of shops changes")
+lines(d$Year, d$nChangeShopInBuyFromShopNull, col="blue")
+lines(d$Year, d$nChangeShopInSearchForShop, col="red")
+abline(h=0)
+
+
+mx=max(d$ConsumptionValue / d$Price / corr)
+plot(d$Year, d$ConsumptionValue / d$Price / corr, type="l", ylim=c(0,1.1*mx), ylab="Value", main="Consumption value")
+abline(h=0)
+
+#-----------------------------------------------
+par(mfrow=c(3,3))
+
+mx_y = max(d$ConsumptionBudget / d$Price / corr)
+
+plot(d$nCouldNotFindFirmWithGoods, d$ConsumptionBudget / d$Price / corr, ylab="Consumption", 
+     xlab="nCouldNotFindFirmWithGoods", cex=0.5, cex.lab=0.7, ylim=c(0,mx_y), main="black=budget, red=value", 
+     cex.main=0.7)
+lines(d$nCouldNotFindFirmWithGoods, d$ConsumptionValue / d$Price / corr, col="red", cex=0.5, type="p")
+abline(h=0,v=0)
+
+mx = max(max(d$nChangeShopInBuyFromShopLookingForGoods), max(d$nChangeShopInSearchForShop))
+
+z = d$nChangeShopInBuyFromShopLookingForGoods
+plot(z, d$ConsumptionBudget / d$Price / corr, xlab="nChangeShopInBuyFromShopLookingForGoods", 
+     ylab="Consumption", cex=0.5, cex.lab=0.7, xlim=c(0,mx), ylim=c(0,mx_y), main="black=budget, red=value", 
+     cex.main=0.7)
+lines(z, d$ConsumptionValue / d$Price / corr, col="red", cex=0.5, type="p")
+abline(h=0,v=0)
+
+z = d$nChangeShopInSearchForShop
+plot(z, d$ConsumptionBudget / d$Price / corr, xlab="nChangeShopInSearchForShop", 
+     ylab="Consumption", cex=0.5, cex.lab=0.7, xlim=c(0,mx), ylim=c(0,mx_y), main="black=budget, red=value", 
+     cex.main=0.7)
+lines(z, d$ConsumptionValue / d$Price / corr, col="red", cex=0.5, type="p")
+abline(h=0,v=0)
+
+z = (d$nCouldNotFindFirmWithGoods+d$nChangeShopInBuyFromShopLookingForGoods) /  (d$n_Households*2)
+plot(z, d$ConsumptionValue / d$ConsumptionBudget, cex=0.5, cex.lab=0.7, xlim=c(0,1), ylim=c(0,1),
+     xlab="Share of unsuccesfull trades")
+abline(h=0, v=0)
+
+z = (d$nCouldNotFindFirmWithGoods+d$nChangeShopInBuyFromShopLookingForGoods) /  (d$n_Households*2)
+plot(z, d$nCouldNotFindFirmWithGoods, cex=0.5, cex.lab=0.7, xlim=c(0,1),
+     xlab="Share of unsuccesfull trades")
+abline(h=0, v=0)
+
+z = (d$nCouldNotFindFirmWithGoods+d$nChangeShopInBuyFromShopLookingForGoods) /  (d$n_Households*2)
+plot(z, d$nChangeShopInBuyFromShopLookingForGoods, cex=0.5, cex.lab=0.7, xlim=c(0,1),
+     xlab="Share of unsuccesfull trades")
+abline(h=0, v=0)
+
+
+z = (d$nCouldNotFindFirmWithGoods+d$nChangeShopInBuyFromShopLookingForGoods) /  (d$n_Households*2)
+plot(z, d$nChangeShopInSearchForShop, cex=0.5, cex.lab=0.7, xlim=c(0,1),
+     xlab="Share of unsuccesfull trades")
+abline(h=0, v=0)
+
+
+mx = max(max(d$nChangeShopInSearchForShop), max(d$nChangeShopInBuyFromShopLookingForGoods))
+plot(d$nChangeShopInSearchForShop, d$nChangeShopInBuyFromShopLookingForGoods, xlab="nChangeShopInSearchForShop", 
+     ylab="nChangeShopInBuyFromShopLookingForGoods", cex=0.5, cex.lab=0.7, log="xy", ylim=c(1,mx), xlim=c(1,mx), main="Log-scale")
+abline(a=0,b=1, lty=2)
+
+mx = max(max(d$nChangeShopInSearchForShop), max(d$nCouldNotFindFirmWithGoods))
+plot(d$nChangeShopInSearchForShop, d$nCouldNotFindFirmWithGoods, xlab="nChangeShopInSearchForShop", 
+     ylab="nCouldNotFindFirmWithGoods", cex=0.5, cex.lab=0.7, log="xy", ylim=c(1,mx), xlim=c(1,mx), main="Log-scale")
+abline(a=0,b=1, lty=2)
 
 
 dev.off()

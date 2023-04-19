@@ -59,16 +59,16 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProbabilityRecalculateWageInZone = 0.5; // 0.2 
 
             // Price ----------------------------------
-            settings.FirmPriceMarkup = 1 * mark;
-            settings.FirmPriceMarkupSensitivity = sens;
-            settings.FirmPriceMarkdown = 1 * mark;             //Stable prices  
-            settings.FirmPriceMarkdownSensitivity = sens;  //Stable prices 
+            settings.FirmPriceMarkup = 2 * mark;
+            settings.FirmPriceMarkupSensitivity = 1*sens;
+            settings.FirmPriceMarkdown = 2 * mark;             //Stable prices  
+            settings.FirmPriceMarkdownSensitivity = 1 * sens;  //Stable prices 
 
             // In zone
-            settings.FirmPriceMarkupInZone = 1 * mark;
-            settings.FirmPriceMarkupSensitivityInZone = sens;
-            settings.FirmPriceMarkdownInZone = 1 * mark;                //Stable prices  
-            settings.FirmPriceMarkdownSensitivityInZone = sens;    //Stable prices 
+            settings.FirmPriceMarkupInZone = 2 * mark;
+            settings.FirmPriceMarkupSensitivityInZone = 1 * sens;
+            settings.FirmPriceMarkdownInZone = 2 * mark;                //Stable prices  
+            settings.FirmPriceMarkdownSensitivityInZone = 1 * sens;    //Stable prices 
 
             settings.FirmProbabilityRecalculatePrice = 0.5;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
@@ -102,7 +102,7 @@ namespace Dream.Models.SOE_Basic
 
             // Households
             settings.HouseholdNumberFirmsSearchJob = 15;              
-            settings.HouseholdNumberFirmsSearchShop = 5;       //15
+            settings.HouseholdNumberFirmsSearchShop = 5;       //5
             settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
             settings.HouseholdProbabilitySearchForJob = 0.5;   //0.5                        
             settings.HouseholdProbabilitySearchForShop = 0.5;     //0.25                    
@@ -142,7 +142,8 @@ namespace Dream.Models.SOE_Basic
             if (Environment.MachineName == "C2210098") // PSP's nye maskine
             {
                 settings.ROutputDir = @"C:\Users\B007566\Documents\Output";
-                settings.RExe = @"C:\Program Files\R\R-4.2.0\bin\x64\R.exe";
+                settings.RExe = @"C:\Program Files\R\R-4.2.3\bin\x64\R.exe";
+                //settings.RExe = @"C:\Program Files\R\R-4.2.3\bin\R.exe";
             }
 
             if (Environment.MachineName == "VDI00316") // Fjernskrivebord
@@ -165,7 +166,7 @@ namespace Dream.Models.SOE_Basic
             settings.PeriodsPerYear = 12;
 
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
-            settings.StatisticsGraphicsPlotInterval = 12 * 1;
+            settings.StatisticsGraphicsPlotInterval = 1;
             
             settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12;   // 70
             if(settings.SaveScenario)

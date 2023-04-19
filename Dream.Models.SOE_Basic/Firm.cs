@@ -261,7 +261,7 @@ namespace Dream.Models.SOE_Basic
                     return ECommunicate.Ok;
 
                 case ECommunicate.CanIBuy:
-                    double x = (double)o;
+                    var x = (double)o;
                     if (x < 0)
                         throw new Exception("Can only buy positive number.");
                     
@@ -417,7 +417,7 @@ namespace Dream.Models.SOE_Basic
                             markupSensitivity = _settings.FirmPriceMarkupSensitivityInZone;
                             markdownSensitivity = _settings.FirmPriceMarkdownSensitivityInZone;
                         }
-                       
+
                         //if (_expSales < _y_optimal)
                         if (_expSales < _y_primo * gamma_y)
                         {
