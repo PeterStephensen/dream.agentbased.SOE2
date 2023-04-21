@@ -26,7 +26,7 @@ namespace Dream.Models.SOE_Basic
             settings.NumberOfHouseholdsPerFirm = 5;
             settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
-            settings.HouseholdNumberShoppingsPerPeriod = 2; // Weekly consumption
+            settings.HouseholdNumberShoppingsPerPeriod = 4; // Weekly consumption
 
             //Firms
             settings.FirmParetoMinPhi = 0.5;
@@ -40,54 +40,54 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.15; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            double sens = 0.1/0.05;   //1/0.05
+            double mark = 0.20; // 0.15
+            double sens = 1/0.25;   //0.1/0.05
 
             // Wage ----------------------------------
-            settings.FirmWageMarkup = 1 * mark;                                            //2  !!!!
-            settings.FirmWageMarkupSensitivity = 0.5 * sens;
-            settings.FirmWageMarkdown = 1 * mark;            // 1        // 0 is ok
-            settings.FirmWageMarkdownSensitivity = 0.5 * sens;
+            settings.FirmWageMarkup = 1 * mark; //2                                            
+            settings.FirmWageMarkupSensitivity = 1 * sens;
+            settings.FirmWageMarkdown = 1 * mark;            
+            settings.FirmWageMarkdownSensitivity = 1 * sens;
 
             // In zone
-            settings.FirmWageMarkupInZone = 1 * mark;                                      //2  !!!!
-            settings.FirmWageMarkupSensitivityInZone = 0.5 * sens;
-            settings.FirmWageMarkdownInZone = 1 * mark;    //1          // 0 is ok
-            settings.FirmWageMarkdownSensitivityInZone = 0.5 * sens;
+            settings.FirmWageMarkupInZone = 1 * mark; //2                                      
+            settings.FirmWageMarkupSensitivityInZone = 1 * sens;
+            settings.FirmWageMarkdownInZone = 1 * mark;    
+            settings.FirmWageMarkdownSensitivityInZone = 1 * sens;
 
-            settings.FirmProbabilityRecalculateWage = 0.5;
-            settings.FirmProbabilityRecalculateWageInZone = 0.5; // 0.2 
+            settings.FirmProbabilityRecalculateWage = 1.0;
+            settings.FirmProbabilityRecalculateWageInZone = 0.5;  
 
             // Price ----------------------------------
-            settings.FirmPriceMarkup = 2 * mark;
+            settings.FirmPriceMarkup = 1 * mark; //2
             settings.FirmPriceMarkupSensitivity = 1*sens;
-            settings.FirmPriceMarkdown = 2 * mark;             //Stable prices  
-            settings.FirmPriceMarkdownSensitivity = 1 * sens;  //Stable prices 
+            settings.FirmPriceMarkdown = 1 * mark;             
+            settings.FirmPriceMarkdownSensitivity = 1 * sens;  
 
             // In zone
-            settings.FirmPriceMarkupInZone = 2 * mark;
+            settings.FirmPriceMarkupInZone = 1 * mark; //2
             settings.FirmPriceMarkupSensitivityInZone = 1 * sens;
-            settings.FirmPriceMarkdownInZone = 2 * mark;                //Stable prices  
-            settings.FirmPriceMarkdownSensitivityInZone = 1 * sens;    //Stable prices 
+            settings.FirmPriceMarkdownInZone = 1 * mark;             
+            settings.FirmPriceMarkdownSensitivityInZone = 1 * sens;    
 
-            settings.FirmProbabilityRecalculatePrice = 0.5;
+            settings.FirmProbabilityRecalculatePrice = 1.0;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
 
-            settings.FirmExpectedExcessPotentialSales = 1.5; // 1.1  !!!!!!!!!!!!!!!!
-            settings.FirmGamma_y = 0.8; //0.95
+            settings.FirmExpectedExcessPotentialSales = 0.8; // 0.8  !!!!!!!!!!!!!!!!
+            settings.FirmGamma_y = 0.8; //0.8
 
             settings.FirmPriceMechanismStart = 12 * 1;
 
             //-----
-            settings.FirmComfortZoneEmployment = 0.15;
-            settings.FirmComfortZoneSales = 0.15;
+            settings.FirmComfortZoneEmployment = 0.1;
+            settings.FirmComfortZoneSales = 0.1;
 
             //-----
             settings.FirmDefaultProbabilityNegativeProfit = 0.5;  
             settings.FirmDefaultStart = 12 * 5;
             settings.FirmNegativeProfitOkAge = 12 * 2;
 
-            settings.FirmExpectationSmooth = 0.4; //0.9
+            settings.FirmExpectationSmooth = 0.95; //0.4  
             settings.FirmMaxEmployment = 1000;  // 700
 
             settings.FirmNumberOfGoodAdvertisements = 25; 
@@ -104,8 +104,8 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdNumberFirmsSearchJob = 15;              
             settings.HouseholdNumberFirmsSearchShop = 5;       //5
             settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
-            settings.HouseholdProbabilitySearchForJob = 0.5;   //0.5                        
-            settings.HouseholdProbabilitySearchForShop = 0.5;     //0.25                    
+            settings.HouseholdProbabilityOnTheJobSearch = 0.75;   //0.5                        
+            settings.HouseholdProbabilitySearchForShop = 0.25;     //0.25                    
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
             settings.HouseholdProductivityErrorSigma = 0.02;
@@ -119,9 +119,10 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdProbabilityReactOnAdvertisingGood = 1.0;
             settings.HouseholdPensionAge = 67 * 12;
             settings.HouseholdStartAge = 18 * 12;
+            settings.HouseholdNumberFirmsLookingForGoods = 50;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.05;   // 0.15            
+            settings.InvestorProfitSensitivity = 0.15;   // 0.15            
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.2;  //2.0
@@ -168,7 +169,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 1;
             
-            settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12;   // 70
+            settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12 * 1;  //!!!!!!!!!!!!!!!!!!!!!!!
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 

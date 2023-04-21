@@ -210,7 +210,7 @@ namespace Dream.Models.SOE_Basic
                         else  // If employed
                         {
                             // If job is changed, it is from next period. 
-                            if (_random.NextEvent(_settings.HouseholdProbabilitySearchForJob))
+                            if (_random.NextEvent(_settings.HouseholdProbabilityOnTheJobSearch))
                                 SearchForJob();
 
                             if (_random.NextEvent(_settings.HouseholdProbabilityQuitJob))
@@ -234,7 +234,6 @@ namespace Dream.Models.SOE_Basic
                     if (_nShoppings == 0)
                         if (_consumption_budget > 0 & _budget[0] == 0) //???????????????????????????????!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             _budget[0] = _consumption_budget;
-
 
                     BuyFromShops();
                     _yr_consumption += _consumption;  // Kill this
@@ -321,7 +320,7 @@ namespace Dream.Models.SOE_Basic
             if (_budget[sector] < 0)
                 throw new Exception("Budget is negative");
 
-            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining consumptions
+            int nRemaining = _settings.HouseholdNumberShoppingsPerPeriod - _nShoppings;  // Remaining shoppings this period
 
             if (_firmShopArray[sector] == null)
             {
@@ -335,7 +334,7 @@ namespace Dream.Models.SOE_Basic
             }
 
             _ok++;
-            double buy = _budget[sector] / nRemaining;
+            double buy = _budget[sector] / nRemaining;            
             if (buy < 0)
                 throw new Exception("Can only buy positive number.");
 
@@ -345,6 +344,7 @@ namespace Dream.Models.SOE_Basic
                 _c[sector] += buy / _firmShopArray[sector].Price;
                 _vc[sector] += buy;
                 _budget[sector] -= buy;
+                
 
                 _statistics.Communicate(EStatistics.SuccesfullTrade, this);
                 if (_budget[sector]>0) 
@@ -355,13 +355,18 @@ namespace Dream.Models.SOE_Basic
             {
                 
                 double c = (double)_firmShopArray[sector].ReturnObject;
-                _c[sector] += c;
-                _vc[sector] += _firmShopArray[sector].Price * c;
-                _budget[sector] -= _firmShopArray[sector].Price * c;
-                buy -= _firmShopArray[sector].Price * c;
+                if(c>0) 
+                {
+                    double vc = (double)_firmShopArray[sector].Price * c;
 
-                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, 10);
+                    _c[sector] += c;
+                    _vc[sector] += vc;
+                    _budget[sector] -= vc;
+                    buy -= vc;
+                }
 
+                Firm f = _simulation.GetNextFirmWithGoods(buy, sector, _settings.HouseholdNumberFirmsLookingForGoods);
+                
                 if (f != null)
                 {
                     if (f.Communicate(ECommunicate.CanIBuy, buy / f.Price) == ECommunicate.Yes)
@@ -370,13 +375,7 @@ namespace Dream.Models.SOE_Basic
                         _c[sector] += buy / _firmShopArray[sector].Price;
                         _vc[sector] += buy;
                         _budget[sector] -= buy;
-                    }
-                    else
-                    {
-                        c = (double)f.ReturnObject;
-                        _c[sector] += c;
-                        _vc[sector] += f.Price * c;
-                        _budget[sector] -= f.Price * c;
+
                     }
                     _statistics.Communicate(EStatistics.ChangeShopInBuyFromShopLookingForGoods, this);
                 }

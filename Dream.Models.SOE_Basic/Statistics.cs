@@ -717,7 +717,8 @@ namespace Dream.Models.SOE_Basic
                 if (File.Exists(path)) File.Delete(path);
                 _fileFirmReport = File.CreateText(path);
                 _fileFirmReport.WriteLine("Time\tID\tProductivity\tEmployment\tProduction\tSales\tVacancies\tExpectedPrice\tExpectedWage\tPrice\tWage\tApplications" +
-                    "\tQuitters\tProfit\tValue\tPotensialSales\tOptimalEmployment\tOptimalProduction\tExpectedSales\texpApplications\texpQuitters\texpAvrProd");
+                    "\tQuitters\tProfit\tValue\tPotensialSales\tOptimalEmployment\tOptimalProduction\tExpectedSales\texpApplications\texpQuitters\texpAvrProd\tMarketPrice" +
+                    "\tMarketWage\tExpectedPotentialSales\tExpectedEmployment\tEmploymentMarkup");
 
                 
 

@@ -9,11 +9,17 @@ namespace Dream.Models.SOE_Basic
 
     public class Settings
     {
+        /// <summary>
+        /// Used only at startup
+        /// </summary>
         public int NumberOfHouseholdsPerFirm { get; set; } = 0;
         public bool FirmStartNewFirms { get; set; } = false;
 
         public int NumberOfSectors { get; set; } = 1;
 
+        /// <summary>
+        /// Used only at startup
+        /// </summary>
         public int NumberOfFirms { get; set; } = 0;
         /// <summary>
         /// Minimum productivity in pareto distribution
@@ -209,7 +215,7 @@ namespace Dream.Models.SOE_Basic
         public int HouseholdNumberFirmsSearchShop { get; set; } = 5;
         public int HouseholdMaxNumberShops { get; set; } = 5;
         public double HouseholdProbabilityQuitJob { get; set; } = 0;
-        public double HouseholdProbabilitySearchForJob { get; set; } = 0;
+        public double HouseholdProbabilityOnTheJobSearch { get; set; } = 0;
         public double HouseholdProbabilitySearchForShop { get; set; } = 0.01;
         public int HouseholdPensionAge { get; set; } = 0;
         public int HouseholdStartAge { get; set; } = 0;
@@ -265,6 +271,12 @@ namespace Dream.Models.SOE_Basic
         /// Probability that the household react on a good advertisement
         /// </summary>
         public double HouseholdProbabilityReactOnAdvertisingGood { get; set; } = 1.0;
+
+        /// <summary>
+        /// Number of firms the household visits when searching for goods. Only happens when the household cannot buy from the current supplier
+        /// </summary>
+        public int HouseholdNumberFirmsLookingForGoods { get; set; } = 10;
+
 
 
         public int NumberOfInheritors { get; set; } = 1;
