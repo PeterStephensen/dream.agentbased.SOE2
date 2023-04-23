@@ -23,10 +23,10 @@ if(Sys.info()['nodename'] == "C2210098")     # Peters nye maskine
 }
 
 
-
 d_report = read.delim(paste0(o_dir,"/file_reports.txt")) %>% filter(Production>0)
 
 d_report$EmploymentMarkup = as.numeric(d_report$EmploymentMarkup)
+
 
 #ID=34151
 d_report = d_report %>% arrange(ID)
@@ -55,7 +55,8 @@ for(i in 1:n)
 {
   #i=334
   #i=i+1
-  #i=which(ids==35597)
+  #i=which(ids==34852)
+  #i=i+1
   dr = d_report %>% filter(ID==ids[i])
 
   if(nrow(dr)<12*5)
@@ -102,14 +103,13 @@ for(i in 1:n)
   ContourFunctions::multicolor.title(c("Potensial sales "," Optimal production", " Expected potensial sales"), 1:3, cex.main = 0.7)
   
 
-  mx = max(max(dr$Applications), max(dr$Quitters))
-  plot(dr$Time, dr$Applications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[1])
-  lines(dr$Time, dr$expApplications, lty=1, col=cols[2])
+  mx = max(max(dr$expApplications), max(dr$expQuitters+dr$ExpectedVacancies))
+  plot(dr$Time, dr$expApplications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[1])
+  lines(dr$Time, dr$expQuitters+dr$ExpectedVacancies, lty=1, col=cols[2])
   lines(dr$Time, dr$expQuitters, type="l", col=cols[3])
-  #lines(dr$Time, dr$expQuitters, lty=2, col=cols[4])
   abline(h=0)
   abline(v=2050, lty=2)
-  ContourFunctions::multicolor.title(c("Applications ","ExpApplications ", "Quitters"), 1:3, cex.main = 0.7)
+  ContourFunctions::multicolor.title(c("ExpApplications ", "ExpQuitters+ ExpVacancies"), 1:2, cex.main = 0.7)
 
   if(F)
   {
@@ -129,21 +129,31 @@ for(i in 1:n)
          xlab="Time", col=cols[3], ylim=c(0.8*mn, 1.2*mx)) 
     lines(dr$Time, dr$ExpectedPrice / dr$ExpectedPrice[1]/corr, lty=1)
     
-  }
+  
 
-  t = dr$Time[-1]
-  x = dr$Wage[-1]
-  xx = dr$ExpectedWage[-nrow(dr)]
-  plot(t,  x / xx, type="l", main="Relative Wage", ylab="Relative", col=cols[3])
-  abline(h=1)
+    t = dr$Time[-1]
+    x = dr$Wage[-1]
+    xx = dr$ExpectedWage[-nrow(dr)]
+    plot(t,  x / xx, type="l", main="Relative Wage", ylab="Relative", col=cols[3])
+    abline(h=1)
 
-  t = dr$Time[-1]
-  x = dr$Price[-1]
-  xx = dr$ExpectedPrice[-nrow(dr)]
-  plot(t,  x / xx, type="l", main="Relative Price", ylab="Relative", col=cols[3])
-  abline(h=1)
+    t = dr$Time[-1]
+    x = dr$Price[-1]
+    xx = dr$ExpectedPrice[-nrow(dr)]
+    plot(t,  x / xx, type="l", main="Relative Price", ylab="Relative", col=cols[3])
+    abline(h=1)
     
+  }
+  
+  plot(dr$Time,  dr$RelativeWage, type="l", main="Relative Wage", ylab="Relative", col=cols[3], ylim=c(0.8,1.2))
+  abline(h=1)
+  
+  plot(dr$Time,  dr$RelativePrice, type="l", main="Relative Price", ylab="Relative", col=cols[3], ylim=c(0.8,1.2))
+  abline(h=1)
+  
   plot(dr$Time, dr$Vacancies, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[3])
+  lines(dr$Time, dr$ExpectedVacancies, col=cols[2])
+  #lines(dr$Time, dr$expApplications, col=cols[1])
   abline(v=2050, lty=2)
   abline(h=0)
 
@@ -166,25 +176,20 @@ for(i in 1:n)
   #lines(dr$Time, dr$ExpectedPrice / dr$ExpectedPrice[1], lty=2)
   
   
-  if(F)
-  {
-    mx = max(max(dr$Production), max(dr$PotensialSales), max(dr$OptimalProduction))
-    plot(dr$Time, dr$Production, type="s", ylab="Production", main="", 
-         xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
-    lines(dr$Time, dr$PotensialSales, col=cols[2], type="s")
-    lines(dr$Time, dr$ExpectedSales, col=cols[3], type="l")
-    lines(dr$Time, dr$OptimalProduction, col=cols[4], type="l")
-    lines(dr$Time, dr$Production, col=cols[1], type="l")
-    abline(h=0)
-    ContourFunctions::multicolor.title(c("Production ","Poten. sales ", "Exp. Sales ", "Optim. Produc. "), 1:4, cex.main = 0.7)
+  #mx = max(max(dr$Production), max(dr$OptimalProduction))
+  #plot(dr$Time, dr$Production, type="s", ylab="Sale", main="", 
+  #     xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
+  #lines(dr$Time, dr$OptimalProduction, col=cols[3], type="l")
+  #abline(h=0)
+  #ContourFunctions::multicolor.title(c("Production ","Optimal production"), 1:2, cex.main = 0.7)
   
-  }
 
   mx=max(dr$EmploymentMarkup[-1])
   mn=min(dr$EmploymentMarkup[-1])
-  plot(dr$Time[-1], dr$EmploymentMarkup[-1], type="l", col=cols[3], ylim=c(0.9*mn,1.1*mx))  
-    
+  plot(dr$Time[-1], dr$EmploymentMarkup[-1], type="l", col=cols[3], ylim=c(0,1.1*mx), ylab="Employment Markup")  
   
+
+    
   #plot(0)
   
   

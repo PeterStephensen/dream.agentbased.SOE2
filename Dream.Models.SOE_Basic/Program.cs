@@ -40,20 +40,20 @@ namespace Dream.Models.SOE_Basic
             //-----
             //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //ouble sens = 0.5;
-            double mark = 0.20; // 0.15
-            double sens = 1/0.25;   //0.1/0.05
+            double mark = 0.10; // 0.2
+            double sens = 1/0.5;   //1/0.25
 
             // Wage ----------------------------------
-            settings.FirmWageMarkup = 1 * mark; //2                                            
-            settings.FirmWageMarkupSensitivity = 1 * sens;
-            settings.FirmWageMarkdown = 1 * mark;            
-            settings.FirmWageMarkdownSensitivity = 1 * sens;
+            settings.FirmWageMarkup = 1 * mark; //1                                            
+            settings.FirmWageMarkupSensitivity = 1 * sens;//1
+            settings.FirmWageMarkdown = 1 * mark;   //1          
+            settings.FirmWageMarkdownSensitivity = 1 * sens;//1
 
             // In zone
-            settings.FirmWageMarkupInZone = 1 * mark; //2                                      
-            settings.FirmWageMarkupSensitivityInZone = 1 * sens;
-            settings.FirmWageMarkdownInZone = 1 * mark;    
-            settings.FirmWageMarkdownSensitivityInZone = 1 * sens;
+            settings.FirmWageMarkupInZone = 1 * mark; //1                                      
+            settings.FirmWageMarkupSensitivityInZone = 1 * sens;//1
+            settings.FirmWageMarkdownInZone = 1 * mark; //1    
+            settings.FirmWageMarkdownSensitivityInZone = 1 * sens;//1
 
             settings.FirmProbabilityRecalculateWage = 1.0;
             settings.FirmProbabilityRecalculateWageInZone = 0.5;  
@@ -73,8 +73,8 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProbabilityRecalculatePrice = 1.0;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
 
-            settings.FirmExpectedExcessPotentialSales = 0.8; // 0.8  !!!!!!!!!!!!!!!!
-            settings.FirmGamma_y = 0.8; //0.8
+            settings.FirmExpectedExcessPotentialSales = 1.0; // 0.8  !!!!!!!!!!!!!!!!
+            settings.FirmGamma_y = 1.0; //0.8
 
             settings.FirmPriceMechanismStart = 12 * 1;
 
@@ -104,7 +104,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdNumberFirmsSearchJob = 15;              
             settings.HouseholdNumberFirmsSearchShop = 5;       //5
             settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
-            settings.HouseholdProbabilityOnTheJobSearch = 0.75;   //0.5                        
+            settings.HouseholdProbabilityOnTheJobSearch = 0.15;   //0.75                        
             settings.HouseholdProbabilitySearchForShop = 0.25;     //0.25                    
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
@@ -169,7 +169,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 1;
             
-            settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12 * 1;  //!!!!!!!!!!!!!!!!!!!!!!!
+            settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12 * 100;  //!!!!!!!!!!!!!!!!!!!!!!!
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 
