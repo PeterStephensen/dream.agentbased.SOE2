@@ -19,7 +19,7 @@ namespace Dream.Models.SOE_Basic
             settings.SaveScenario = saveScenario;
             
             // Scale
-            double scale = 5 * 1.0; 
+            double scale = 5 * 1.0; //5
             
             settings.NumberOfSectors = 1;
             settings.NumberOfFirms = (int)(150 * scale);
@@ -38,10 +38,8 @@ namespace Dream.Models.SOE_Basic
             settings.FirmFi = 2;
 
             //-----
-            //double mark = 0.08; // SE HER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //ouble sens = 0.5;
             double mark = 0.10; // 0.2
-            double sens = 1/0.5;   //1/0.25
+            double sens = 1/0.75;   //1/0.1
 
             // Wage ----------------------------------
             settings.FirmWageMarkup = 1 * mark; //1                                            
@@ -59,22 +57,22 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProbabilityRecalculateWageInZone = 0.5;  
 
             // Price ----------------------------------
-            settings.FirmPriceMarkup = 1 * mark; //2
-            settings.FirmPriceMarkupSensitivity = 1*sens;
+            settings.FirmPriceMarkup = 1 * mark; //1
+            settings.FirmPriceMarkupSensitivity = sens; //1
             settings.FirmPriceMarkdown = 1 * mark;             
             settings.FirmPriceMarkdownSensitivity = 1 * sens;  
 
             // In zone
-            settings.FirmPriceMarkupInZone = 1 * mark; //2
-            settings.FirmPriceMarkupSensitivityInZone = 1 * sens;
+            settings.FirmPriceMarkupInZone = 1 * mark; //1
+            settings.FirmPriceMarkupSensitivityInZone = sens;
             settings.FirmPriceMarkdownInZone = 1 * mark;             
             settings.FirmPriceMarkdownSensitivityInZone = 1 * sens;    
 
             settings.FirmProbabilityRecalculatePrice = 1.0;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
 
-            settings.FirmExpectedExcessPotentialSales = 1.0; // 0.8  !!!!!!!!!!!!!!!!
-            settings.FirmGamma_y = 1.0; //0.8
+            settings.FirmExpectedExcessPotentialSales = 1.0; // 1.0  !!!!!!!!!!!!!!!!
+            settings.FirmGamma_y = 1.0; //1.0
 
             settings.FirmPriceMechanismStart = 12 * 1;
 
@@ -90,8 +88,8 @@ namespace Dream.Models.SOE_Basic
             settings.FirmExpectationSmooth = 0.95; //0.4  
             settings.FirmMaxEmployment = 1000;  // 700
 
-            settings.FirmNumberOfGoodAdvertisements = 25; 
-            settings.FirmNumberOfJobAdvertisements = 10;  
+            settings.FirmNumberOfGoodAdvertisements = 100; // 25 
+            settings.FirmNumberOfJobAdvertisements = 100;  
 
             settings.FirmVacanciesShare = 1.0;
             settings.FirmMinRemainingVacancies = 5;
@@ -101,11 +99,11 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProductivityGrowth = 0.02;
 
             // Households
-            settings.HouseholdNumberFirmsSearchJob = 15;              
-            settings.HouseholdNumberFirmsSearchShop = 5;       //5
-            settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
-            settings.HouseholdProbabilityOnTheJobSearch = 0.15;   //0.75                        
-            settings.HouseholdProbabilitySearchForShop = 0.25;     //0.25                    
+            settings.HouseholdNumberFirmsSearchJob = 5;  //15              
+            settings.HouseholdNumberFirmsSearchShop = 5;       //15
+            settings.HouseholdProbabilityQuitJob = 0.05;        // 0.01
+            settings.HouseholdProbabilityOnTheJobSearch = 0.15;   //0.25                        
+            settings.HouseholdProbabilitySearchForShop = 0.15;     //0.25                    
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
             settings.HouseholdProductivityErrorSigma = 0.02;
@@ -115,24 +113,24 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdSaveRate = 0.01;
             settings.NumberOfInheritors = 5;
             settings.HouseholdMaxNumberShops = 15; // 5 When your supplier can not deliver: how many to seach for
-            settings.HouseholdProbabilityReactOnAdvertisingJob = 1.0;
-            settings.HouseholdProbabilityReactOnAdvertisingGood = 1.0;
+            settings.HouseholdProbabilityReactOnAdvertisingJob = 0.5; //1
+            settings.HouseholdProbabilityReactOnAdvertisingGood = 0.5; //1
             settings.HouseholdPensionAge = 67 * 12;
             settings.HouseholdStartAge = 18 * 12;
             settings.HouseholdNumberFirmsLookingForGoods = 50;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.15;   // 0.15            
+            settings.InvestorProfitSensitivity = 0.15; //0.15               
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.2;  //2.0
             settings.StatisticsInitialMarketWage = 0.2;   //1.0 
             settings.StatisticsInitialInterestRate = Math.Pow(1 + 0.05, 1.0 / 12) - 1; // 5% p.a.
 
-            settings.StatisticsFirmReportSampleSize = 0.05;
+            settings.StatisticsFirmReportSampleSize = 0.1;//0.1
             settings.StatisticsHouseholdReportSampleSize = 0.01;
 
-            settings.StatisticsExpectedSharpeRatioSmooth = 0.7;
+            settings.StatisticsExpectedSharpeRatioSmooth = 0.7; 
 
             // R-stuff
             if (Environment.MachineName == "C1709161") // PSP's gamle maskine
@@ -169,7 +167,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 1;
             
-            settings.StatisticsGraphicsStartPeriod = (2060 - 2014) * 12 * 100;  //!!!!!!!!!!!!!!!!!!!!!!!
+            settings.StatisticsGraphicsStartPeriod = (2080 - 2014) * 12 * 100;  //!!!!!!!!!!!!!!!!!!!!!!!
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 

@@ -27,13 +27,83 @@ d_report = read.delim(paste0(o_dir,"/file_reports.txt")) %>% filter(Production>0
 
 d_report$EmploymentMarkup = as.numeric(d_report$EmploymentMarkup)
 
+cols=palette()
+
+#----------
+
+if(F)
+{
+
+#dd2 = d_report %>% filter(Time>2080, Time<2085) %>% arrange(desc(Wage / Price))
+dd2 = d_report %>% filter(Time==2080) %>% arrange(desc(Wage / Price))
+
+plot(dd2$Productivity, dd2$Age/12,pch=19, cex=0.7)
+
+plot(dd2$Wage/dd2$Price, pch=19, cex=0.1, ylim=c(0, max(dd2$Wage/dd2$Price)))
+lines(0.02*dd2$Production, type="p",pch=19, cex=0.7, col="red")
+lines(0.01*(dd2$Age), type="p",pch=19, cex=0.7, col="blue")
+abline(h=0)
+
+plot(dd2$Wage/dd2$Price, pch=19, cex=0.1, ylim=c(0, max(dd2$Wage/dd2$Price)))
+lines(0.000012*cumsum(dd2$Production))
+lines(0.000012*cumsum(dd2$Sales), col="red")
+abline(h=0)
+
+plot(log(dd2$Wage/dd2$Price), pch=19, cex=0.1, ylim=c(0, max(log(dd2$Wage/dd2$Price))))
+lines(0.04*log(cumsum(dd2$Production)))
+lines(0.04*log(cumsum(dd2$Sales)), col="red")
+lines(0.04*log(cumsum(dd2$PotensialSales)), col="blue")
+abline(h=0)
+
+plot(2*dd2$Wage/dd2$Price, pch=19, cex=0.1, ylim=c(0, 5))
+lines(cumsum(dd2$PotensialSales)/cumsum(dd2$Sales), pch=19, cex=0.1, type="p", col="red")
+abline(h=1,lty=2)
+abline(h=0)
+
+
+
+plot(2*dd2$Wage/dd2$Price, pch=19, cex=0.1, ylim=c(0, 4))
+lines((dd2$PotensialSales)/(dd2$Sales), pch=19, cex=0.1, type="p", col="red")
+
+mean(dd2$PotensialSales[dd2$Sales!=0]/dd2$Sales[dd2$Sales!=0])
+mean(dd2$ExpectedPotentialSales[dd2$Sales!=0]/dd2$ExpectedSales[dd2$Sales!=0])
+mean(dd2$ExpectedPotentialSales[dd2$Sales!=0]/dd2$OptimalProduction[dd2$Sales!=0])
+
+
+}
+
+
+
+dd = d_report %>% filter(Time>2080, Time<2085) %>% arrange(Employment)
+
+if(nrow(dd)>0)
+{
+  pdf(paste0(o_dir,"/firms_2080_85.pdf"))
+  par(mfrow=c(2,2))
+
+  plot(dd$Employment, pch=19, cex=0.1)
+  lines(6*dd$Age/12, type="p", pch=19, cex=0.1, col=cols[3])
+  abline(h=0)
+  
+  plot(dd$Sales, dd$PotensialSales, log="xy", pch=19, cex=0.1)
+  abline(a=0.2,b=1, lty=2)
+  abline(a=0,b=1)
+  
+  hist(dd$Age/12, breaks=50)
+  hist(dd$Employment, breaks=50)
+  
+  dev.off()
+  
+}
+
+
+#----------
 
 #ID=34151
 d_report = d_report %>% arrange(ID)
 ids=unique(d_report$ID)
 n = length(ids)
 
-cols=palette()
 
 #ddd = d_report %>% filter(ID==1345)
 
@@ -43,9 +113,25 @@ dec = function(x,n=3)
   round(z*x)/z
 }
 
+growth_rate = function(x)
+{
+  x1 = x[-1]
+  x2 = x[-length(x)]
+  return(x1/x2-1)
+  
+}
+
 d_report$Time_f = as.factor(d_report$Time)
-d_tot = d_report %>% group_by(Time_f) %>% summarise(Employment=sum(Employment, na.rm = T)) %>%
-  mutate(Time=as.numeric(as.character(Time_f)))
+d_tot = d_report %>% group_by(Time_f) %>% summarise(Employment=sum(Employment, na.rm = T), Price=mean(Price), Wage=mean(Wage),
+                                                    Sales=sum(Sales, na.rm = T)) %>%
+       mutate(Time=as.numeric(as.character(Time_f)))
+
+plot(d_tot$Time, log(d_tot$Price), type="l")
+lines(d_tot$Time, log(d_tot$Wage), col=cols[2])
+
+plot(d_tot$Time, d_tot$Employment, type="l")
+plot(d_tot$Time, d_tot$Sales, type="l")
+
 
 pdf(paste0(o_dir,"/firm_reports.pdf"))
 par(mfrow=c(3,3))
@@ -55,14 +141,17 @@ for(i in 1:n)
 {
   #i=334
   #i=i+1
-  #i=which(ids==34852)
+  #i=which(ids==156447)
   #i=i+1
   dr = d_report %>% filter(ID==ids[i])
 
-  if(nrow(dr)<12*5)
+  if(min(dr$Time)<2040)
+    next
+
+  if(nrow(dr)<12*10)
     next
   
-  if(T)
+  if(F)
   {
     if(dr$Productivity[1] < 1.8)
       next
@@ -97,19 +186,33 @@ for(i in 1:n)
   mx = max(max(dr$ExpectedPotentialSales), max(dr$PotensialSales))
   plot(dr$Time, dr$PotensialSales, type="s", ylab="Optimal Production", main="", 
        xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
+  lines(dr$Time, dr$Production, col=cols[4], type="s")
   lines(dr$Time, dr$OptimalProduction, col=cols[2], type="l")
   lines(dr$Time, dr$ExpectedPotentialSales, col=cols[3], type="l")
   abline(h=0)
-  ContourFunctions::multicolor.title(c("Potensial sales "," Optimal production", " Expected potensial sales"), 1:3, cex.main = 0.7)
+  ContourFunctions::multicolor.title(c("Potensial sales ", "Optimal production ", 
+                                       "Expected potensial sales ", "Production "), 
+                                     1:4, cex.main = 0.6)
+  
+  mx = max(max(dr$ExpectedPotentialSales), max(dr$ExpectedSales))
+  plot(dr$Time, dr$ExpectedSales, type="s", ylab="Sales", main="", 
+       xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
+  lines(dr$Time, dr$ExpectedPotentialSales, col=cols[2], type="l")
+  abline(h=0)
+  ContourFunctions::multicolor.title(c("Expected sales ", "Expected Potensial sales"), 
+                                     1:2, cex.main = 0.6)
   
 
-  mx = max(max(dr$expApplications), max(dr$expQuitters+dr$ExpectedVacancies))
-  plot(dr$Time, dr$expApplications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[1])
-  lines(dr$Time, dr$expQuitters+dr$ExpectedVacancies, lty=1, col=cols[2])
-  lines(dr$Time, dr$expQuitters, type="l", col=cols[3])
-  abline(h=0)
-  abline(v=2050, lty=2)
-  ContourFunctions::multicolor.title(c("ExpApplications ", "ExpQuitters+ ExpVacancies"), 1:2, cex.main = 0.7)
+  #plot(dr$Time, dr$PotensialSales/dr$Production, type="l", ylim=c(0,2.5), ylab="PotentialSales/Production")
+  
+  
+  #mx = max(max(dr$expApplications), max(dr$ExpectedVacancies))
+  #plot(dr$Time, dr$expApplications, type="s", ylim=c(0,mx), xlab="Time", ylab="", main="", col=cols[1])
+  #lines(dr$Time, dr$ExpectedVacancies, lty=1, col=cols[2])
+  #lines(dr$Time, dr$expQuitters, type="l", col=cols[3])
+  #abline(h=0)
+  #abline(v=2050, lty=2)
+  #ContourFunctions::multicolor.title(c("ExpApplications ", "ExpVacancies ", "ExpQuitters"), 1:3, cex.main = 0.7)
 
   if(F)
   {
@@ -151,12 +254,20 @@ for(i in 1:n)
   plot(dr$Time,  dr$RelativePrice, type="l", main="Relative Price", ylab="Relative", col=cols[3], ylim=c(0.8,1.2))
   abline(h=1)
   
-  plot(dr$Time, dr$Vacancies, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[3])
-  lines(dr$Time, dr$ExpectedVacancies, col=cols[2])
-  #lines(dr$Time, dr$expApplications, col=cols[1])
+  #barplot(cbind(Vacancies + Quitters, Applications) ~Time, data=dr, beside=T, col=c("black","red"))
+  
+  #plot(dr$Time,  115+cumsum(pmin(dr$Applications, dr$Vacancies)-dr$Quitters), type="l")
+  #lines(dr$Time,  dr$Employment, col=cols[2])
+  #abline(h=0)
+  
+  mx=max(max(dr$Vacancies),max(dr$Applications))
+  plot(dr$Time, dr$Applications, type="s", ylab="Vacancies", main="", xlab="Time", col=cols[1], ylim=c(0, 1.1*mx))
+  lines(dr$Time, dr$Vacancies, col=cols[2], type="l")
+  lines(dr$Time, dr$Quitters, col=cols[3], type="l")
   abline(v=2050, lty=2)
   abline(h=0)
-
+  ContourFunctions::multicolor.title(c("Applications ", "Vacancies ", "Quitters"), 1:3, cex.main = 0.7)
+  
   if(sum(is.nan(dr$Profit / dr$Price))==0)
   {
     plot(dr$Time, dr$Profit / dr$Price, type="s", ylab="Profit / Price", xlab="Time", 
@@ -183,10 +294,20 @@ for(i in 1:n)
   #abline(h=0)
   #ContourFunctions::multicolor.title(c("Production ","Optimal production"), 1:2, cex.main = 0.7)
   
+  mx = max(max(dr$PotensialSales), max(dr$Production))
+  plot(dr$Time, dr$PotensialSales, type="s", ylab="Sale", main="", 
+       xlab="Time", col=cols[1], ylim=c(0,1.1*mx))
+  lines(dr$Time, dr$Production, col=cols[2], type="s")
+  abline(h=0)
+  ContourFunctions::multicolor.title(c("Potensial Sales ","Production"), 1:2, cex.main = 0.7)
 
-  mx=max(dr$EmploymentMarkup[-1])
-  mn=min(dr$EmploymentMarkup[-1])
-  plot(dr$Time[-1], dr$EmploymentMarkup[-1], type="l", col=cols[3], ylim=c(0,1.1*mx), ylab="Employment Markup")  
+  #plot(dr$Time, dr$PotensialSales/dr$Sales, type="l", ylim=c(0,2.5), ylab="PotentialSales/Sales")
+  #plot(dr$Time, dr$ExpectedPotentialSales/dr$OptimalProduction, type="l", ylim=c(0,2), ylab="")
+  #lines(dr$Time)
+  
+  #mx=max(dr$EmploymentMarkup[-1])
+  #mn=min(dr$EmploymentMarkup[-1])
+  #plot(dr$Time[-1], dr$EmploymentMarkup[-1], type="l", col=cols[3], ylim=c(0,1.1*mx), ylab="Employment Markup")  
   
 
     

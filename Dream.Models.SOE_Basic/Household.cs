@@ -164,7 +164,7 @@ namespace Dream.Models.SOE_Basic
                 case Event.Economics.Update:
                     #region Event.Economics.Update
                     // Income calculadet here because PublicProfitPerHousehold is calculated during PeriodStart-event by the Statistics object
-                    _income = _w * _productivity + _simulation.Statistics.PublicProfitPerHousehold; //!!!!!!!!!!!!!!!
+                    _income = _w * _productivity + 0*_simulation.Statistics.PublicProfitPerHousehold; //!!!!!!!!!!!!!!!
 
                     #region Not used (Saving)
                     //if (_age >= _settings.HouseholdPensionAge) // If pensioner
@@ -187,13 +187,19 @@ namespace Dream.Models.SOE_Basic
                     // This overwrites code above *****************************************************
                     //PSP
                     //double pos_wealth = Math.Max(_wealth, 0);
-                    //_consumption_budget = _income + 0.0* pos_wealth;    
+                    //_consumption_budget = _income + pos_wealth;    
                     //if (_consumption_budget > 1.9 * _income)
                     //    _consumption_budget = 1.9 * _income;
 
-                    _consumption_budget = _income;
-                    if (_income < 0)
+                    if (_time.Now <= _settings.BurnInPeriod2)
+                        _wealth = 0;
+                    
+                    _consumption_budget = _income + 0.25*_wealth;
+
+                    if (_consumption_budget < 0)
                         _consumption_budget = 0;
+
+
 
                     if (_age==_settings.HouseholdPensionAge)  // Retirement
                     {
@@ -458,7 +464,7 @@ namespace Dream.Models.SOE_Basic
             //Firm[] firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
 
             Firm[] firms = null;
-            if (_time.Now<12*5) // Solving up-start problem
+            if (_time.Now<12*5) // Solving up-start problem  
                 firms = _simulation.GetRandomOpenFirms(_settings.HouseholdNumberFirmsSearchShop, sector);
             else
                 firms = _simulation.GetRandomFirmsFromHouseholdsGood(_settings.HouseholdNumberFirmsSearchShop, sector);
@@ -511,7 +517,7 @@ namespace Dream.Models.SOE_Basic
             {
                 double year = _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
 
-                _statistics.StreamWriterHouseholdReport.WriteLineTab(year, this.ID, _productivity, _age/ _settings.PeriodsPerYear, 
+                _statistics.StreamWriterHouseholdReport.WriteLineTab(year, this.ID, _productivity, 1.0*_age / _settings.PeriodsPerYear, 
                     _consumption, _consumption_value, _income, _wealth, _w, _statistics.PublicMarketPriceTotal);
                 _statistics.StreamWriterHouseholdReport.Flush();
             }

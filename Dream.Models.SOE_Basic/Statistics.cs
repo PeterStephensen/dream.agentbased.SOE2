@@ -90,6 +90,10 @@ namespace Dream.Models.SOE_Basic
         int _nSuccesfullTrade = 0;
         int _nZeroBudget = 0;
         int _nSuccesfullTradeNonZero = 0;
+        double[] _priceMedian;
+        double _wageMedian = 0;
+        double _vb = 0; // Used en console output
+        double _wage_lag = 0, _price_lag = 0;
         #endregion
 
         #region Constructor
@@ -108,15 +112,18 @@ namespace Dream.Models.SOE_Basic
             _sigmaRisk = new double[_settings.NumberOfSectors];
             _sharpeRatio = new double[_settings.NumberOfSectors];
             _expSharpeRatio = new double[_settings.NumberOfSectors];
+            _priceMedian = new double[_settings.NumberOfSectors];
 
             for (int i = 0; i < _settings.NumberOfSectors; i++)
             {
                 _marketPrice[i] = _settings.StatisticsInitialMarketPrice;
+                _priceMedian[i] = _settings.StatisticsInitialMarketPrice;
                 _marketWage[i] = _settings.StatisticsInitialMarketWage;
                 _sectorProductivity[i] = 1.0;
             }
             _marketPriceTotal = _settings.StatisticsInitialMarketPrice;
             _marketWageTotal = _settings.StatisticsInitialMarketWage;
+            _wageMedian = _settings.StatisticsInitialMarketWage;
             _interestRate = _settings.StatisticsInitialInterestRate;
 
             //var options = new JsonSerializerOptions { WriteIndented = true };
@@ -365,6 +372,12 @@ namespace Dream.Models.SOE_Basic
                     int h_no = 0;
                     int h_ok = 0;
                     double consValue = 0, consBudget = 0;
+
+                    List<double> wages= new();
+                    List<double>[] prices = new List<double>[_settings.NumberOfSectors];
+                    for(int i=0;i< _settings.NumberOfSectors;i++)
+                        prices[i] = new List<double>();
+
                     foreach (Household h in _simulation.Households)
                     {
                         if (h.Age < _settings.HouseholdPensionAge)
@@ -374,18 +387,30 @@ namespace Dream.Models.SOE_Basic
                             _n_laborSupply++;
                             _laborSupply += h.Productivity;
                             _n_unemployed += h.Unemployed ? 1 : 0;
+                            if (h.FirmEmployment != null)
+                                wages.Add(h.FirmEmployment.Wage);
                         }
                         h_no += h.No;
                         h_ok += h.Ok;
                         consValue += h.ConsumptionValue;
                         consBudget += h.ConsumptionBudget;
                         totalConsumption += h.Consumption;
+
+                        for (int i = 0; i < _settings.NumberOfSectors; i++)
+                            if (h.FirmShopArray(i) != null)
+                                prices[i].Add(h.FirmShopArray(i).Price);
+
                     }
                     //double h_rejectionRate = (double)h_no / (h_no + h_ok);
                     double consLoss = 1.0 - consValue / consBudget;
                     // Calculate median wage
-                    //if (wages.Count > 0)
-                    //    _marketWage = wages.Median();
+                    if (wages.Count > 0)
+                        _wageMedian = wages.Median();
+
+                    // Calculate median prices
+                    for (int i = 0; i < _settings.NumberOfSectors; i++)
+                        _priceMedian[i] = prices[i].Median();
+
 
                     if (_time.Now > _settings.FirmPriceMechanismStart)
                     {
@@ -529,8 +554,8 @@ namespace Dream.Models.SOE_Basic
                     }
 
                     int nFirmClosed = _nFirmCloseNatural + _nFirmCloseNegativeProfit + _nFirmCloseTooBig + _nFirmCloseZeroEmployment;
-                    _fileMacro.WriteLineTab(_scenario_id, Environment.MachineName, _runName, _time.Now, _expSharpeRatioTotal, _macroProductivity, _marketPriceTotal, _marketWageTotal,
-                                                n_firms, _totalEmployment, _totalSales, _laborSupply, _n_laborSupply, _n_unemployed,
+                    _fileMacro.WriteLineTab(_scenario_id, Environment.MachineName, _runName, _time.Now, _expSharpeRatioTotal, _macroProductivity, _marketPriceTotal, 
+                                                _marketWageTotal,n_firms, _totalEmployment, _totalSales, _laborSupply, _n_laborSupply, _n_unemployed,
                                                 _totalProduction, _simulation.Households.Count, _nFirmNew, nFirmClosed, _sigmaRiskTotal, _sharpeRatioTotal, 
                                                 mean_age, tot_vacancies, _marketPrice[0], _marketWage[0], _employment[0], _sales[0], 
                                                 _simulation.Sector(0).Count, _expSharpeRatio[0], totalRevenues, _totalPotensialSales);
@@ -550,8 +575,28 @@ namespace Dream.Models.SOE_Basic
                     _nFirmCloseZeroEmployment = 0;
                     _nFirmNew = 0;
 
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.####}\t{7:#.#}\t{8:#.#}", 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear,
-                        n_firms, _simulation.Households.Count, _marketWageTotal, _marketPriceTotal, consLoss, _avrProductivity, _totalSales/1000, totalConsumption/1000);  //h_rejectionRate
+                    if(_time.Now>12)
+                        _vb = 0.9 * _vb + (1-0.9) * consValue / consBudget;
+
+
+                    double g = Math.Pow(1 + _settings.FirmProductivityGrowth, 1.0 / _settings.PeriodsPerYear) - 1;
+                    double real_w = (_marketWageTotal / _marketPriceTotal) * Math.Pow(1+g, -_time.Now);
+                    double yr = 1.0 * _settings.StartYear + 1.0 * _time.Now / _settings.PeriodsPerYear;
+
+                    double w_infl = 0;                    
+                    if(_wage_lag>0)
+                        w_infl = Math.Pow(_marketWageTotal / _wage_lag, 12) - 1;
+                    _wage_lag = _marketWageTotal;
+
+                    double p_infl = 0;
+                    if (_price_lag > 0)
+                        p_infl = Math.Pow(_marketPriceTotal / _price_lag, 12) - 1;
+                    _price_lag = _marketPriceTotal;
+
+
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.#}\t{7:#.#}\t{8:#.####}\t{9:#.####}", yr,
+                        n_firms, _simulation.Households.Count, w_infl, p_infl, _avrProductivity, _totalSales/1000, totalConsumption/1000, 
+                        _vb, real_w);
                     break;
                     #endregion
 
@@ -718,7 +763,7 @@ namespace Dream.Models.SOE_Basic
                 _fileFirmReport = File.CreateText(path);
                 _fileFirmReport.WriteLine("Time\tID\tProductivity\tEmployment\tProduction\tSales\tVacancies\tExpectedPrice\tExpectedWage\tPrice\tWage\tApplications" +
                     "\tQuitters\tProfit\tValue\tPotensialSales\tOptimalEmployment\tOptimalProduction\tExpectedSales\texpApplications\texpQuitters\texpAvrProd\tMarketPrice" +
-                    "\tMarketWage\tExpectedPotentialSales\tExpectedEmployment\tEmploymentMarkup\tRelativePrice\tRelativeWage\tExpectedVacancies");
+                    "\tMarketWage\tExpectedPotentialSales\tExpectedEmployment\tEmploymentMarkup\tRelativePrice\tRelativeWage\tExpectedVacancies\tAge");
 
                 
 
@@ -832,7 +877,8 @@ namespace Dream.Models.SOE_Basic
         }
         public double PublicMarketWageTotal
         {
-            get { return _marketWageTotal; }
+            //get { return _marketWageTotal; }
+            get { return _wageMedian; }
         }
         public double PublicMarketPriceTotal
         {
@@ -841,7 +887,8 @@ namespace Dream.Models.SOE_Basic
 
         public double[] PublicMarketPrice
         {
-            get { return _marketPrice; }
+            //get { return _marketPrice; }
+            get { return _priceMedian; }
         }
 
         public double PublicProductivity
