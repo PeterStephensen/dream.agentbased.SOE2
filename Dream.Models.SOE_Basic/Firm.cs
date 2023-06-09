@@ -337,10 +337,10 @@ namespace Dream.Models.SOE_Basic
             // The firm expects the real wage to grow with productivity
             //_expPrice = _statistics.PublicMarketPrice[_sector];
             //_expWage = _statistics.PublicMarketWageTotal * Math.Pow(1 + _settings.FirmProductivityGrowth, 1.0 / _settings.PeriodsPerYear);
-            double smooth_wp = 0.6;
+            //PSP
+            double smooth_wp = 0.3;
             _expPrice = smooth_wp * _expPrice + (1 - smooth_wp) * _p;
             _expWage  = smooth_wp * _expWage + (1 - smooth_wp) * _w;
-            //_expWage *= Math.Pow(1 + _settings.FirmProductivityGrowth, 1.0 / _settings.PeriodsPerYear);
 
 
         }
@@ -411,7 +411,7 @@ namespace Dream.Models.SOE_Basic
         /// Selling the good: Setting price
         /// </summary>
 
-        void Marketing()
+        void Marketing_NEW()
         {
 
             bool inZone = Math.Abs((_expSales - _y_optimal) / _y_optimal) < _settings.FirmComfortZoneSales;
@@ -429,7 +429,8 @@ namespace Dream.Models.SOE_Basic
                 if (_time.Now > _settings.FirmPriceMechanismStart & _age >= _settings.FirmStartupPeriod)  
                 {
 
-                    if (_y_primo > 0)
+                    //if (_y_primo > 0)//PSP
+                    if (_y_optimal > 0)
                     {
                         double markup = _settings.FirmPriceMarkup;
                         double markdown = _settings.FirmPriceMarkdown;
@@ -445,12 +446,83 @@ namespace Dream.Models.SOE_Basic
                         }
 
                         _excessPotentialSales = _settings.FirmExpectedExcessPotentialSales;
-                        _excessPotentialSales = 1.3;
+                        _excessPotentialSales = 1.0;
 
-
-                        if (_expPotentialSales / _excessPotentialSales < _expSales)
+                        if (_expSales < _y_optimal)
                         {
-                            double g = markdown * PriceFunc(markdownSensitivity * (_expSales - _expPotentialSales / _excessPotentialSales) / _expSales);
+                            double g = markdown * PriceFunc(markdownSensitivity * (_y_optimal - _expSales) / _y_optimal);
+                            p_target = (1 - g) * _expPrice;
+
+                            if (_age < 12 * 5)
+                                advertise = true;
+                        }
+                        else
+                        {
+                            //if(inZone & _expPotentialSales > _expSales)
+                            if (_expPotentialSales > _expSales)
+                            {
+                                //double g = markup * PriceFunc(markupSensitivity * (_expSales - _y_optimal) / _y_optimal);
+                                double g = 0 * PriceFunc(markupSensitivity * (_expPotentialSales - _expSales) / _y_optimal);
+                                p_target = (1 + g) * _expPrice;
+
+                            }
+
+                        }
+
+
+                    }
+                }
+
+                _relative_price = p_target / _statistics.PublicMarketPrice[_sector];
+
+                double a = 0.2; //0.2
+                _p = a * _p + (1 - a) * p_target;
+                if (advertise)
+                    AdvertiseGood();
+
+            }
+        }
+
+        void Marketing()
+        {
+
+            bool inZone = Math.Abs((_expSales - _y_optimal) / _y_optimal) < _settings.FirmComfortZoneSales;
+            double probRecalculate = inZone ? _settings.FirmProbabilityRecalculatePriceInZone : _settings.FirmProbabilityRecalculatePrice;
+            double gamma_y = _settings.FirmGamma_y;
+            bool advertise = false;
+
+            if (_random.NextEvent(probRecalculate))
+            {
+
+                double marketPrice = _statistics.PublicMarketPrice[_sector];
+                //double p_target = _expPrice;
+                double p_target = marketPrice;
+
+                if (_time.Now > _settings.FirmPriceMechanismStart & _age >= _settings.FirmStartupPeriod)
+                {
+
+                    if (_y_primo > 0)
+                    {
+                        double markup = _settings.FirmPriceMarkup;
+                        double markdown = _settings.FirmPriceMarkdown;
+                        double markupSensitivity = _settings.FirmPriceMarkupSensitivity;
+                        double markdownSensitivity = _settings.FirmPriceMarkdownSensitivity;
+
+                        if (inZone)
+                        {
+                            markup = _settings.FirmPriceMarkupInZone;
+                            markdown = _settings.FirmPriceMarkdownInZone;
+                            markupSensitivity = _settings.FirmPriceMarkupSensitivityInZone;
+                            markdownSensitivity = _settings.FirmPriceMarkdownSensitivityInZone;
+                        }
+
+                        _excessPotentialSales = _settings.FirmExpectedExcessPotentialSales;
+                        _excessPotentialSales = 1.0;
+
+
+                        if (_expPotentialSales < _expSales)
+                        {
+                            double g = markdown * PriceFunc(markdownSensitivity * (_expSales - _expPotentialSales) / _expSales);
                             p_target = (1 - g) * marketPrice;
 
                             if (_age < 12 * 5 * 1)
@@ -459,7 +531,7 @@ namespace Dream.Models.SOE_Basic
                         }
                         else
                         {
-                            double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales / _excessPotentialSales - _expSales) / _expSales);
+                            double g = markup * PriceFunc(markupSensitivity * (_expPotentialSales - _expSales) / _expSales);
                             p_target = (1 + g) * marketPrice;
                         }
 
@@ -491,7 +563,8 @@ namespace Dream.Models.SOE_Basic
 
             }
         }
-        
+
+
         double PriceFunc2(double x)
         {
             return Math.Atan(0.5 * Math.PI * x) / (0.5 * Math.PI);
@@ -506,6 +579,77 @@ namespace Dream.Models.SOE_Basic
         /// <summary>
         /// Setting wage and vacancies
         /// </summary>
+        void HumanResource_NEW()
+        {
+
+            bool advertise = false;
+            double l = CalcEmployment();
+            double avr_prod = 1.0;
+            if(_employed.Count>0) avr_prod = l / _employed.Count;
+            _expAvrProd = _statistics.PublicAverageProductivity;
+
+            // I(1) process
+            _vacancies_net += 0.01 * (_l_optimal - _expEmployment);
+            //_vacancies_net += 0.01 * (_expOptimalEmployment - _expEmployment);
+            _vacancies = _vacancies_net + _expQuitters;
+            if (_vacancies < 0)
+                _vacancies = 0;
+
+            _v_primo = _vacancies; // Primo vacancies
+
+            bool inZone = Math.Abs((_l_optimal - l) / _l_optimal) < _settings.FirmComfortZoneEmployment;
+            double probRecalculate = inZone ? _settings.FirmProbabilityRecalculateWageInZone : _settings.FirmProbabilityRecalculateWage;
+            
+            if (_random.NextEvent(probRecalculate))
+            {
+
+                double markup = _settings.FirmWageMarkup;
+                double markdown = _settings.FirmWageMarkdown;
+                double markupSensitivity = _settings.FirmWageMarkupSensitivity;
+                double markdownSensitivity = _settings.FirmWageMarkdownSensitivity;
+
+                if (inZone)
+                {
+                    markup = _settings.FirmWageMarkupInZone;
+                    markdown = _settings.FirmWageMarkdownInZone;
+                    markupSensitivity = _settings.FirmWageMarkupSensitivityInZone;
+                    markdownSensitivity = _settings.FirmWageMarkdownSensitivityInZone;
+                }
+
+                // Wage formation
+                //double w_target = _expWage;
+                double marketWage = _statistics.PublicMarketWageTotal;
+                double w_target = marketWage;
+
+                if (l > _l_optimal)
+                {
+                    double g = markdown * PriceFunc(markdownSensitivity * (l - _l_optimal) / _l_optimal);
+                    w_target = (1 - g) * marketWage;
+                }
+                else
+                {
+                    double g = markup * PriceFunc(markdownSensitivity * (_l_optimal - l) / _l_optimal);
+                    w_target = (1 + g) * marketWage;
+                    if (_age < 12 * 5)
+                        advertise = true;
+
+                }
+
+                _relative_wage = w_target / _statistics.PublicMarketWageTotal;
+
+                double a = 0.2; //0.1
+                _w = a * _w + (1 - a) * w_target;
+                if (advertise)
+                    AdvertiseJob();
+            }
+            //else
+            //{
+            //    double a = 0.8;
+            //    //_w = a * _w + (1 - a) * _expWage; Very slow!
+            //    //_w = _expWage;
+            //}
+        }
+
         void HumanResource()
         {
             if (_age < _settings.FirmStartupPeriod)
@@ -517,7 +661,7 @@ namespace Dream.Models.SOE_Basic
             bool advertise = false;
             double l = CalcEmployment();
             double avr_prod = 1.0;
-            if(_employed.Count>0) avr_prod = l / _employed.Count;
+            if (_employed.Count > 0) avr_prod = l / _employed.Count;
             _expAvrProd = _statistics.PublicAverageProductivity;
 
             // I(1) process
@@ -563,10 +707,10 @@ namespace Dream.Models.SOE_Basic
 
             _v_primo = _vacancies; // Primo vacancies
 
-            //bool inZone = Math.Abs((l - l_target) / l_target) < _settings.FirmComfortZoneEmployment;
-            bool inZone = Math.Abs((_l_optimal - _expEmployment) / _l_optimal) < _settings.FirmComfortZoneEmployment;
+            //bool inZone = Math.Abs((_l_optimal - _expEmployment) / _l_optimal) < _settings.FirmComfortZoneEmployment;
+            bool inZone = Math.Abs((_l_optimal - l) / _l_optimal) < _settings.FirmComfortZoneEmployment;
             double probRecalculate = inZone ? _settings.FirmProbabilityRecalculateWageInZone : _settings.FirmProbabilityRecalculateWage;
-            
+
             if (_random.NextEvent(probRecalculate))
             {
 
@@ -652,7 +796,7 @@ namespace Dream.Models.SOE_Basic
             //}
         }
 
-        void HumanResource_OLD()
+        void HumanResource_veryOLD()
         {
             if (_age < _settings.FirmStartupPeriod)
             {

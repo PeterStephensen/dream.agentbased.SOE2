@@ -22,7 +22,7 @@ namespace Dream.Models.SOE_Basic
             double scale = 5 * 1.0; //5
             
             settings.NumberOfSectors = 1;
-            settings.NumberOfFirms = (int)(150 * scale);
+            settings.NumberOfFirms = (int)(150 * scale); //150 //PSP
             settings.NumberOfHouseholdsPerFirm = 5;
             settings.HouseholdNewBorn = (int)(5 * scale);   //15
             settings.InvestorInitialInflow = (int)(10 * scale);
@@ -38,17 +38,18 @@ namespace Dream.Models.SOE_Basic
             settings.FirmFi = 2;
 
             //-----
-            double mark = 0.10; // 0.2
+            double mark = 0.1; // 0.2
             double sens = 1/0.75;   //1/0.1
 
+
             // Wage ----------------------------------
-            settings.FirmWageMarkup = 1 * mark; //1                                            
+            settings.FirmWageMarkup = 1 * mark; //1                                              
             settings.FirmWageMarkupSensitivity = 1 * sens;//1
-            settings.FirmWageMarkdown = 1 * mark;   //1          
+            settings.FirmWageMarkdown = 1 * mark;   //1 //PSP          
             settings.FirmWageMarkdownSensitivity = 1 * sens;//1
 
             // In zone
-            settings.FirmWageMarkupInZone = 1 * mark; //1                                      
+            settings.FirmWageMarkupInZone = 1 * mark; //1 //PSP                                     
             settings.FirmWageMarkupSensitivityInZone = 1 * sens;//1
             settings.FirmWageMarkdownInZone = 1 * mark; //1    
             settings.FirmWageMarkdownSensitivityInZone = 1 * sens;//1
@@ -57,16 +58,20 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProbabilityRecalculateWageInZone = 0.5;  
 
             // Price ----------------------------------
-            settings.FirmPriceMarkup = 1 * mark; //1
-            settings.FirmPriceMarkupSensitivity = sens; //1
+            settings.FirmPriceMarkup = 1 * mark; //1 //PSP
+            settings.FirmPriceMarkupSensitivity = 1 * sens; //1
             settings.FirmPriceMarkdown = 1 * mark;             
             settings.FirmPriceMarkdownSensitivity = 1 * sens;  
 
             // In zone
             settings.FirmPriceMarkupInZone = 1 * mark; //1
-            settings.FirmPriceMarkupSensitivityInZone = sens;
-            settings.FirmPriceMarkdownInZone = 1 * mark;             
-            settings.FirmPriceMarkdownSensitivityInZone = 1 * sens;    
+            settings.FirmPriceMarkupSensitivityInZone = 1 * sens;
+            settings.FirmPriceMarkdownInZone = 0 * mark;             
+            settings.FirmPriceMarkdownSensitivityInZone = 1 * sens;
+
+            //-----
+            settings.FirmComfortZoneEmployment = 0.15;
+            settings.FirmComfortZoneSales = 0.15;
 
             settings.FirmProbabilityRecalculatePrice = 1.0;
             settings.FirmProbabilityRecalculatePriceInZone = 0.5; // 0.2
@@ -76,9 +81,6 @@ namespace Dream.Models.SOE_Basic
 
             settings.FirmPriceMechanismStart = 12 * 1;
 
-            //-----
-            settings.FirmComfortZoneEmployment = 0.1;
-            settings.FirmComfortZoneSales = 0.1;
 
             //-----
             settings.FirmDefaultProbabilityNegativeProfit = 0.5;  
@@ -86,7 +88,7 @@ namespace Dream.Models.SOE_Basic
             settings.FirmNegativeProfitOkAge = 12 * 2;
 
             settings.FirmExpectationSmooth = 0.95; //0.4  
-            settings.FirmMaxEmployment = 1000;  // 700
+            settings.FirmMaxEmployment = 1000;  // 1000
 
             settings.FirmNumberOfGoodAdvertisements = 100; // 25 
             settings.FirmNumberOfJobAdvertisements = 100;  
@@ -99,10 +101,10 @@ namespace Dream.Models.SOE_Basic
             settings.FirmProductivityGrowth = 0.02;
 
             // Households
-            settings.HouseholdNumberFirmsSearchJob = 5;  //15              
-            settings.HouseholdNumberFirmsSearchShop = 5;       //15
-            settings.HouseholdProbabilityQuitJob = 0.05;        // 0.01
-            settings.HouseholdProbabilityOnTheJobSearch = 0.15;   //0.25                        
+            settings.HouseholdNumberFirmsSearchJob = 15;  //15              
+            settings.HouseholdNumberFirmsSearchShop = 15;       //15
+            settings.HouseholdProbabilityQuitJob = 0.0;        // 0.01
+            settings.HouseholdProbabilityOnTheJobSearch = 0.25;   //0.25                        
             settings.HouseholdProbabilitySearchForShop = 0.15;     //0.25                    
             settings.HouseholdProductivityLogSigmaInitial = 0.6;
             settings.HouseholdProductivityLogMeanInitial = -0.5 * Math.Pow(settings.HouseholdProductivityLogSigmaInitial, 2); // Sikrer at forventet produktivitet er 1
@@ -120,7 +122,7 @@ namespace Dream.Models.SOE_Basic
             settings.HouseholdNumberFirmsLookingForGoods = 50;
 
             // Investor
-            settings.InvestorProfitSensitivity = 0.15; //0.15               
+            settings.InvestorProfitSensitivity = 0.1; //0.15               
 
             // Statistics
             settings.StatisticsInitialMarketPrice = 1.2;  //2.0
@@ -141,7 +143,7 @@ namespace Dream.Models.SOE_Basic
             if (Environment.MachineName == "C2210098") // PSP's nye maskine
             {
                 settings.ROutputDir = @"C:\Users\B007566\Documents\Output";
-                settings.RExe = @"C:\Program Files\R\R-4.2.3\bin\x64\R.exe";
+                settings.RExe = @"C:\Program Files\R\R-4.3.0\bin\x64\R.exe";
                 //settings.RExe = @"C:\Program Files\R\R-4.2.3\bin\R.exe";
             }
 
@@ -167,7 +169,7 @@ namespace Dream.Models.SOE_Basic
             settings.StatisticsOutputPeriode = (2075 - 2014) * 12;
             settings.StatisticsGraphicsPlotInterval = 1;
             
-            settings.StatisticsGraphicsStartPeriod = (2080 - 2014) * 12 * 100;  //!!!!!!!!!!!!!!!!!!!!!!!
+            settings.StatisticsGraphicsStartPeriod = (2080 - 2014) * 12 * 1;  //!!!!!!!!!!!!!!!!!!!!!!!
             if(settings.SaveScenario)
                 settings.StatisticsGraphicsStartPeriod = 12 * 500;
 

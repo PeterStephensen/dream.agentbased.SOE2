@@ -235,6 +235,12 @@ namespace Dream.Models.SOE_Basic
                         _expSharpeRatio[i] = _settings.StatisticsExpectedSharpeRatioSmooth * _expSharpeRatio[i] + (1 - _settings.StatisticsExpectedSharpeRatioSmooth) * _sharpeRatio[i];
                     }
 
+                    //PSP
+                    //for (int i = 0; i < _settings.NumberOfSectors; i++)
+                    //    _expSharpeRatio[i] += 1 * Math.Pow(0.99, _time.Now);
+
+                    //_expSharpeRatioTotal += 5 * Math.Pow(0.99, _time.Now);
+
                     //int z = 0;
                     //if (_time.Now > 12 * 30)
                     //    z++;
@@ -594,9 +600,9 @@ namespace Dream.Models.SOE_Basic
                     _price_lag = _marketPriceTotal;
 
 
-                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.#}\t{7:#.#}\t{8:#.####}\t{9:#.####}", yr,
+                    Console.WriteLine("{0:#.##}\t{1}\t{2}\t{3:#.###}\t{4:#.###}\t{5:#.####}\t{6:#.#}\t{7:#.#}\t{8:#.####}\t{9:#.####}\t{10:#.####}\t{11:#.####}", yr,
                         n_firms, _simulation.Households.Count, w_infl, p_infl, _avrProductivity, _totalSales/1000, totalConsumption/1000, 
-                        _vb, real_w);
+                        _vb, real_w, _expSharpeRatio[0], 1.0*_n_unemployed/_n_laborSupply);
                     break;
                     #endregion
 

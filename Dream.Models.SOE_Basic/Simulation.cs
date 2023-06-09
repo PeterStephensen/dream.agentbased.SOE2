@@ -200,7 +200,20 @@ namespace Dream.Models.SOE_Basic
                         Console.WriteLine("***************************************** Time per year: {0}", DateTime.Now - _t0);
                         _t0 = DateTime.Now;
                     }
-                    
+
+                    if(_time.Now==_settings.BurnInPeriod1)
+                    {
+                        Console.WriteLine("-------------------------------------------------------------------------------");
+                        Console.WriteLine("--------------------------- END OF BURN-IN PERIOD 1 ---------------------------");
+                        Console.WriteLine("-------------------------------------------------------------------------------");
+                    }
+
+                    if (_time.Now == _settings.BurnInPeriod2)
+                    {
+                        Console.WriteLine("===============================================================================");
+                        Console.WriteLine("=========================== END OF BURN-IN PERIOD 2 ===========================");
+                        Console.WriteLine("===============================================================================");
+                    }
 
                     base.EventProc(idEvent);
                     break;
@@ -228,9 +241,18 @@ namespace Dream.Models.SOE_Basic
                         _settings.FirmDefaultProbability = 0; //!!!!!!!!!!!!!!!!!!!!
                         _settings.FirmStartNewFirms = true;
                         _settings.FirmStartupPeriod = 6;
-                        _settings.FirmStartupEmployment = 10;  //15
+                        _settings.FirmStartupEmployment = 10;  
                     }
                     
+                    //PSP
+                    //if (_time.Now == _settings.BurnInPeriod2)
+                    //{
+                    //    _settings.FirmWageMarkup = 0.1;
+                    //    _settings.FirmPriceMarkdown = 0.1;
+
+                    //}
+
+
                     // Investor
                     if (_settings.FirmStartNewFirms)
                     {
@@ -501,7 +523,7 @@ namespace Dream.Models.SOE_Basic
                 {
                     if ((f.Production - f.Sales) * f.Price > budget)
                         return f;
-                    
+
                     // Maybe i++ here????
                 }
 

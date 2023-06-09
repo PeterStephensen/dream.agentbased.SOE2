@@ -145,29 +145,23 @@ for(i in 1:n)
   #i=i+1
   dr = d_report %>% filter(ID==ids[i])
 
-  if(min(dr$Time)<2040)
-    next
-
-  if(nrow(dr)<12*10)
-    next
-  
   if(F)
   {
-    if(dr$Productivity[1] < 1.8)
+    if(min(dr$Time)<2040)
       next
-  }
-  
-  if(F)
-  {
-    if(nrow(dr)>12*10)
-    {
-      dr = dr[1:(12*10),]
-    }
+    
+    if(nrow(dr)<12*10)
+      next
+    
+    
+    if(sum(dr$Profit / dr$Price>0)==0)
+      next
     
   }
   
-  if(sum(dr$Profit / dr$Price>0)==0)
+  if(nrow(dr)<2)
     next
+  
   
   cat(i, "/", n, "\n")
   
